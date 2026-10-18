@@ -8204,7 +8204,7 @@ function gcNarrativeHtml(raw) {
 /* GC WYSIWYG NARRATIVE EDITOR v1 */
 let GC_AI_EDITOR = null;
 let GC_AI_EDITOR_SELECTION = null;
-const GC_AI_ALLOWED_TAGS=new Set(["DIV","P","BR","B","STRONG","I","EM","U","S","STRIKE","H2","H3","H4","H5","UL","OL","LI","BLOCKQUOTE","SPAN","A","FONT"]);
+const GC_AI_ALLOWED_TAGS=new Set(["DIV","P","BR","B","STRONG","I","EM","U","S","STRIKE","H2","H3","H4","H5","UL","OL","LI","BLOCKQUOTE","SPAN","SECTION","A","FONT"]);
 const GC_AI_DROP_TAGS=new Set(["SCRIPT","STYLE","IFRAME","OBJECT","EMBED","IMG","SVG","MATH","FORM","INPUT","TEXTAREA","BUTTON","VIDEO","AUDIO","LINK","META"]);
 function gcAiColor(color) {
   const v=String(color||"").trim();
@@ -8224,12 +8224,19 @@ function gcAiCleanHtml(raw) {
     if(tag==="FONT"){
       const color=gcAiColor(node.getAttribute("color"));
       if(color)el.style.color=color;
+      const size=Number(node.getAttribute("size"));
+      const mapping={1:"10px",2:"12px",3:"14px",4:"18px",5:"24px",6:"30px",7:"36px"};
+      if(Number.isInteger(size)&&mapping[size])el.style.fontSize=mapping[size];
     }
-    if(["DIV","P","H2","H3","H4","H5","BLOCKQUOTE","SPAN"].includes(tag)){
+    if(tag==="SECTION"&&node.classList.contains("gc-ai-narrative-section"))
+      el.className="gc-ai-narrative-section";
+    if(["DIV","P","H2","H3","H4","H5","BLOCKQUOTE","SPAN","SECTION"].includes(tag)){
       const alignment=node.style?.textAlign;
       if(["left","right","center","justify"].includes(alignment))el.style.textAlign=alignment;
       const color=gcAiColor(node.style?.color);
       if(color)el.style.color=color;
+      const fontSize=node.style?.fontSize||"";
+      if(/^(?:1[0-9]|2[0-9]|30|36)px$/.test(fontSize))el.style.fontSize=fontSize;
     }
     if(tag==="A"){
       const href=(node.getAttribute("href")||"").trim();
@@ -8412,6 +8419,11 @@ function gcAiBindEditor(res){
   if(blocks)blocks.addEventListener("change",()=>{
     gcAiEditorCommand("formatBlock",blocks.value);
     blocks.value="p";
+  });
+  const size=$("#gcAiFontSize");
+  if(size)size.addEventListener("change",()=>{
+    gcAiEditorCommand("fontSize",size.value);
+    size.value="3";
   });
   const color=$("#gcAiColor");
   if(color)color.addEventListener("input",()=>gcAiEditorCommand("foreColor",color.value));
