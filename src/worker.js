@@ -1,4 +1,4 @@
-import { networkScope, validPublicState } from "./public-state.js";
+import { deviceScope, validPublicState } from "./public-state.js";
 import { handleAiApi, verifyAccessIdentity } from "./ai-worker.js";
 import { permissionsForRole, writableKeysForRole, preservesExistingRecords } from "./roles.js";
 // GreenCal — D1-backed authentication, two-role RBAC, shared state.
@@ -190,12 +190,14 @@ async function router(req,env) {
 
 async function publicStateRouter(req,env) {
   if(!env.DB)return err("Penyimpanan belum tersedia",503);
-  const scope=await networkScope(req,env.IP_SCOPE_SECRET);
-  if(!scope)return err("Identitas jaringan tidak tersedia",503);
+  const device=await deviceScope(req,env.IP_SCOPE_SECRET);
+  if(!device)return err("Penyimpanan tidak tersedia",503);
+  if(req.method!=="GET"&&device.newlyCreated)return err("Inisialisasi perangkat diperlukan. Muat ulang.",428);
+  const scope=device.scope;
   const url=new URL(req.url);
   if(req.method==="GET"){
     const row=await env.DB.prepare("SELECT revision,payload FROM gc_public_state WHERE scope_id=?").bind(scope).first();
-    return C({revision:row?.revision??0,data:row?JSON.parse(row.payload):null});
+    return C({revision:row?.revision??0,data:row?JSON.parse(row.payload):null},200,device.cookie?{"set-cookie":device.cookie}:{});
   }
   if(req.method!=="PUT")return err("Metode tidak didukung",405);
   if(req.headers.get("origin")!==url.origin)return err("Origin permintaan tidak valid",403);
