@@ -56,6 +56,7 @@ async function decryptProviderKey(envelope,env){
  return new TextDecoder().decode(plain);
 }
 
+export { identity as verifyAccessIdentity };
 const defaultOrder=[{provider:"gemini",model:"gemini-2.5-flash",enabled:true},{provider:"openai",model:"gpt-4.1-mini",enabled:true},{provider:"openrouter",model:"openai/gpt-4.1-mini",enabled:false},{provider:"groq",model:"llama-3.3-70b-versatile",enabled:false}];
 const keyVar={gemini:"AI_KEY_GEMINI",openai:"AI_KEY_OPENAI",openrouter:"AI_KEY_OPENROUTER",groq:"AI_KEY_GROQ"};
 async function loadConfig(env){return (await env.AI_CONFIG.get("ai_chain_v1",{type:"json"}))||{order:defaultOrder,updatedAt:null};}
