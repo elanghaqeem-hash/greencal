@@ -1,0 +1,32 @@
+name: GreenCal Login UI regression tests
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'index.html'
+      - 'auth-client.js'
+      - 'src/worker.js'
+      - 'tests/auth-ui.test.mjs'
+      - '.github/workflows/login-ui-tests.yml'
+  pull_request:
+    paths:
+      - 'index.html'
+      - 'auth-client.js'
+      - 'src/worker.js'
+      - 'tests/auth-ui.test.mjs'
+      - '.github/workflows/login-ui-tests.yml'
+permissions:
+  contents: read
+jobs:
+  validate-login:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Login UI and role regression
+        run: |
+          node --test tests/auth-ui.test.mjs tests/rbac.test.mjs
+          node --check auth-client.js
+          node --check src/worker.js
