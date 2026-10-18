@@ -3068,6 +3068,130 @@ dialog.modal-sheet .modal-foot { background:var(--surface); }
  .gc-ai-editable p,.gc-ai-editable div{font-size:13px;}
 }
 
+
+/* GreenCal Narrative Editor v4 — responsive premium sustainability workspace */
+.gc-ai-editor-panel.panel {
+  container:gc-narrative / inline-size;
+  position:relative;isolation:isolate;min-width:0;overflow:hidden;
+  padding:0!important;background:#fff;border:1px solid #d6e5db;border-radius:19px;
+  box-shadow:0 8px 27px rgba(9,67,45,.052),0 1px 3px rgba(9,67,45,.03);
+}
+.gc-ai-editor-panel .gc-ai-editor-heading {
+  display:grid!important;grid-template-columns:minmax(0,1fr) auto;
+  align-items:start;gap:clamp(15px,2vw,26px);
+  padding:clamp(18px,2.2vw,27px);margin:0!important;min-width:0;
+  border:none!important;border-bottom:1px solid #e3eee7!important;
+  background:radial-gradient(ellipse at 100% 5%,rgba(222,243,231,.46),transparent 35%),linear-gradient(108deg,#fff 6%,#fcfefd 72%,#f5fbf7 100%);
+}
+.gc-ai-editor-panel .gc-ai-editor-heading-main{display:flex;align-items:flex-start;gap:15px;min-width:0;flex:none}
+.gc-ai-editor-panel .gc-ai-editor-leading-icon{
+  width:46px;height:46px;flex:none;display:grid;place-items:center;
+  background:#e9f5ed;border:1px solid #d3e8dc;border-radius:13px;color:#17674c;
+}
+.gc-ai-editor-panel .gc-ai-editor-leading-icon svg{width:24px;height:24px}
+.gc-ai-editor-panel .gc-ai-editor-heading-text{flex:1;min-width:0;max-width:810px}
+.gc-ai-editor-panel .gc-ai-editor-eyebrow{
+  margin:1px 0 8px;color:#248165;font-size:10px;font-weight:800;line-height:1.35;letter-spacing:.1em;
+}
+.gc-ai-editor-panel .gc-ai-editor-heading h3{
+  margin:0 0 9px!important;font-size:clamp(17px,1.6vw,21px);font-weight:800;
+  line-height:1.32;letter-spacing:-.027em;color:#122e29;overflow-wrap:anywhere;
+}
+.gc-ai-editor-panel .gc-ai-editor-heading p{
+  margin:0!important;color:#667871;font-size:12.5px;font-weight:450;
+  line-height:1.65;max-width:710px;overflow-wrap:anywhere;
+}
+.gc-ai-editor-panel .gc-ai-editor-actions{
+  display:flex;flex-wrap:wrap;justify-content:flex-end;align-items:flex-start;align-content:flex-start;
+  gap:8px;min-width:0;max-width:510px;
+}
+.gc-ai-editor-panel .gc-ai-editor-actions .gc-ai-action{
+  display:inline-flex;justify-content:center;align-items:center;gap:8px;
+  margin:0;padding:10px 14px;width:auto;max-width:100%;
+  min-height:43px;height:auto;border-radius:11px;
+  font-size:12px;line-height:1.4;font-weight:750;font-family:inherit;
+  letter-spacing:-.009em;box-shadow:none;white-space:nowrap;text-align:center;cursor:pointer;
+  transition:background-color .15s,border-color .15s,box-shadow .15s;
+}
+.gc-ai-editor-panel .gc-ai-action svg{width:17px;height:17px;flex:none}
+.gc-ai-editor-panel .gc-ai-action>span{min-width:0}
+.gc-ai-editor-panel .gc-ai-action-edit{color:#115e44;background:#fff;border:1px solid #70b595}
+.gc-ai-editor-panel .gc-ai-action-edit:hover{background:#eff9f3;border-color:#187f59}
+.gc-ai-editor-panel .gc-ai-action-save{color:#fff;border:1px solid #096b4c;background:#0b7052;box-shadow:0 4px 13px rgba(10,90,64,.14)}
+.gc-ai-editor-panel .gc-ai-action-save:hover{background:#075c44}
+.gc-ai-editor-panel .gc-ai-action-cancel{color:#354940;background:#fff;border:1px solid #d4ded8}
+.gc-ai-editor-panel .gc-ai-action-cancel:hover{background:#f3f7f4}
+.gc-ai-editor-panel .gc-ai-action-restore{color:#1a654c;background:#f3faf6;border:1px solid #cfdfd4}
+.gc-ai-editor-panel .gc-ai-action-restore:hover{background:#e6f5eb;border-color:#79ad90}
+.gc-ai-editor-panel .gc-ai-action:focus-visible{outline:3px solid #74cda3;outline-offset:2px}
+.gc-ai-editor-panel [hidden]{display:none!important}
+.gc-ai-editor-panel .gc-ai-editor-meta{
+  display:flex;align-items:center;flex-wrap:wrap;column-gap:14px;row-gap:9px;
+  min-height:57px;margin:0!important;padding:12px clamp(18px,2.2vw,27px);
+  border-bottom:1px solid #e5eee8;background:#f6fbf8;color:#5e7066;
+  font-size:11.5px;line-height:1.65;
+}
+.gc-ai-editor-panel .gc-ai-editor-statusline{
+  display:flex;align-items:flex-start;gap:10px;min-width:0;flex:1 1 380px;
+}
+.gc-ai-editor-panel .gc-ai-editor-statusline svg{flex:none;width:18px;height:18px;margin-top:1px;color:#18805a}
+.gc-ai-editor-panel #gcAiEditorStatus{display:block;min-width:0;overflow-wrap:anywhere}
+.gc-ai-editor-panel .gc-ai-draft-badge{
+  flex:none;background:#e8f6ee;border:1px solid #c9e4d3;color:#246947;
+  border-radius:99px;padding:5px 10px;font-size:10.5px;font-weight:750;
+  white-space:normal;max-width:100%;
+}
+.gc-ai-editor-panel .gc-ai-editor-warning{
+  flex-basis:100%;max-width:100%;border-radius:9px;padding:8px 10px;
+  background:#fff7e9;color:#945c1d;font-size:11.5px;line-height:1.5;overflow-wrap:anywhere;
+}
+.gc-ai-editor-panel .gc-ai-toolbar{
+  margin:18px clamp(16px,2vw,26px) 0;width:auto;max-width:100%;
+  border-color:#dce8df;background:#f7faf8;
+}
+.gc-ai-editor-panel .gc-ai-narrative{
+  margin:19px clamp(16px,2vw,26px) 0;min-width:0;
+}
+.gc-ai-editor-panel .gc-ai-narrative.gc-ai-editable{
+  margin-top:0;border-color:#dce8df;border-radius:0 0 13px 13px;outline-color:#b8d9c5;
+}
+.gc-ai-editor-panel .gc-ai-editor-footer{
+  margin:0;padding:14px clamp(16px,2vw,26px) 19px;line-height:1.7;
+}
+@container gc-narrative (max-width:1100px){
+  .gc-ai-editor-panel .gc-ai-editor-heading{grid-template-columns:minmax(0,1fr);gap:17px}
+  .gc-ai-editor-panel .gc-ai-editor-actions{justify-content:flex-start;max-width:none;width:100%}
+  .gc-ai-editor-panel .gc-ai-editor-heading h3{max-width:840px}
+}
+@container gc-narrative (max-width:600px){
+  .gc-ai-editor-panel .gc-ai-editor-heading{padding:17px 16px;gap:16px}
+  .gc-ai-editor-panel .gc-ai-editor-heading-main{gap:10px}
+  .gc-ai-editor-panel .gc-ai-editor-leading-icon{width:37px;height:37px;border-radius:10px}
+  .gc-ai-editor-panel .gc-ai-editor-leading-icon svg{width:21px;height:21px}
+  .gc-ai-editor-panel .gc-ai-editor-eyebrow{font-size:9px;letter-spacing:.06em;margin:0 0 6px}
+  .gc-ai-editor-panel .gc-ai-editor-heading h3{font-size:17px;line-height:1.34;margin-bottom:7px!important}
+  .gc-ai-editor-panel .gc-ai-editor-heading p{font-size:12px;line-height:1.6}
+  .gc-ai-editor-panel .gc-ai-editor-actions{
+    display:grid;grid-template-columns:repeat(2,minmax(0,1fr));align-items:stretch;gap:8px;
+  }
+  .gc-ai-editor-panel .gc-ai-editor-actions .gc-ai-action{
+    width:100%;min-height:45px;padding:9px 11px;font-size:11.5px;white-space:normal;
+  }
+  .gc-ai-editor-panel .gc-ai-editor-meta{padding:12px 16px;min-height:0;gap:8px}
+  .gc-ai-editor-panel .gc-ai-editor-statusline{flex-basis:100%;font-size:11.5px}
+  .gc-ai-editor-panel .gc-ai-narrative{margin:15px 15px 0}
+  .gc-ai-editor-panel .gc-ai-toolbar{margin:15px 15px 0}
+  .gc-ai-editor-panel .gc-ai-editor-footer{padding:13px 15px 17px}
+}
+@container gc-narrative (max-width:390px){
+  .gc-ai-editor-panel .gc-ai-editor-actions{grid-template-columns:1fr}
+  .gc-ai-editor-panel .gc-ai-editor-actions .gc-ai-action{
+    justify-content:flex-start;padding:11px 13px;min-height:44px;
+  }
+  .gc-ai-editor-panel .gc-ai-editor-heading h3{font-size:16px}
+}
+@media(prefers-reduced-motion:reduce){.gc-ai-editor-panel .gc-ai-action{transition:none}}
+
 </style>
 </head>
 <body>
