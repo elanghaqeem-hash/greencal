@@ -2317,6 +2317,7 @@ dialog.modal-sheet .modal-foot { background:var(--surface); }
 .gc-ai-provider-body .field-label{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
 .gc-ai-key-state{font-size:10px;font-weight:700;color:var(--ink-muted)}
 .gc-ai-provider-body input[type=text]{width:100%;min-height:39px;font-size:12px;padding:7px 9px}
+.gc-ai-provider-body input.gc-ai-key{width:100%;min-height:39px;padding:7px 9px;font-size:13px;}
 .gc-ai-switch{display:flex;align-items:center;gap:7px;font-size:11px;color:var(--ink-muted)}
 .gc-ai-movers{display:grid;gap:5px}
 .gc-ai-movers button{border:1px solid var(--line);background:var(--surface-2);border-radius:7px;height:31px;font-size:16px;cursor:pointer}
@@ -2407,14 +2408,226 @@ dialog.modal-sheet .modal-foot { background:var(--surface); }
 }
 @media(prefers-reduced-motion:reduce){#view-aktivitas .carbon-scope-filters button{transition:none}}
 
+/* GreenCal two-role sign-in, account management & save-state cues */
+.gc-auth-gate {position:fixed;inset:0;z-index:600;background:linear-gradient(135deg,#073a2c,#12674b 58%,#e6f5eb);display:flex;justify-content:center;align-items:center;overflow:auto;padding:24px 15px;}
+.gc-auth-gate[hidden],#gcLoginForm[hidden],#gcBootstrapForm[hidden],[data-admin-only][hidden] {display:none!important;}
+.gc-auth-card {background:#fff;color:#182e25;border-radius:24px;box-shadow:0 25px 90px #02261a55;width:min(440px,100%);padding:29px 25px;max-height:96dvh;overflow:auto;}
+.gc-auth-icon {display:grid;place-items:center;width:52px;height:52px;color:white;background:#075b42;border-radius:15px;font-size:28px;margin-bottom:16px;}
+.gc-auth-card h2 {font-size:24px;letter-spacing:-.045em;margin:0 0 5px;}
+.gc-auth-card p {font-size:13px;line-height:1.6;color:#59695e;margin:0 0 17px;}
+.gc-auth-card form {display:flex;flex-direction:column;gap:12px;}
+.gc-auth-card label {display:flex;flex-direction:column;gap:5px;font-size:12px;font-weight:700;}
+.gc-auth-card input {background:#fff;color:#172a20;min-height:48px;padding:10px 12px;border:1px solid #ccd9d0;border-radius:11px;font-size:16px;width:100%;}
+.gc-auth-card form button {margin-top:4px;min-height:48px;background:#086245;color:#fff;border:0;border-radius:12px;font-weight:800;font-size:15px;cursor:pointer;}
+.gc-auth-card form button:disabled {opacity:.55;}
+.gc-auth-error {color:#9d2828!important;background:#fff1f1;padding:12px;border-radius:10px;margin-top:13px!important;}
+.gc-auth-foot {border-top:1px solid #e4ece6;padding-top:13px;margin-top:18px;font-size:11px;color:#6a796e;}
+.gc-account-bar {display:flex;gap:7px;align-items:center;min-width:0;}
+.gc-role-tag {padding:5px 9px;border-radius:99px;font-size:11px;font-weight:800;background:var(--primary-soft);color:var(--primary);}
+.gc-account-bar button {border:1px solid var(--line);background:var(--surface);color:var(--ink-muted);border-radius:10px;padding:7px 8px;cursor:pointer;font-weight:700;font-size:11px;}
+#gcSyncStatus {position:fixed;bottom:calc(72px + var(--safe-bottom));right:12px;max-width:min(94vw,420px);z-index:200;border:1px solid #efa8a8;border-radius:11px;background:#fff1f1;color:#9a2929;padding:10px 14px;font-size:12px;box-shadow:var(--shadow-md);}
+.gc-user-actions {display:flex;gap:6px;flex-wrap:wrap;}
+.gc-users-layout {display:grid;grid-template-columns:minmax(0,330px) minmax(0,1fr);gap:16px;align-items:start;}
+.gc-users-layout .panel {border-radius:19px;}
+.gc-users-layout input,.gc-users-layout select {min-height:47px;width:100%;border-radius:11px;}
+.gc-users-layout .table-responsive {min-width:0;}
+.gc-user-feedback {font-size:12px;color:var(--primary);min-height:1.3em;}
+.gc-local-note {border:1px solid var(--primary-border);background:var(--primary-soft);border-radius:14px;padding:15px;font-size:12px;line-height:1.6;color:var(--ink-muted);margin-top:14px;}
+.gc-local-note button {margin-top:12px;}
+@media(max-width:859px){.gc-account-bar {gap:4px}.gc-account-bar button {font-size:10px;padding:6px 7px}.gc-role-tag {padding:4px 6px;font-size:10px}.gc-users-layout {grid-template-columns:minmax(0,1fr)}}
+@media(max-width:500px){.header-actions {gap:4px}.gc-account-bar {flex-wrap:wrap;justify-content:end}.gc-auth-card {padding:25px 20px}.gc-users-layout table {font-size:12px}.gc-user-actions .btn {min-height:32px;padding:5px 7px;font-size:11px}}
+
+
+/* GreenCal laptop sidebar and activity overview v6 (scoped desktop layout) */
+:root { --gc-sidebar-width:252px; --gc-sidebar-top:76px; --gc-page-gutter:clamp(20px,2.2vw,36px); }
+.gc-sidebar-toggle { display:none;flex:0 0 auto;align-items:center;justify-content:center;width:42px;height:42px;border:1px solid var(--line);background:var(--surface);color:var(--primary);border-radius:12px;cursor:pointer;transition:border-color .18s,background .18s; }
+.gc-sidebar-toggle:hover {border-color:var(--primary-border);background:var(--primary-soft);}
+.gc-sidebar-toggle:focus-visible {outline:3px solid var(--primary);outline-offset:3px;}
+.gc-sidebar { display:none; }
+.activity-desktop-insights {display:none;}
+.activity-desktop-column,.activity-layout-grid > *, .activity-desktop-insights > * {min-width:0;}
+@media (min-width:860px) {
+  /* Header remains full width; sidebar starts underneath it. */
+  header.app-header {position:sticky;top:0;z-index:55;box-shadow:0 3px 14px rgba(16,53,36,.04);}
+  header.app-header .header-inner {height:auto;min-height:74px;padding:10px 0;gap:12px;}
+  header.app-header .brand-title {font-size:clamp(17px,1.35vw,20px);letter-spacing:-.035em;}
+  header.app-header .brand-sub {font-size:12px;}
+  header.app-header .gc-sidebar-toggle {display:inline-flex;}
+  header.app-header .container {max-width:none;width:100%;padding-left:var(--gc-page-gutter);padding-right:var(--gc-page-gutter);}
+  .gc-sidebar {
+    position:fixed;display:block;top:var(--gc-sidebar-top);bottom:0;left:0;
+    width:var(--gc-sidebar-width);overflow-y:auto;overflow-x:hidden;
+    background:var(--surface);border-right:1px solid var(--line);
+    z-index:49;box-shadow:4px 2px 16px rgba(24,60,40,.025);
+    transition:transform .2s ease;
+    overscroll-behavior:contain;scrollbar-width:thin;
+  }
+  .gc-sidebar-inner {display:flex;flex-direction:column;min-height:100%;padding:17px 11px 14px;gap:12px;}
+  .gc-sidebar-heading {display:flex;align-items:center;gap:10px;padding:7px 10px 14px;border-bottom:1px solid var(--line-subtle);color:var(--ink);}
+  .gc-sidebar-heading-icon {display:grid;place-items:center;width:35px;height:35px;flex:0 0 auto;border-radius:11px;background:var(--primary-soft);color:var(--primary);font-size:20px;}
+  .gc-sidebar-heading strong {display:block;font-size:13px;letter-spacing:-.015em;}
+  .gc-sidebar-heading small {display:block;font-size:10px;color:var(--ink-muted);line-height:1.35;margin-top:2px;}
+  #gcSidebar nav.desktop-nav {
+    display:flex!important;flex-direction:column;align-items:stretch;gap:5px;
+    border-top:0;padding:0;overflow:visible;min-width:0;
+  }
+  #gcSidebar nav.desktop-nav button {
+    display:flex;align-items:center;justify-content:flex-start;min-width:0;max-width:100%;
+    white-space:normal;text-align:left;gap:11px;padding:11px 12px;
+    font-size:12.5px;font-weight:700;line-height:1.4;
+    min-height:45px;border-radius:12px;color:var(--ink-muted);
+    border:1px solid transparent;box-shadow:none;
+  }
+  #gcSidebar nav.desktop-nav button svg {width:18px;height:18px;flex:0 0 18px;}
+  #gcSidebar nav.desktop-nav button:hover {background:var(--primary-soft);color:var(--primary);}
+  #gcSidebar nav.desktop-nav button[aria-selected="true"] {
+    background:linear-gradient(110deg,#075d43,#087855);color:white;
+    border-color:rgba(7,82,60,.14);box-shadow:0 6px 14px rgba(6,91,64,.13);
+  }
+  .gc-sidebar-footer {margin-top:auto;display:flex;align-items:center;gap:8px;color:var(--ink-subtle);padding:12px 10px 1px;border-top:1px solid var(--line-subtle);font-size:10.5px;font-weight:650;}
+  .gc-sidebar-status-dot {display:block;width:7px;height:7px;border-radius:50%;background:#29ba7d;}
+  body.gc-sidebar-collapsed .gc-sidebar {transform:translateX(calc(-1 * var(--gc-sidebar-width) - 3px));pointer-events:none;}
+  body.gc-sidebar-collapsed header.app-header .gc-sidebar-toggle {background:var(--primary-soft);border-color:var(--primary-border);}
+  main.container {
+    max-width:none;width:auto;min-width:0;
+    margin-left:calc(var(--gc-sidebar-width) + var(--gc-page-gutter));
+    margin-right:var(--gc-page-gutter);
+    padding-left:0;padding-right:0;padding-top:clamp(19px,2vw,30px);
+    transition:margin-left .2s ease;
+  }
+  body.gc-sidebar-collapsed main.container {margin-left:var(--gc-page-gutter);}
+  .view-title-group h2 {font-size:clamp(22px,1.8vw,28px);letter-spacing:-.035em;}
+  .view-title-group p {font-size:12.5px;line-height:1.55;}
+  .view-header {margin-bottom:19px;}
+  .panel {border-radius:19px;padding:clamp(18px,1.5vw,24px);margin-bottom:17px;}
+  .panel-header h3 {font-size:clamp(16px,1.18vw,19px);line-height:1.35;}
+  .panel-header p {font-size:12px;line-height:1.5;}
+  .btn {font-size:12.5px;}
+  .grid-form-list > *, .grid-2 > *, .input-row-2 > * {min-width:0;}
+  #view-aktivitas .activity-layout-grid {display:grid;grid-template-columns:minmax(0,1fr);align-items:start;gap:18px;}
+  #view-aktivitas .activity-layout-grid > form {order:1;}
+  #view-aktivitas .activity-layout-grid > .activity-desktop-column {order:2;}
+  #view-aktivitas #carbonActivityHero {display:none;}
+  #view-aktivitas #actForm {padding:clamp(18px,1.5vw,25px);margin-bottom:0;min-width:0;}
+  #view-aktivitas .activity-desktop-insights {display:grid;gap:15px;margin-bottom:17px;}
+  #view-aktivitas .activity-desktop-column {width:100%;display:flex;flex-direction:column;gap:1px;}
+  #view-aktivitas .activity-data-list {background:var(--surface);border:1px solid var(--line);box-shadow:var(--shadow-sm);border-radius:18px;padding:16px;margin-bottom:22px;min-width:0;}
+  #view-aktivitas .activity-toolbar {margin-bottom:13px;}
+  #view-aktivitas .activity-form-heading h3 {font-size:18px;}
+  #view-aktivitas .activity-form-heading p {font-size:12px;}
+  #view-aktivitas .calc-step-badge {font-size:11.5px;}
+  #view-aktivitas .field-label {font-size:12px;}
+  #view-aktivitas select,#view-aktivitas input {font-size:13px;min-height:44px;}
+  #view-aktivitas .activity-sort-label select {font-size:11px;}
+  #view-aktivitas .carbon-activity-card .data-card-title {font-size:13px;}
+  #view-aktivitas .activity-list-meta {font-size:11px;}
+  #view-aktivitas .activity-desktop-card {border:1px solid var(--line);background:var(--surface);border-radius:18px;box-shadow:var(--shadow-sm);padding:clamp(15px,1.2vw,20px);min-width:0;}
+  #view-aktivitas .activity-desktop-section-heading {display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:14px;}
+  #view-aktivitas .activity-desktop-section-heading h3 {font-size:clamp(14.5px,1.12vw,17px);letter-spacing:-.026em;line-height:1.35;margin:0;font-weight:800;color:var(--ink);}
+  #view-aktivitas .activity-desktop-section-heading p {margin:3px 0 0;font-size:11px;color:var(--ink-muted);line-height:1.5;}
+  #view-aktivitas .activity-desktop-period {border:1px solid var(--line);border-radius:10px;padding:6px 9px;background:var(--surface-2);font-size:10px;line-height:1.5;color:var(--ink-muted);text-align:right;white-space:nowrap;}
+  #view-aktivitas .activity-desktop-period strong {display:block;color:var(--ink);font-size:10.5px;}
+  #view-aktivitas .activity-insight-metrics {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;}
+  #view-aktivitas .activity-insight-kpi {border-radius:13px;border:1px solid var(--line-subtle);padding:13px 11px;min-width:0;background:var(--surface-2);}
+  #view-aktivitas .activity-insight-kpi.tone-green {background:var(--s1-soft);}
+  #view-aktivitas .activity-insight-kpi.tone-blue {background:var(--s2-soft);}
+  #view-aktivitas .activity-insight-kpi.tone-purple {background:var(--s3-soft);}
+  #view-aktivitas .activity-insight-kpi.tone-amber {background:var(--warn-soft);}
+  #view-aktivitas .activity-insight-kpi > span {display:block;font-size:10.5px;color:var(--ink-muted);font-weight:750;line-height:1.45;}
+  #view-aktivitas .activity-insight-kpi strong {display:block;font-size:clamp(20px,1.8vw,28px);line-height:1.2;letter-spacing:-.045em;font-weight:800;margin:5px 0 3px;color:var(--ink);font-variant-numeric:tabular-nums;overflow-wrap:anywhere;}
+  #view-aktivitas .activity-insight-kpi small {font-size:10px;color:var(--ink-muted);line-height:1.35;display:block;}
+  #view-aktivitas .activity-data-caution {font-size:10.5px;line-height:1.55;color:var(--ink-muted);margin-top:10px;}
+  #view-aktivitas .activity-data-caution strong {color:var(--warn);}
+  #view-aktivitas .activity-recent-table-wrap {overflow-x:auto;width:100%;border-radius:12px;border:1px solid var(--line-subtle);}
+  #view-aktivitas .activity-recent-table {border-collapse:collapse;width:100%;min-width:435px;}
+  #view-aktivitas .activity-recent-table th {background:var(--surface-2);font-size:10.5px;text-align:left;padding:9px 10px;color:var(--ink-muted);font-weight:750;white-space:nowrap;}
+  #view-aktivitas .activity-recent-table td {border-top:1px solid var(--line-subtle);padding:9px 10px;font-size:11px;line-height:1.45;vertical-align:middle;color:var(--ink);}
+  #view-aktivitas .activity-recent-table td strong {font-size:11px;font-weight:750;display:block;max-width:23ch;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  #view-aktivitas .activity-recent-table td small {display:block;font-size:10px;color:var(--ink-muted);}
+  #view-aktivitas .activity-recent-table td.num {font-variant-numeric:tabular-nums;text-align:right;font-weight:800;white-space:nowrap;}
+  #view-aktivitas .activity-scope-badge {display:inline-flex;align-items:center;border-radius:99px;padding:3px 8px;font-size:10px;font-weight:800;background:var(--s1-soft);color:var(--s1-ink);}
+  #view-aktivitas .activity-scope-badge.scope-2 {background:var(--s2-soft);color:var(--s2-ink);}
+  #view-aktivitas .activity-scope-badge.scope-3 {background:var(--s3-soft);color:var(--s3-ink);}
+  #view-aktivitas .activity-recent-table .btn {font-size:10.5px;padding:4px 8px;min-height:30px;white-space:nowrap;border-radius:9px;}
+  #view-aktivitas .activity-recent-table .activity-table-actions {display:flex;flex-wrap:nowrap;gap:5px;}
+  #view-aktivitas .activity-view-all {font-size:11px;font-weight:750;border:0;background:transparent;color:var(--primary);cursor:pointer;padding:4px 0;text-align:right;white-space:nowrap;}
+  #view-aktivitas .activity-scope-track {display:flex;width:100%;height:13px;border-radius:99px;overflow:hidden;background:var(--surface-2);gap:2px;}
+  #view-aktivitas .activity-scope-track span {height:100%;display:block;min-width:0;}
+  #view-aktivitas .activity-scope-track .s1 {background:#35bc8b;}
+  #view-aktivitas .activity-scope-track .s2 {background:#4f92f6;}
+  #view-aktivitas .activity-scope-track .s3 {background:#a451e8;}
+  #view-aktivitas .activity-scope-track span:empty {display:none;}
+  #view-aktivitas .activity-scope-breakdown {display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:14px;}
+  #view-aktivitas .activity-scope-line {min-width:0;}
+  #view-aktivitas .activity-scope-line .dot {width:8px;height:8px;border-radius:50%;display:inline-block;margin-right:5px;background:#35bc8b;}
+  #view-aktivitas .activity-scope-line .dot.s2 {background:#4f92f6;}
+  #view-aktivitas .activity-scope-line .dot.s3 {background:#a451e8;}
+  #view-aktivitas .activity-scope-line small {display:block;font-size:10px;color:var(--ink-muted);line-height:1.4;}
+  #view-aktivitas .activity-scope-line strong {display:block;margin-top:4px;font-size:clamp(13px,1.1vw,16px);font-weight:800;letter-spacing:-.035em;font-variant-numeric:tabular-nums;overflow-wrap:anywhere;}
+  #view-aktivitas .activity-scope-line em {font-style:normal;color:var(--ink-muted);font-size:10px;margin-left:5px;}
+  #view-aktivitas .activity-no-data {font-size:12px;line-height:1.55;padding:12px;border:1px dashed var(--line);border-radius:12px;color:var(--ink-muted);}
+  #view-aktivitas .activity-insight-note {font-size:10.5px;color:var(--ink-muted);margin-top:10px;line-height:1.5;}
+  #view-aktivitas #actTableWrap table {font-size:12px;}
+}
+@media (min-width:1140px) {
+  #view-aktivitas .activity-layout-grid {grid-template-columns:minmax(340px,.84fr) minmax(0,1.42fr);}
+  #view-aktivitas #actForm {position:relative;}
+}
+@media (min-width:1600px) {
+  #view-aktivitas .activity-layout-grid {grid-template-columns:minmax(390px,.84fr) minmax(0,1.6fr);}
+  #view-aktivitas .activity-insight-metrics {grid-template-columns:repeat(4,minmax(0,1fr));}
+}
+@media (min-width:860px) and (max-width:1099px) {
+  :root { --gc-sidebar-width:218px; --gc-page-gutter:18px; }
+  #gcSidebar nav.desktop-nav button {font-size:12px;padding:10px;}
+}
+@media (min-width:860px) and (max-height:680px) {
+  .gc-sidebar-inner {padding-top:10px;gap:7px;}
+  #gcSidebar nav.desktop-nav button {min-height:39px;padding:8px 10px;}
+}
+@media (max-width:859px) {
+  header.app-header .gc-sidebar-toggle,.gc-sidebar {display:none!important;}
+}
+@media (prefers-reduced-motion:reduce) {
+  .gc-sidebar,main.container,.gc-sidebar-toggle {transition:none!important;}
+}
+
 </style>
 </head>
 <body>
+
+  <!-- AUTH: standalone overlay; protected shared state is never initialized anonymously. -->
+  <div id="gcAuthGate" class="gc-auth-gate">
+    <div class="gc-auth-card">
+      <div class="gc-auth-icon" aria-hidden="true">☘</div>
+      <h2>Green Calculator</h2>
+      <p><b>PT Bank Riau Kepri Syariah (Perseroda)</b><br>Akses aplikasi sesuai peran Admin atau Maker.</p>
+      <form id="gcLoginForm" hidden>
+        <label>Email pengguna<input id="gcLoginEmail" type="email" autocomplete="username" required placeholder="nama@perusahaan.co.id"></label>
+        <label>Password<input id="gcLoginPassword" type="password" autocomplete="current-password" required></label>
+        <button type="submit">Masuk ke GreenCal</button>
+      </form>
+      <form id="gcBootstrapForm" hidden>
+        <p>Aktivasi awal Admin — hanya bisa dilakukan sekali menggunakan kode aktivasi dari pengelola Cloudflare.</p>
+        <label>Email Admin<input id="gcSetupEmail" type="email" autocomplete="email" required></label>
+        <label>Password Admin (minimal 12 karakter)<input id="gcSetupPassword" type="password" autocomplete="new-password" minlength="12" required></label>
+        <label>Kode Aktivasi Sekali Pakai<input id="gcSetupCode" type="password" autocomplete="off" required></label>
+        <button type="submit">Aktivasi Akun Admin</button>
+      </form>
+      <p id="gcAuthError" class="gc-auth-error" role="alert" hidden></p>
+      <div class="gc-auth-foot">Akses akun, password, dan izin dikelola melalui autentikasi server. Maker tidak dapat mengubah parameter atau pengguna.</div>
+    </div>
+  </div>
 
   <!-- APP HEADER -->
   <header class="app-header">
     <div class="container">
       <div class="header-inner">
+        <button type="button" id="gcSidebarToggle" class="gc-sidebar-toggle" aria-controls="gcSidebar" aria-expanded="true" title="Sembunyikan sidebar" aria-label="Sembunyikan sidebar">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <rect x="3" y="4" width="18" height="16" rx="2"/><path d="M9 4v16"/><path d="m15 9-3 3 3 3"/>
+          </svg>
+        </button>
         <a href="#" class="brand-block" id="brandLogo">
           <span class="brks-logo-wrap">
             <img class="brks-logo-img" src="./assets/brks-syariah.svg" width="360" height="79" alt="BRK Syariah — berkah untuk semua" fetchpriority="high">
@@ -2429,6 +2642,7 @@ dialog.modal-sheet .modal-foot { background:var(--surface); }
         </a>
 
         <div class="header-actions">
+          <div class="gc-account-bar"><span id="gcCurrentRole" class="gc-role-tag">—</span><button id="gcLogout" type="button">Keluar</button></div>
           <div class="year-select-wrap">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
             <span>Tahun</span>
@@ -2443,8 +2657,18 @@ dialog.modal-sheet .modal-foot { background:var(--surface); }
         </div>
       </div>
 
-      <!-- Desktop Nav Tabs -->
-      <nav class="desktop-nav" role="tablist" aria-label="Navigasi Utama">
+
+    </div>
+  </header>
+
+  <!-- Collapsible desktop sidebar (mobile uses unchanged bottom navigation) -->
+  <aside id="gcSidebar" class="gc-sidebar" aria-label="Menu utama GreenCal">
+    <div class="gc-sidebar-inner">
+      <div class="gc-sidebar-heading">
+        <span class="gc-sidebar-heading-icon" aria-hidden="true">☘</span>
+        <div><strong>Menu Utama</strong><small>Carbon &amp; Climate Management</small></div>
+      </div>
+      <nav class="desktop-nav gc-sidebar-nav" role="tablist" aria-label="Navigasi Utama">
         <button role="tab" data-tab="ringkasan" aria-selected="true">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M3 3v18h18"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></svg>
           Ringkasan Emisi
@@ -2482,8 +2706,12 @@ dialog.modal-sheet .modal-foot { background:var(--surface); }
           Panduan OJK
         </button>
       </nav>
+      <div class="gc-sidebar-footer">
+        <span class="gc-sidebar-status-dot" aria-hidden="true"></span>
+        <span>GreenCal · CRMS 2026</span>
+      </div>
     </div>
-  </header>
+  </aside>
 
   <!-- MOBILE BOTTOM NAVIGATION -->
   <nav class="mobile-nav" role="tablist" aria-label="Navigasi Seluler">
@@ -2522,6 +2750,7 @@ dialog.modal-sheet .modal-foot { background:var(--surface); }
   <!-- MAIN CONTAINER -->
   <main class="container">
     <div id="banners"></div>
+    <div id="gcSyncStatus" role="status" hidden></div>
 
     <!-- VIEW 1: RINGKASAN -->
     <section class="view" id="view-ringkasan">
@@ -2708,7 +2937,7 @@ dialog.modal-sheet .modal-foot { background:var(--surface); }
       </div>
 
       <div id="carbonActivityHero" aria-live="polite"></div>
-      <div class="grid-form-list">
+      <div class="grid-form-list activity-layout-grid">
         <form class="panel form-stack" id="actForm" autocomplete="off">
           <div class="activity-form-heading"><span class="activity-form-heading-icon" aria-hidden="true">＋</span><div>
             <h3 id="actFormTitle">Tambah Data Aktivitas</h3>
@@ -2756,7 +2985,9 @@ dialog.modal-sheet .modal-foot { background:var(--surface); }
           <p class="activity-form-footnote">Draft hanya tersimpan di browser perangkat ini, belum menjadi angka pelaporan.</p>
         </form>
 
-        <div style="min-width:0">
+        <div class="activity-desktop-column">
+          <div id="activityDesktopInsights" class="activity-desktop-insights" aria-label="Ringkasan dan tren data aktivitas"></div>
+          <div class="activity-data-list" id="activityDataList">
           <div class="activity-toolbar" aria-label="Pengaturan daftar aktivitas">
             <div class="activity-search-row">
               <div class="search-input-wrap activity-search">
@@ -2808,6 +3039,7 @@ dialog.modal-sheet .modal-foot { background:var(--surface); }
           <div class="data-cards-list" id="actCardsList"></div>
           <div class="table-responsive" id="actTableWrap" style="display:none">
             <table id="actTable"></table>
+          </div>
           </div>
         </div>
       </div>
@@ -3107,6 +3339,35 @@ dialog.modal-sheet .modal-foot { background:var(--surface); }
       <div class="panel" id="guide"></div>
     </section>
 
+    <!-- ADMIN ONLY: USER MANAGEMENT -->
+    <section class="view" id="view-users" hidden data-admin-only>
+      <div class="view-header"><div class="view-title-group">
+        <h2>Manajemen Pengguna</h2>
+        <p>Kelola dua role GreenCal: Admin dan Maker. Semua perubahan akses diperiksa oleh server.</p>
+      </div></div>
+      <div class="gc-users-layout">
+        <div class="panel">
+          <h3>Tambah Pengguna</h3>
+          <form id="gcUserCreate" class="form-stack" autocomplete="off">
+            <label class="field-group"><span class="field-label">Email Pengguna</span><input id="gcNewEmail" type="email" required autocomplete="off"></label>
+            <label class="field-group"><span class="field-label">Role Pengguna</span>
+              <select id="gcNewRole"><option value="maker">Maker — Input &amp; Edit Emisi</option><option value="admin">Admin — Kelola Sistem</option></select>
+            </label>
+            <label class="field-group"><span class="field-label">Password Awal (minimal 12 karakter)</span><input id="gcNewPassword" type="password" minlength="12" required autocomplete="new-password"></label>
+            <button type="submit" class="btn primary">Buat Pengguna</button>
+          </form>
+          <p class="gc-user-feedback" id="gcUserFeedback" role="status"></p>
+          <div class="gc-local-note"><b>Data browser lama</b><br>Impor hanya dilakukan atas persetujuan Admin, bukan otomatis. Periksa sumber terlebih dahulu.<br>
+            <button id="gcImportLocal" class="btn sm" type="button">Impor data browser ke database</button>
+          </div>
+        </div>
+        <div class="panel" style="min-width:0">
+          <div class="view-title-row"><h3 style="margin:0">Daftar Akun</h3><button id="gcRefreshUsers" type="button" class="btn sm">Muat Ulang</button></div>
+          <div class="table-responsive" style="margin-top:12px"><table><thead><tr><th>Email</th><th>Role</th><th>Status</th><th>Tindakan</th></tr></thead><tbody id="gcUsersTable"></tbody></table></div>
+        </div>
+      </div>
+    </section>
+
     <!-- VIEW 9: MENU / LAINNYA (MOBILE HUBS) -->
     <section class="view" id="view-menu" hidden>
       <div class="view-header">
@@ -3117,6 +3378,9 @@ dialog.modal-sheet .modal-foot { background:var(--surface); }
       </div>
 
       <div class="data-cards-list" style="margin-bottom:20px">
+        <div data-admin-only id="gcUsersMenu" class="data-card" role="button" tabindex="0" style="cursor:pointer">
+          <div class="data-card-head"><div><h3 class="data-card-title">👥 Manajemen Pengguna</h3><span style="font-size:12px;color:var(--ink-muted)">Admin: buat, ubah role, dan nonaktifkan akun Maker</span></div><strong>→</strong></div>
+        </div>
         <div class="data-card" onclick="setTab('ai')" style="cursor:pointer">
           <div class="data-card-head">
             <div style="display:flex;align-items:center;gap:12px">
@@ -3156,7 +3420,7 @@ dialog.modal-sheet .modal-foot { background:var(--surface); }
           </div>
         </div>
 
-        <div class="data-card" onclick="setTab('parameter')" style="cursor:pointer">
+        <div class="data-card" data-admin-only onclick="setTab('parameter')" style="cursor:pointer">
           <div class="data-card-head">
             <div style="display:flex;align-items:center;gap:12px">
               <div class="wizard-icon-box" style="width:40px;height:40px;font-size:20px">⚙️</div>
@@ -3183,16 +3447,26 @@ dialog.modal-sheet .modal-foot { background:var(--surface); }
         </div>
       </div>
 
+      <div class="panel" style="margin-bottom:16px">
+        <h3 style="margin:0 0 4px">Keamanan Akun</h3>
+        <p style="font-size:12px;color:var(--ink-muted)">Role aktif: <b id="gcProfileRole">Admin / Maker</b>. Ganti password secara berkala.</p>
+        <form class="form-stack" id="gcPasswordForm" autocomplete="off">
+          <label class="field-group"><span class="field-label">Password saat ini</span><input type="password" id="gcOldPassword" autocomplete="current-password" required></label>
+          <label class="field-group"><span class="field-label">Password baru (12 karakter atau lebih)</span><input type="password" id="gcNewSelfPassword" autocomplete="new-password" minlength="12" required></label>
+          <button class="btn primary" type="submit">Ubah Password Akun</button>
+        </form>
+        <p id="gcPasswordFeedback" role="status" style="font-size:12px;color:var(--ink-muted)"></p>
+      </div>
       <div class="panel">
         <h3 style="margin:0 0 4px">Penyimpanan &amp; Cadangan Data</h3>
-        <p style="margin:0 0 14px;font-size:12.5px;color:var(--ink-muted)">Data Anda otomatis tersimpan di browser perangkat HP ini. Cadangkan ke file untuk dipindahkan ke laptop/komputer lain.</p>
+        <p style="margin:0 0 14px;font-size:12.5px;color:var(--ink-muted)">Data setelah login disimpan pada database bersama Cloudflare D1. Cadangkan data secara berkala untuk audit.</p>
         <div style="display:flex;gap:10px;flex-wrap:wrap">
           <button class="btn sm" id="btnBackupJson">Unduh Cadangan (JSON)</button>
-          <label class="btn sm" style="cursor:pointer">
-            <span>Pulihkan Cadangan</span>
+          <label class="btn sm" style="cursor:pointer" data-admin-only>
+            <span>Pulihkan Cadangan (Admin)</span>
             <input type="file" id="fileRestoreJson" accept=".json" style="display:none">
           </label>
-          <button class="btn sm danger" id="btnResetData">Reset ke Data Default</button>
+          <button class="btn sm danger" data-admin-only id="btnResetData">Reset ke Data Default</button>
         </div>
       </div>
     </section>
@@ -3220,6 +3494,7 @@ dialog.modal-sheet .modal-foot { background:var(--surface); }
   </script>
 
   <!-- COMBINED COMPREHENSIVE SCRIPT -->
+  <script src="./auth-client.js" defer></script>
   <script>
 
 "use strict";
@@ -3414,7 +3689,7 @@ const S = {
   audit: [],
   editActId: null,
   editFinId: null,
-  isAdmin: true,
+  isAdmin: false,
   psub: "tabel",
   ptab: "stationary"
 };
@@ -3497,20 +3772,12 @@ function loadStateFromStorage() {
 }
 
 function saveStateToStorage() {
-  try {
-    const dataToSave = {
-      settings: S.settings,
-      tables: S.tables,
-      classes: S.classes,
-      entries: S.entries,
-      exposures: S.exposures,
-      offsets: S.offsets,
-      audit: S.audit
-    };
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(dataToSave));
-  } catch(e) {
-    console.error("Storage save error:", e);
-  }
+  // API server owns shared data; Maker never sends Admin-only config to the server.
+  if (!window.GC_AUTH || !GC_AUTH.user) return;
+  GC_AUTH.queue(() => {
+    const common = {entries:S.entries,exposures:S.exposures,offsets:S.offsets};
+    return GC_AUTH.isAdmin ? Object.assign(common,{settings:S.settings,tables:S.tables,classes:S.classes}) : common;
+  });
 }
 
 async function logAudit(action, target, detail) {
@@ -4046,13 +4313,16 @@ function renderAll() {
     parameter: renderParams,
     panduan: renderGuide,
     ai: renderAiView,
-    menu: () => {}
+    menu: () => {},
+    users: () => GC_AUTH.renderUsers()
   };
 
   if (views[S.tab]) views[S.tab]();
+  if (window.GC_AUTH) GC_AUTH.applyRole();
 }
 
 function setTab(tab) {
+  if (!window.GC_AUTH || !GC_AUTH.can(tab)) { toast('Akses menu ini hanya untuk Admin.'); return; }
   S.tab = tab;
 
   // Update desktop navigation
@@ -5226,6 +5496,146 @@ function clearActivityFilters() {
   toast("Semua filter aktivitas direset.");
 }
 
+
+/* GreenCal desktop sidebar – persisted preference, mobile navigation unchanged */
+const GC_SIDEBAR_PREF = "greencal_desktop_sidebar_collapsed";
+function initDesktopSidebar() {
+  const btn=document.getElementById("gcSidebarToggle");
+  const sidebar=document.getElementById("gcSidebar");
+  const head=document.querySelector("header.app-header");
+  if (!btn || !sidebar || !head) return;
+  let collapsed=false;
+  try {collapsed=localStorage.getItem(GC_SIDEBAR_PREF)==="1";} catch(e){}
+  const setCollapsed=(state,persist)=>{
+    collapsed=!!state;
+    document.body.classList.toggle("gc-sidebar-collapsed",collapsed);
+    btn.setAttribute("aria-expanded",String(!collapsed));
+    btn.setAttribute("aria-label",collapsed?"Tampilkan sidebar":"Sembunyikan sidebar");
+    btn.setAttribute("title",collapsed?"Tampilkan menu samping":"Sembunyikan menu samping");
+    sidebar.setAttribute("aria-hidden",String(collapsed));
+    sidebar.inert=collapsed;
+    const chevron=btn.querySelector("path.gc-sidebar-arrow");
+    if(chevron)chevron.setAttribute("d",collapsed?"m12 9 3 3-3 3":"m15 9-3 3 3 3");
+    if(persist){try{localStorage.setItem(GC_SIDEBAR_PREF,collapsed?"1":"0");}catch(e){}}
+  };
+  const updateHeaderHeight=()=>{
+    const height=Math.ceil(head.getBoundingClientRect().height);
+    document.documentElement.style.setProperty("--gc-sidebar-top",height+"px");
+  };
+  btn.onclick=()=>setCollapsed(!collapsed,true);
+  setCollapsed(collapsed,false);
+  updateHeaderHeight();
+  if(typeof ResizeObserver==="function"){
+    const observer=new ResizeObserver(updateHeaderHeight);
+    observer.observe(head);
+  }
+  window.addEventListener("resize",updateHeaderHeight,{passive:true});
+}
+
+
+/* Enterprise activity panels: all values are calculated from registered entries.
+   No demo numbers, fabricated growth or unsupported comparisons. */
+function renderActivityDesktopInsights() {
+  const host=document.getElementById("activityDesktopInsights");
+  if(!host) return;
+  const current=S.entries.filter(e=>e.year===S.year);
+  const calculated=current.filter(e=>e.res && Number.isFinite(Number(entryT(e,S.method))));
+  const sum=current.reduce((v,e)=>{
+    const amount=e.res?Number(entryT(e,S.method)):0;
+    return v+(Number.isFinite(amount)?amount:0);
+  },0);
+  const scopeValues={"1":0,"2":0,"3":0};
+  const scopeCounts={"1":0,"2":0,"3":0};
+  current.forEach(e=>{
+    const sc=String((CAT(e.cat)||{}).s||"");
+    if(Object.prototype.hasOwnProperty.call(scopeCounts,sc)){
+      scopeCounts[sc]++;
+      if(e.res){
+        const t=Number(entryT(e,S.method));
+        if(Number.isFinite(t))scopeValues[sc]+=t;
+      }
+    }
+  });
+  const activeScopes=Object.values(scopeCounts).filter(x=>x>0).length;
+  const evidence=current.filter(e=>String(e.evidence||"").trim()).length;
+  const samples=current.filter(e=>e.contoh).length;
+  const pct=amount=>sum>0 ? amount/sum*100:0;
+  const fPct=amount=>nf(pct(amount),1);
+  const dateText=(stamp)=>{
+    const date=new Date(stamp||"");
+    return !Number.isNaN(date.getTime()) ? date.toLocaleDateString("id-ID",{day:"2-digit",month:"short",year:"numeric"}) : "—";
+  };
+  const recent=current.slice().sort((a,b)=>String(b.at||"").localeCompare(String(a.at||""))).slice(0,5);
+  const row=entry=>{
+    const cat=CAT(entry.cat)||{s:"?",t:entry.cat||"Kategori belum diketahui"};
+    const scope=String(cat.s||"?");
+    const t=Number(entryT(entry,S.method));
+    const amount=entry.res && Number.isFinite(t) ? nf(t,2) : "—";
+    return '<tr><td><strong>'+esc(entry.desc||cat.t||"Aktivitas")+'</strong><small>'+esc(entry.unitKerja||"Unit tidak ditentukan")+'</small></td>'+
+      '<td><small>'+esc(dateText(entry.at))+'</small></td>'+
+      '<td class="num">'+amount+'</td>'+
+      '<td><span class="activity-scope-badge scope-'+esc(scope)+'">S'+esc(scope)+'</span></td>'+
+      '<td><div class="activity-table-actions"><button type="button" class="btn" data-summary-edit="'+esc(entry.id)+'" aria-label="Edit '+esc(entry.desc||cat.t||"aktivitas")+'">Edit</button>'+
+      (S.isAdmin?'<button type="button" class="btn danger" data-summary-delete="'+esc(entry.id)+'" aria-label="Hapus aktivitas">Hapus</button>':'')+'</div></td></tr>';
+  };
+  const totalDisplay=nf(sum,2);
+  host.innerHTML=
+    '<section class="activity-desktop-card" aria-label="Ringkasan aktivitas tahun '+esc(S.year)+'">'+
+      '<div class="activity-desktop-section-heading"><div><h3>Ringkasan Aktivitas '+esc(S.year)+'</h3>'+
+      '<p>Rekapitulasi berdasarkan data aktivitas yang terdaftar</p></div>'+
+      '<div class="activity-desktop-period">Periode Data<strong>1 Jan – 31 Des '+esc(S.year)+'</strong></div></div>'+
+      '<div class="activity-insight-metrics">'+
+        '<div class="activity-insight-kpi tone-green"><span>Total Aktivitas</span><strong>'+current.length+'</strong><small>Baris terdaftar pada periode ini</small></div>'+
+        '<div class="activity-insight-kpi tone-blue"><span>Emisi Terhitung</span><strong>'+totalDisplay+'</strong><small>tCO₂e · '+calculated.length+' hasil perhitungan</small></div>'+
+        '<div class="activity-insight-kpi tone-amber"><span>Referensi Bukti</span><strong>'+evidence+'/'+current.length+'</strong><small>Aktivitas memiliki rujukan bukti</small></div>'+
+        '<div class="activity-insight-kpi tone-purple"><span>Scope Tercatat</span><strong>'+activeScopes+' / 3</strong><small>Scope 1, 2, dan 3 operasional</small></div>'+
+      '</div>'+
+      (samples?'<p class="activity-data-caution"><strong>Perhatian:</strong> '+samples+' baris data contoh masih termasuk dalam angka. Belum layak untuk pelaporan resmi tanpa verifikasi.</p>':
+        '<p class="activity-data-caution">Angka mengikuti data dan faktor emisi yang tersimpan dalam sistem; tetap memerlukan validasi sebelum pelaporan.</p>')+
+    '</section>'+
+    '<section class="activity-desktop-card" aria-label="Daftar aktivitas terbaru">'+
+      '<div class="activity-desktop-section-heading"><div><h3>Daftar Aktivitas Terbaru</h3><p>'+Math.min(recent.length,5)+' aktivitas terakhir menurut waktu pencatatan</p></div>'+
+      '<button class="activity-view-all" type="button" id="btnViewAllActivity">Lihat Semua →</button></div>'+
+      (recent.length?
+        '<div class="activity-recent-table-wrap"><table class="activity-recent-table"><thead><tr><th>Keterangan / Unit</th><th>Tanggal</th><th>Emisi (tCO₂e)</th><th>Scope</th><th>Aksi</th></tr></thead>'+
+        '<tbody>'+recent.map(row).join("")+'</tbody></table></div>':
+        '<div class="activity-no-data">Belum ada aktivitas tercatat pada tahun '+esc(S.year)+'. Tambahkan aktivitas melalui formulir di sebelah kiri.</div>')+
+    '</section>'+
+    '<section class="activity-desktop-card" aria-label="Distribusi emisi Scope 1 hingga 3">'+
+      '<div class="activity-desktop-section-heading"><div><h3>Distribusi Emisi Berdasarkan Scope</h3>'+
+      '<p>Proporsi emisi dari aktivitas operasional yang tercatat</p></div>'+
+      '<div class="activity-desktop-period">Total Emisi<strong>'+totalDisplay+' tCO₂e</strong></div></div>'+
+      '<div class="activity-scope-track" role="img" aria-label="Proporsi Scope 1 '+fPct(scopeValues["1"])+' persen, Scope 2 '+fPct(scopeValues["2"])+' persen, Scope 3 '+fPct(scopeValues["3"])+' persen">'+
+        '<span class="s1" style="width:'+pct(scopeValues["1"]).toFixed(4)+'%"></span>'+
+        '<span class="s2" style="width:'+pct(scopeValues["2"]).toFixed(4)+'%"></span>'+
+        '<span class="s3" style="width:'+pct(scopeValues["3"]).toFixed(4)+'%"></span></div>'+
+      '<div class="activity-scope-breakdown">'+
+        ["1","2","3"].map((sc)=>'<div class="activity-scope-line"><small><span class="dot '+(sc==="1"?"":("s"+sc))+'"></span>Scope '+sc+' · '+scopeCounts[sc]+' aktivitas</small>'+
+          '<strong>'+nf(scopeValues[sc],2)+' <em>('+fPct(scopeValues[sc])+'%)</em></strong></div>').join("")+
+      '</div><p class="activity-insight-note">PCAF (Scope 3 Kategori 15) dikelola pada modul Investasi &amp; Pembiayaan dan tidak dihitung dua kali dalam ringkasan aktivitas ini.</p>'+
+    '</section>';
+  const viewAll=host.querySelector("#btnViewAllActivity");
+  if(viewAll)viewAll.onclick=()=>{
+    S.actView="table";
+    renderActList();
+    document.getElementById("activityDataList")?.scrollIntoView({behavior:"smooth",block:"start"});
+  };
+  host.querySelectorAll("[data-summary-edit]").forEach(btn=>{
+    btn.onclick=()=>loadAct(btn.dataset.summaryEdit);
+  });
+  host.querySelectorAll("[data-summary-delete]").forEach(btn=>{
+    btn.onclick=()=>{
+      if(!S.isAdmin)return;
+      confirmDlg("Hapus Data Aktivitas?","Data aktivitas ini akan dihapus permanen.","Hapus",()=>{
+        S.entries=S.entries.filter(e=>e.id!==btn.dataset.summaryDelete);
+        saveStateToStorage();
+        renderAll();
+        toast("Data aktivitas berhasil dihapus");
+      });
+    };
+  });
+}
+
 /* GC-CARBON-EXPERIENCE-v2: overview is derived exclusively from registered activity data */
 function renderCarbonActivityHero() {
   const host = $("#carbonActivityHero");
@@ -5273,6 +5683,7 @@ function renderCarbonActivityHero() {
 
 function renderActList() {
   renderCarbonActivityHero();
+  renderActivityDesktopInsights();
   const y = S.year;
   const sc = $("#fScope").value;
   const q = ($("#fSearch").value || "").trim().toLowerCase();
@@ -5377,6 +5788,7 @@ function renderActList() {
     '</tbody><tfoot><tr><td>Total (' + rows.length + ' Baris)</td><td></td><td class="r num"><b>' + nf(tot, 3) + '</b></td><td colspan="2"></td></tr></tfoot>';
 
   // Bind Actions
+  if (!S.isAdmin) $$("[data-ed]").forEach(b => b.remove());
   $$("[data-ea]").forEach(b => b.onclick = () => loadAct(b.dataset.ea));
   $$("[data-ed]").forEach(b => b.onclick = () => {
     confirmDlg("Hapus Data Aktivitas?", "Data aktivitas ini akan dihapus permanen.", "Hapus", () => {
@@ -5666,6 +6078,7 @@ function renderFinList() {
     }).join("") +
     '</tbody><tfoot><tr><td colspan="2">Total Portofolio</td><td class="r num"><b>' + nf(osAll) + '</b></td><td></td><td></td><td class="r num"><b>' + nf(fin, 1) + '</b></td><td class="r num">' + (dqW != null ? nf(dqW, 1) : "–") + '</td><td></td></tr></tfoot>';
 
+  if (!S.isAdmin) $$("[data-xd]").forEach(b => b.remove());
   $$("[data-xa]").forEach(b => b.onclick = () => loadFin(b.dataset.xa));
   $$("[data-xd]").forEach(b => b.onclick = () => {
     confirmDlg("Hapus Eksposur Debitur?", "Data eksposur ini akan dihapus permanen.", "Hapus", () => {
@@ -5887,6 +6300,7 @@ function renderOff() {
       '</tr>'
     ).join("") + '</tbody>';
 
+  if (!S.isAdmin) $$("[data-od]").forEach(b => b.remove());
   $$("[data-od]").forEach(b => {
     b.onclick = () => {
       confirmDlg("Hapus Catatan Offset?", "Catatan offset ini akan dihapus permanen.", "Hapus", () => {
@@ -6384,6 +6798,7 @@ function updateThemeIcon() {
 
 /* ---------- BOOTSTRAP EVENT BINDING ---------- */
 function bindEvents() {
+  initDesktopSidebar();
   // Navigation tabs
   $$("nav.desktop-nav button").forEach(b => {
     b.onclick = () => setTab(b.dataset.tab);
@@ -6497,22 +6912,27 @@ function bindEvents() {
   $("#btnBackupJson").onclick = backupJson;
   $("#fileRestoreJson").onchange = restoreJson;
   $("#btnResetData").onclick = () => {
-    confirmDlg("Reset Seluruh Data?", "Semua data aktivitas & pembiayaan akan dikembalikan ke data default awal.", "Reset Data", () => {
-      localStorage.removeItem(STORAGE_KEY);
-      loadStateFromStorage();
-      renderAll();
-      toast("Data berhasil direset ke kondisi default!");
-    });
-  };
-}
+    if (!GC_AUTH.isAdmin) { toast("Hanya Admin yang dapat mereset data."); return; }
+    confirmDlg("Reset Aktivitas?", "Semua aktivitas, eksposur dan offset bersama akan dikosongkan.", "Reset Data", () => { S.entries=[]; S.exposures=[]; S.offsets=[]; saveStateToStorage(); renderAll(); toast("Menyimpan perubahan."); });
+  };}
 
-function boot() {
+async function boot() {
   initTheme();
-  loadStateFromStorage();
   bindEvents();
-  renderAll();
-  setTab("ringkasan");
-  console.log("Green Calculator CRMS 2026 loaded successfully!");
+  await GC_AUTH.start(data => {
+    // First login starts from clean entries; local browser data can be imported by Admin explicitly.
+    S.entries = Array.isArray(data?.entries) ? data.entries : [];
+    S.exposures = Array.isArray(data?.exposures) ? data.exposures : [];
+    S.offsets = Array.isArray(data?.offsets) ? data.offsets : [];
+    S.audit = [];
+    S.settings = data?.settings || clone(DEFAULT_SETTINGS);
+    S.tables = data?.tables || clone(BASE.tables);
+    S.classes = data?.classes || clone(DEFAULT_CLASSES);
+    S.isAdmin = GC_AUTH.isAdmin;
+    S.tab = "ringkasan";
+    renderAll();
+    setTab("ringkasan");
+  });
 }
 
 function closeDlg() {
@@ -6992,6 +7412,7 @@ function displayAiResult(res) {
 
 /* Admin provider priority. Keys are Cloudflare Worker secrets — never browser fields. */
 async function openAiConfigDialog() {
+  if (!GC_AUTH.isAdmin) { toast("Hanya Admin dapat mengatur AI."); return; }
   let status,reply;
   try{
     reply=await fetch("/api/ai/status",{credentials:"same-origin",cache:"no-store"});
@@ -7007,6 +7428,9 @@ async function openAiConfigDialog() {
       '<div class="gc-ai-provider-body"><label class="field-label">'+esc(names[p.provider]||p.provider)+
       ' <span class="gc-ai-key-state">'+(p.hasKey?'Secret tersedia':'Secret belum dipasang')+'</span></label>'+
       '<input class="gc-ai-model" aria-label="Model '+esc(p.provider)+'" type="text" value="'+esc(p.model)+'" maxlength="100">'+
+      '<label class="field-label">API Key baru (opsional, hanya Admin)</label>'+
+      '<input class="gc-ai-key" type="password" autocomplete="new-password" placeholder="'+(p.hasKey?'Key telah tersedia; biarkan kosong untuk mempertahankan':'Masukkan API Key server')+'" aria-label="API Key '+esc(p.provider)+'">'+
+      '<label class="gc-ai-switch"><input type="checkbox" class="gc-ai-remove">Hapus key tersimpan di GreenCal</label>'+
       '<label class="gc-ai-switch"><input type="checkbox" class="gc-ai-enabled"'+(p.enabled?' checked':'')+'>Aktifkan model</label>'+
       '</div><div class="gc-ai-movers"><button type="button" class="gc-ai-up" aria-label="Naikkan prioritas">↑</button>'+
       '<button type="button" class="gc-ai-down" aria-label="Turunkan prioritas">↓</button></div></div>'
@@ -7014,11 +7438,13 @@ async function openAiConfigDialog() {
   openDlg("Admin · Pengaturan Prioritas AI",
     '<div class="form-stack"><p class="gc-ai-explainer">Urutan paling atas dicoba terlebih dahulu. Bila API gagal, sistem otomatis berpindah ke model aktif berikutnya. Hanya Admin yang dapat mengubah konfigurasi.</p>'+
     '<div id="gcAiChain">'+rows+'</div>'+
-    '<p class="gc-ai-explainer"><b>Keamanan:</b> API key tidak diisi atau disimpan di browser. Admin memasang secret <code>AI_KEY_GEMINI</code>, <code>AI_KEY_OPENAI</code>, <code>AI_KEY_OPENROUTER</code> atau <code>AI_KEY_GROQ</code> pada Cloudflare Worker → Settings → Variables and Secrets.</p></div>',
+    '<p class="gc-ai-explainer"><b>Keamanan:</b> Key baru dikirim sekali melalui HTTPS, dienkripsi AES-GCM oleh Worker dan disimpan di Cloudflare KV; tidak disimpan di browser atau dikembalikan oleh API. Key alternatif dapat dipasang sebagai Secret <code>AI_KEY_GEMINI</code>, <code>AI_KEY_OPENAI</code>, <code>AI_KEY_OPENROUTER</code> atau <code>AI_KEY_GROQ</code> di Cloudflare.</p></div>',
     [{t:"Simpan Prioritas AI",primary:true,fn:async()=>{
       const order=Array.from(document.querySelectorAll("#gcAiChain .gc-ai-provider")).map(row=>({
         provider:row.dataset.aiProvider,model:row.querySelector(".gc-ai-model").value.trim(),
-        enabled:row.querySelector(".gc-ai-enabled").checked
+        enabled:row.querySelector(".gc-ai-enabled").checked,
+        newKey:row.querySelector(".gc-ai-key").value,
+        removeKey:row.querySelector(".gc-ai-remove").checked
       }));
       let r,data;
       try{
