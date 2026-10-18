@@ -4487,26 +4487,122 @@ const CATS = [
   },
   {
     id: "s3_c6", s: "3", ref: "S3-Cat 6 Perjalanan Bisnis", t: "Kat. 6 · Perjalanan dinas",
-    d: "Perjalanan dinas tiket pesawat, darat, laut, dan hotel penginapan.",
+    d: "Scope 3 Kat. 6: udara domestik/internasional, bus/taksi/kereta, feri/kapal/speedboat, dan hotel. Faktor dari tabel perjalanan CRMS Buku 3 OJK 2026; kendaraan sewa dan speedboat dapat menggunakan proxy yang perlu validasi.",
     f: [
-      OPT("m", "Jenis moda", [["udara", "Penerbangan"], ["jarak", "Darat, laut & hotel"]]),
-      OPT("cls", "Kelas penerbangan", [["Economy", "Ekonomi"], ["Premium Economy", "Ekonomi Premium"], ["Business", "Bisnis"], ["First", "Utama"], ["Unknown", "Tidak Diketahui"]], { show: show("m", "udara") }),
-      NUM("dist", "Jarak tempuh (sekali jalan)", { units: () => ["km", "mile"], show: show("m", "udara") }),
-      NUM("pax", "Jumlah penumpang", { def: 1, unit: "orang", show: show("m", "udara") }),
-      OPT("trip", "Jenis rute", [["pp", "Pulang-Pergi"], ["sj", "Sekali Jalan"]], { show: show("m", "udara") }),
-      SEL("code", "Moda darat/laut/hotel", "travel", { show: show("m", "jarak"), disp: r => r.mode + " · " + r.unit, group: r => r.travel }),
-      NUM("qty", "Jumlah", { units: rowUnits("travel", "code", "IDR"), show: show("m", "jarak") })
+      OPT("m", "Kategori perjalanan", [["udara", "✈ Penerbangan domestik / internasional"], ["darat", "🚌 Perjalanan darat (bus, taksi, kereta, dll)"], ["laut", "⛴ Perjalanan laut (feri, kapal, speedboat)"], ["hotel", "🏨 Penginapan hotel"]]),
+      OPT("region", "Wilayah penerbangan", [["domestik", "Domestik (antar kota di Indonesia)"], ["internasional", "Internasional (lintas negara)"]], { show: show("m", "udara") }),
+      OPT("cls", "Kelas penerbangan", [["Economy", "Ekonomi"], ["Premium Economy", "Ekonomi Premium"], ["Business", "Bisnis"], ["First", "Kelas Utama"], ["Unknown", "Kelas tidak diketahui"]], { show: show("m", "udara") }),
+      OPT("land", "Jenis transportasi darat", [["bus", "Bus antarkota / bus umum"], ["shuttle", "Bus shuttle / travel (proxy bus)"], ["taxi", "Taksi konvensional"], ["ride_hailing", "Taksi online (proxy taksi)"], ["train", "Kereta antarkota"], ["city_rail", "KRL / MRT / LRT (proxy kereta perkotaan)"], ["car", "Mobil rental (per kendaraan)"], ["motorbike", "Sepeda motor / ojek (per kendaraan)"]], { show: show("m", "darat") }),
+      OPT("sea", "Jenis transportasi laut", [["ferry", "Kapal feri (proxy kapal penumpang)"], ["ship", "Kapal penumpang (faktor kapal penumpang)"], ["speedboat", "Speedboat / kapal cepat (proxy atau BBM aktual)"]], { show: show("m", "laut") }),
+      OPT("basis", "Metode data perjalanan", i => (i.m === "laut" ? [["distance", "Jarak perjalanan (km)"], ["spend", "Pengeluaran tiket (Rp)"], ["fuel", "BBM perjalanan aktual (liter)"]] : [["distance", "Jarak perjalanan (km)"], ["spend", "Pengeluaran tiket (Rp)"]]), { show: show("m", "darat", "laut") }),
+      NUM("dist", "Jarak sekali jalan", { units: () => ["km", "mile"], show: i => i.m === "udara" || (["darat", "laut"].includes(i.m) && i.basis === "distance") }),
+      NUM("pax", "Jumlah penumpang (untuk seluruh rute)", { def: 1, unit: "orang", show: i => i.m === "udara" || (["darat", "laut"].includes(i.m) && i.basis === "distance") }),
+      OPT("trip", "Jenis rute", [["sj", "Sekali Jalan"], ["pp", "Pulang-Pergi"]], { show: i => i.m === "udara" || (["darat", "laut"].includes(i.m) && i.basis === "distance") }),
+      NUM("expense", "Total biaya perjalanan (semua tiket)", { unit: "IDR", show: i => ["darat", "laut"].includes(i.m) && i.basis === "spend" }),
+      OPT("fuelType", "Jenis BBM kapal (data aktual)", [["MINYAK-DIESEL", "Solar / Minyak Diesel"], ["MINYAK-BIO-SOLAR-CN-48", "Bio Solar CN-48"], ["MINYAK-DEX-SOLAR-CN-53", "Dex Solar CN-53"], ["BENSIN-RON-92-PERTAMAX", "Bensin Pertamax RON 92"], ["BENSIN-RON-90-PERTALITE", "Bensin Pertalite RON 90"]], { show: i => i.m === "laut" && i.basis === "fuel" }),
+      NUM("fuelLiters", "BBM aktual yang dialokasikan untuk perjalanan", { unit: "liter", show: i => i.m === "laut" && i.basis === "fuel" }),
+      OPT("hotelBasis", "Metode perhitungan hotel", [["guestnight", "Jumlah tamu × malam (disarankan)"], ["spend", "Total biaya penginapan (IDR)"]], { show: show("m", "hotel") }),
+      NUM("guests", "Jumlah tamu yang menginap", { def: 1, unit: "orang", show: i => i.m === "hotel" && i.hotelBasis !== "spend" }),
+      NUM("nights", "Jumlah malam per tamu", { def: 1, unit: "malam", show: i => i.m === "hotel" && i.hotelBasis !== "spend" }),
+      NUM("rooms", "Jumlah kamar (informasi, tidak mengalikan emisi)", { unit: "kamar", show: show("m", "hotel") }),
+      NUM("hotelExpense", "Total biaya penginapan (semua kamar, Rp)", { unit: "IDR", show: i => i.m === "hotel" && i.hotelBasis === "spend" }),
+      NUM("hotelClass", "Kelas hotel (bintang; metadata)", { unit: "bintang", show: show("m", "hotel") }),
+      NUM("legacyUnused", "Data legacy", { show: () => false }),
+      SEL("code", "Faktor emisi lama (data histori)", "travel", { show: show("m", "jarak"), disp: r => r.mode + " · " + r.unit, group: r => r.travel }),
+      NUM("qty", "Jumlah historis", { units: rowUnits("travel", "code", "IDR"), show: show("m", "jarak") })
     ],
     calc(i, y) {
-      if ((i.m || "udara") === "udara") {
-        const k = K(), mi = conv(num(i.dist), i.dist_u || "km", "mile", y);
+      const mode = i.m || "udara";
+      const mustPositive = (v, label) => {
+        const n = num(v);
+        if (n == null || !Number.isFinite(n) || n <= 0) throw new Error("Masukkan " + label + " lebih besar dari nol");
+        return n;
+      };
+      const multiplier = (i.trip === "pp" ? 2 : 1);
+      if (mode === "udara") {
+        const km = conv(mustPositive(i.dist, "jarak penerbangan"), i.dist_u || "km", "km", y);
+        if (km == null) throw new Error("Satuan jarak penerbangan tidak valid");
+        const mi = conv(km, "km", "mile", y);
+        const k = K();
         const haul = mi < k.shortHaul ? "Short haul" : mi > k.longHaul ? "Long haul" : "Medium haul";
-        const r = R("flight", keyOf((i.cls || "Economy") + " " + haul), y);
-        const pax = num(i.pax) ?? 1, tr = i.trip === "sj" ? 1 : 2;
-        return { oth: r.perMile * mi * pax * tr, co2: 0, ch4: 0, n2o: 0, bio: 0, refs: [["flight", r.key]], L: [nfa(mi) + " mil (" + haul + ") × " + nfx(r.perMile) + " × " + pax + " pax × " + tr + " rute"] };
+        const cls = i.cls || "Economy", region = i.region || "domestik";
+        const r = R("flight", keyOf(cls + " " + haul), y);
+        const pax = mustPositive(i.pax == null ? 1 : i.pax, "jumlah penumpang");
+        const kg = r.perKm * km * pax * multiplier;
+        return {
+          oth: kg, refs: [["flight", r.key]], co2: 0, ch4: 0, n2o: 0, bio: 0,
+          L: [(region === "internasional" ? "Internasional" : "Domestik") + " · " + cls + " · " + haul + ": " + nfa(km) + " km × " + nfx(r.perKm) + " kgCO₂e/pkm × " + pax + " penumpang × " + multiplier + " arah = " + nfa(kg) + " kgCO₂e",
+              "Klasifikasi domestik/internasional dicatat terpisah. Tabel OJK memakai faktor menurut jarak dan kelas, bukan faktor geografis terpisah. " + r.src]
+        };
       }
-      const r = R("travel", i.code, y), u = i.qty_u || r.unit, q = (u === "km") ? conv(num(i.qty), "km", "mile", y) : num(i.qty);
-      return { co2: q * r.co2, ch4: q * nn(r.ch4) * 1000, n2o: q * nn(r.n2o) * 1000, oth: 0, bio: 0, refs: [["travel", r.key]], L: [(u === "km" ? nfa(num(i.qty)) + " km = " : "") + nfa(q) + " " + r.unit + " × " + nfx(r.co2) + " kg CO₂"] };
+      if (mode === "darat" || mode === "laut") {
+        const ground = {
+          bus:"BUS-PASSENGER-MILES",shuttle:"BUS-PASSENGER-MILES",
+          taxi:"TAXI-PASSENGER-MILES",ride_hailing:"TAXI-PASSENGER-MILES",
+          train:"TRAIN-PASSENGER-MILES",city_rail:"CITY-RAIL-PASSENGER-MILES",
+          car:"CAR-MILES",motorbike:"MOTORBIKE-MILES"
+        };
+        const sea = {ferry:"SHIP-PASSENGER-MILES",ship:"SHIP-PASSENGER-MILES",speedboat:"SHIP-PASSENGER-MILES"};
+        const item = mode === "darat" ? (i.land || "bus") : (i.sea || "ferry");
+        const isProxy = ["shuttle","ride_hailing","ferry","speedboat"].includes(item);
+        const basis = i.basis || "distance";
+        if (basis === "fuel") {
+          if (mode !== "laut") throw new Error("Perhitungan BBM khusus moda laut");
+          const r = R("mobile", i.fuelType || "MINYAK-DIESEL", y);
+          const liters = mustPositive(i.fuelLiters, "jumlah BBM liter yang digunakan");
+          const gallons = conv(liters,"liter","gallon",y);
+          if (gallons == null) throw new Error("Konversi liter-ke-galon belum tersedia");
+          return {co2:r.co2*gallons,ch4:0,n2o:0,oth:0,bio:0,refs:[["mobile",r.key]],
+            L:[item+" · "+nfa(liters)+" liter BBM teralokasi × "+nfx(r.co2)+" kg CO₂/galon = "+nfa(r.co2*gallons)+" kg CO₂. "+r.src,
+               "BBM pihak ketiga = Scope 3 Kat. 6; bila kapal dimiliki/dikendalikan bank, klasifikasikan Scope 1. Emisi non-CO₂ bahan bakar belum tercakup."]};
+        }
+        if (basis === "spend") {
+          const costKeys = mode === "laut" ? "SHIP-IDR" : ({
+            bus:"BUS-IDR",shuttle:"BUS-IDR",taxi:"TAXI-IDR",ride_hailing:"TAXI-IDR",
+            train:"TRAIN-IDR",city_rail:"CITY-RAIL-IDR",car:"CAR-IDR",motorbike:"MOTORBIKE-IDR"
+          }[item]);
+          if (!costKeys) throw new Error("Moda perjalanan tidak dikenal");
+          const r = R("travel",costKeys,y);
+          const idr = mustPositive(i.expense,"total pengeluaran perjalanan (IDR)");
+          return {co2:idr*r.co2,ch4:0,n2o:0,oth:0,bio:0,refs:[["travel",r.key]],
+            L:[item+" · "+nfa(idr)+" IDR × "+nfx(r.co2)+" kg CO₂/IDR = "+nfa(idr*r.co2)+" kg CO₂",
+               (isProxy?"Faktor proxy moda terkait; perlu validasi kesesuaian. ":"")+"Metode berbasis biaya (lebih rendah kualitas datanya daripada jarak). "+r.src]};
+        }
+        const key = (mode === "laut" ? sea[item] : ground[item]);
+        if (!key) throw new Error("Moda perjalanan tidak dikenal");
+        const r = R("travel",key,y);
+        const km = conv(mustPositive(i.dist,"jarak perjalanan"),i.dist_u || "km","km",y);
+        if (km == null) throw new Error("Satuan jarak tidak valid");
+        const mi = conv(km,"km","mile",y);
+        if (mi == null) throw new Error("Konversi jarak km ke mil belum tersedia");
+        const isPassenger = r.unit === "passenger.miles";
+        const passengers = isPassenger ? mustPositive(i.pax == null ? 1 : i.pax,"jumlah penumpang") : 1;
+        const activity = mi * multiplier * passengers;
+        const co2 = activity * r.co2, ch4 = activity * nn(r.ch4) * 1000, n2o = activity * nn(r.n2o) * 1000;
+        return {co2,ch4,n2o,oth:0,bio:0,refs:[["travel",r.key]],
+          L:[item+" · "+nfa(km)+" km/arah × "+multiplier+" arah"+(isPassenger?" × "+passengers+" penumpang":" (basis per kendaraan)")+" = "+nfa(activity)+" "+r.unit,
+            "Faktor "+r.key+": CO₂ "+nfx(r.co2)+" kg, CH₄ "+nfx(nn(r.ch4))+" kg, N₂O "+nfx(nn(r.n2o))+" kg per "+r.unit+"; "+r.src,
+            ...(isProxy?["PERHATIAN: faktor "+r.mode+" dipakai sebagai PROXY untuk "+item+". Speedboat memiliki konsumsi BBM berbeda; utamakan data BBM aktual atau faktor terverifikasi operator."]:[])]};
+      }
+      if (mode === "hotel") {
+        const basis = i.hotelBasis || "guestnight";
+        const r = R("travel",basis === "spend" ? "HOTEL-IDR" : "HOTEL-GUEST-NIGHT",y);
+        const guests = basis === "spend" ? null : mustPositive(i.guests == null ? 1 : i.guests,"jumlah tamu");
+        const nights = basis === "spend" ? null : mustPositive(i.nights == null ? 1 : i.nights,"jumlah malam");
+        const units = basis === "spend" ? mustPositive(i.hotelExpense,"total biaya hotel (IDR)") : guests*nights;
+        const co2 = units*r.co2;
+        return {co2,ch4:0,n2o:0,oth:0,bio:0,refs:[["travel",r.key]],
+          L:[basis === "spend" ? "Hotel (biaya): "+nfa(units)+" IDR × "+nfx(r.co2)+" kg CO₂/IDR" :
+             "Hotel (tamu-malam): "+guests+" tamu × "+nights+" malam = "+nfa(units)+" guest.night × "+nfx(r.co2)+" kg CO₂/guest.night",
+             "Hasil "+nfa(co2)+" kg CO₂ · "+r.src+"; lokasi, kamar, dan bintang hanya metadata, TIDAK mengubah faktor nasional proxy. Pilih salah satu metode, jangan dihitung ganda."]};
+      }
+      // Historical compatibility for records saved before the modality selector was introduced.
+      if (mode === "jarak") {
+        const r = R("travel",i.code,y),u=i.qty_u || r.unit,q=u === "km"?conv(mustPositive(i.qty,"kuantitas"),"km","mile",y):mustPositive(i.qty,"kuantitas");
+        if(q==null)throw new Error("Konversi satuan historis tidak tersedia");
+        return {co2:q*r.co2,ch4:q*nn(r.ch4)*1000,n2o:q*nn(r.n2o)*1000,oth:0,bio:0,refs:[["travel",r.key]],L:["Data historis "+nfa(q)+" "+r.unit+" × "+nfx(r.co2)+" kg CO₂/satuan"]};
+      }
+      throw new Error("Jenis perjalanan dinas tidak dikenal");
     }
   },
   {
