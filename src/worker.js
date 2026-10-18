@@ -96,6 +96,18 @@ async function router(req,env) {
   const user=await identity(req,db);
   if(!user)return err("Silakan masuk ke akun GreenCal",401);
   if(path==="/api/auth/me"&&method==="GET")return C({user:{id:user.id,email:user.email,role:user.role}});
+  if(path==="/api/auth/password"&&method==="POST"){
+    const body=await readBody(req);
+    if(!validPassword(body.newPassword))return err("Password baru minimal 12 karakter");
+    const record=await db.prepare("SELECT salt,password_hash FROM gc_users WHERE id=?").bind(user.id).first();
+    if(!record || !equal(await passHash(String(body.oldPassword||""),record.salt),record.password_hash))return err("Password lama salah",403);
+    const salt=rand(16),hashed=await passHash(body.newPassword,salt);
+    await db.prepare("UPDATE gc_users SET salt=?, password_hash=? WHERE id=?").bind(salt,hashed,user.id).run();
+    await db.prepare("DELETE FROM gc_sessions WHERE user_id=?").bind(user.id).run();
+    await audit(db,user.id,"auth.password_changed",user.id);
+    return C({ok:true,reauth:true},200,{"set-cookie":cookie("",0)});
+  }
+
   if(path==="/api/admin/users"&&method==="GET"){
     if(user.role!=="admin")return err("Hanya Admin yang dapat mengelola pengguna",403);
     const rows=await db.prepare("SELECT id,email,role,active,created_at FROM gc_users ORDER BY created_at DESC").all();
