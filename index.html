@@ -4528,13 +4528,13 @@ const CATS = [
   },
   {
     id: "s3_c6", s: "3", ref: "S3-Cat 6 Perjalanan Bisnis", t: "Kat. 6 · Perjalanan dinas",
-    d: "Scope 3 Kat. 6: udara domestik/internasional, bus/taksi/kereta, feri/kapal/speedboat, dan hotel. Faktor dari tabel perjalanan CRMS Buku 3 OJK 2026; kendaraan sewa dan speedboat dapat menggunakan proxy yang perlu validasi.",
+    d: "Scope 3 Kat. 6: penerbangan domestik/internasional, bus, taksi, kereta, feri, kapal cepat, dan hotel. Faktor emisi mengacu pada tabel perjalanan CRMS Buku 3 OJK 2026; tersedia pilihan penggunaan jarak, biaya, atau BBM aktual untuk moda tertentu.",
     f: [
       OPT("m", "Kategori perjalanan", [["udara", "✈ Penerbangan domestik / internasional"], ["darat", "🚌 Perjalanan darat (bus, taksi, kereta, dll)"], ["laut", "⛴ Perjalanan laut (feri, kapal, speedboat)"], ["hotel", "🏨 Penginapan hotel"], ["jarak", "Metode historis (data sebelum pembaruan)"]]),
       OPT("region", "Wilayah penerbangan", [["domestik", "Domestik (antar kota di Indonesia)"], ["internasional", "Internasional (lintas negara)"]], { show: show("m", "udara") }),
       OPT("cls", "Kelas penerbangan", [["Economy", "Ekonomi"], ["Premium Economy", "Ekonomi Premium"], ["Business", "Bisnis"], ["First", "Kelas Utama"], ["Unknown", "Kelas tidak diketahui"]], { show: show("m", "udara") }),
       OPT("land", "Jenis transportasi darat", [["bus", "Bus antarkota / bus umum"], ["shuttle", "Bus shuttle / travel (proxy bus)"], ["taxi", "Taksi konvensional"], ["ride_hailing", "Taksi online (proxy taksi)"], ["train", "Kereta antarkota"], ["city_rail", "KRL / MRT / LRT (proxy kereta perkotaan)"], ["car", "Mobil rental (per kendaraan)"], ["motorbike", "Sepeda motor / ojek (per kendaraan)"]], { show: show("m", "darat") }),
-      OPT("sea", "Jenis transportasi laut", [["ferry", "Kapal feri (proxy kapal penumpang)"], ["ship", "Kapal penumpang (faktor kapal penumpang)"], ["speedboat", "Speedboat / kapal cepat (proxy atau BBM aktual)"]], { show: show("m", "laut") }),
+      OPT("sea", "Jenis transportasi laut", [["ferry", "Kapal feri"], ["ship", "Kapal penumpang (faktor kapal penumpang)"], ["speedboat", "Speedboat / kapal cepat"]], { show: show("m", "laut") }),
       OPT("basis", "Metode data perjalanan", i => (i.m === "laut" ? [["distance", "Jarak perjalanan (km)"], ["spend", "Pengeluaran tiket (Rp)"], ["fuel", "BBM perjalanan aktual (liter)"]] : [["distance", "Jarak perjalanan (km)"], ["spend", "Pengeluaran tiket (Rp)"]]), { show: show("m", "darat", "laut") }),
       NUM("dist", "Jarak sekali jalan", { units: () => ["km", "mile"], show: i => i.m === "udara" || (["darat", "laut"].includes(i.m) && i.basis === "distance") }),
       NUM("pax", "Jumlah penumpang (untuk seluruh rute)", { def: 1, unit: "orang", show: i => i.m === "udara" || (["darat", "laut"].includes(i.m) && i.basis === "distance") }),
@@ -4624,7 +4624,7 @@ const CATS = [
         return {co2,ch4,n2o,oth:0,bio:0,refs:[["travel",r.key]],
           L:[item+" · "+nfa(km)+" km/arah × "+multiplier+" arah"+(isPassenger?" × "+passengers+" penumpang":" (basis per kendaraan)")+" = "+nfa(activity)+" "+r.unit,
             "Faktor "+r.key+": CO₂ "+nfx(r.co2)+" kg, CH₄ "+nfx(nn(r.ch4))+" kg, N₂O "+nfx(nn(r.n2o))+" kg per "+r.unit+"; "+r.src,
-            ...(isProxy?["PERHATIAN: faktor "+r.mode+" dipakai sebagai PROXY untuk "+item+". Speedboat memiliki konsumsi BBM berbeda; utamakan data BBM aktual atau faktor terverifikasi operator."]:[])]};
+            ...(isProxy?["Catatan perhitungan: faktor "+r.mode+" digunakan sebagai pendekatan untuk "+item+". Speedboat memiliki konsumsi BBM berbeda; utamakan data BBM aktual atau faktor terverifikasi operator."]:[])]};
       }
       if (mode === "hotel") {
         const basis = i.hotelBasis || "guestnight";
@@ -5619,9 +5619,9 @@ function renderWzDinas(box) {
     ["car","Mobil rental (per kendaraan)"],["motorbike","Sepeda motor / ojek"]
   ];
   const seaModes = [
-    ["ferry","Kapal feri (proxy kapal penumpang)"],
+    ["ferry","Kapal feri"],
     ["ship","Kapal penumpang"],
-    ["speedboat","Speedboat / kapal cepat (butuh validasi faktor)"]
+    ["speedboat","Speedboat / kapal cepat"]
   ];
   const choice = pairs => pairs.map(([v,t])=>'<option value="'+esc(v)+'">'+esc(t)+'</option>').join("");
   const field = (id,label,markup,attrs="") =>
@@ -5692,7 +5692,7 @@ function renderWzDinas(box) {
     '<details class="gc-travel-factor-catalog">',
     '<summary>📚 Lihat seluruh faktor emisi perjalanan &amp; hotel</summary>',
     '<div id="wzD_factorCatalog"></div>',
-    '<p>Referensi: Tabel Perjalanan Dinas Buku 3 CRMS OJK 2026. Faktor jarak yang dikonversi dari mil menggunakan konversi di GreenCal; CH₄/N₂O disetarakan memakai GWP dalam konfigurasi aktif. Nilai ferry/speedboat menggunakan faktor proxy kapal penumpang—bukan faktor spesifik operator.</p>',
+    '<p>Referensi: Tabel Perjalanan Dinas Buku 3 CRMS OJK 2026. Faktor jarak yang dikonversi dari mil menggunakan konversi di GreenCal; CH₄/N₂O disetarakan memakai GWP dalam konfigurasi aktif. Untuk metode jarak, feri dan speedboat menggunakan faktor kapal penumpang sebagai pendekatan. Gunakan data BBM aktual atau faktor operator jika tersedia.</p>',
     '</details></div>'
   ].join("");
 
@@ -5749,7 +5749,7 @@ function renderWzDinas(box) {
       ["Taksi / taksi online","TAXI-PASSENGER-MILES"],["Kereta antarkota","TRAIN-PASSENGER-MILES"],
       ["KRL / MRT / LRT","CITY-RAIL-PASSENGER-MILES"],["Mobil rental (kendaraan)","CAR-MILES"],
       ["Motor/ojek (kendaraan)","MOTORBIKE-MILES"],["Kapal penumpang","SHIP-PASSENGER-MILES"],
-      ["Kapal feri (proxy)","SHIP-PASSENGER-MILES"],["Speedboat (proxy)","SHIP-PASSENGER-MILES"],
+      ["Kapal feri","SHIP-PASSENGER-MILES"],["Speedboat","SHIP-PASSENGER-MILES"],
       ["Hotel per tamu-malam","HOTEL-GUEST-NIGHT"],["Hotel per IDR","HOTEL-IDR"]
     ];
     let out='<div class="gc-travel-factors-table"><table><thead><tr><th>Moda/metode</th><th>Faktor</th><th>Satuan</th></tr></thead><tbody>';
