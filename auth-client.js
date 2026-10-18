@@ -14,31 +14,45 @@
  };
  const msg=text=>{by("gcAuthError").textContent=text;by("gcAuthError").hidden=!text;};
  const status=msg=>{const box=by("gcSyncStatus");if(box){box.textContent=msg;box.hidden=!msg;}};
- const showGate=async()=>{
-   const overlay=by("gcAuthGate");
-   if(!overlay)return;
+ const showGate=async(message="")=>{
+   const overlay=by("gcAuthGate");if(!overlay)return;
    overlay.hidden=false;
+   by("gcLoginForm").hidden=false;
+   by("gcBootstrapForm").hidden=true;
+   by("gcForcePasswordForm").hidden=true;
+   by("gcAuthHeading").textContent="Masuk ke GreenCal";
+   by("gcAuthDescription").textContent="Masukkan email terdaftar serta password dari email aktivasi atau password pribadi Anda.";
+   msg(message);
+ };
+ const forcePasswordChange=()=>{
+   by("gcAuthGate").hidden=false;
    by("gcLoginForm").hidden=true;
    by("gcBootstrapForm").hidden=true;
-   msg("Sesi Cloudflare Access belum aktif. Masuk dengan email yang diizinkan, lalu muat ulang GreenCal.");
+   by("gcForcePasswordForm").hidden=false;
+   by("gcAuthHeading").textContent="Wajib Ganti Password";
+   by("gcAuthDescription").textContent="Untuk mengamankan akun "+state.user.email+", ganti password sementara sebelum menggunakan aplikasi.";
+   by("gcForcePasswordForm").reset();
+   msg("");
  };
 
  const applyRole=()=>{
    const admin=state.user?.role==="admin";
    document.querySelectorAll('[data-admin-only]').forEach(el=>{el.hidden=!admin;});
    document.querySelectorAll('nav.desktop-nav [data-tab="parameter"]').forEach(el=>{el.hidden=!admin;});
-   const chip=by("gcCurrentRole");if(chip)chip.textContent=admin?"Admin":"Maker";
-   const profile=by("gcProfileRole");if(profile)profile.textContent=admin?"Admin":"Maker";
+   const chip=by("gcCurrentRole");if(chip)chip.textContent=admin?"Superadmin":"Maker";
+   const profile=by("gcProfileRole");if(profile)profile.textContent=admin?"Superadmin":"Maker";
    const email=by("gcCurrentUser");if(email)email.textContent=state.user?.email||"";
    document.querySelectorAll('[data-ed],[data-xd],[data-od]').forEach(el=>{if(!admin)el.remove();});
    // Identities and assigned roles are managed through signed Cloudflare Access policies.
-   const usersMenu=by("gcUsersMenu");if(usersMenu)usersMenu.hidden=true;
-   document.querySelectorAll('[data-tab="users"]').forEach(el=>{el.hidden=true;});
-   const passwordForm=by("gcPasswordForm");if(passwordForm)passwordForm.hidden=true;
+   const usersMenu=by("gcUsersMenu");if(usersMenu)usersMenu.hidden=!admin;
+   document.querySelectorAll('[data-tab="users"]').forEach(el=>{el.hidden=!admin;});
+   const create=by('gcUserCreate');if(create)create.hidden=true;
+   const passwordForm=by("gcPasswordForm");if(passwordForm)passwordForm.hidden=false;
    const cfg=by("btnConfigureAi");if(cfg)cfg.hidden=!admin;
    const clear=by("btnClearSamples");if(clear)clear.hidden=!admin;
  };
  const postAuth=async()=>{
+   if(state.user?.mustChangePassword){forcePasswordChange();return;}
    const saved=await request("/api/state");
    state.revision=saved.revision||0;
    by("gcAuthGate").hidden=true;
@@ -48,7 +62,8 @@
    status("");
  };
  async function signIn(body,bootstrap){
-   const b=await request(bootstrap?"/api/auth/bootstrap":"/api/auth/login","POST",body);
+   if(bootstrap)throw Error("Bootstrap publik ditutup.");
+   const b=await request("/api/auth/login","POST",body);
    state.user=b.user;
    await postAuth();
  }
@@ -65,10 +80,25 @@
        by("gcSetupPassword").value="";by("gcSetupCode").value="";}
      catch(ex){msg(ex.message);}finally{btn.disabled=false;}
    };
+   by("gcForcePasswordForm").onsubmit=async e=>{
+     e.preventDefault();const btn=e.currentTarget.querySelector('button[type="submit"]');
+     const old=by("gcForceOld").value,pass=by("gcForceNew").value;
+     if(pass!==by("gcForceConfirm").value){msg("Konfirmasi password baru tidak sama.");return;}
+     if(pass.length<12||!/[A-Z]/.test(pass)||!/[a-z]/.test(pass)||
+       !/[0-9]/.test(pass)||!/[^a-zA-Z0-9]/.test(pass)){
+       msg("Gunakan minimal 12 karakter dengan huruf besar, kecil, angka, dan simbol.");return;
+     }
+     btn.disabled=true;msg("");
+     try{
+       await request("/api/auth/password","POST",{oldPassword:old,newPassword:pass});
+       by("gcForcePasswordForm").reset();
+       state.user=null;state.revision=0;
+       await showGate("Password baru telah disimpan. Silakan login ulang.");
+     }catch(err){msg(err.message);}finally{btn.disabled=false;}
+   };
    by("gcLogout").onclick=async()=>{
      await request("/api/auth/logout","POST",{}).catch(()=>{});
-     state.user=null;
-     window.location.assign("/cdn-cgi/access/logout");
+     state.user=null;state.revision=0;window.location.assign("/");
    };
    by("gcUsersMenu").onclick=()=>{if(state.user?.role==="admin"&&typeof window.setTab==="function")window.setTab("users");};
    by("gcUsersMenu").onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();by("gcUsersMenu").click();}};
@@ -79,7 +109,7 @@
        await request("/api/auth/password","POST",{oldPassword:by("gcOldPassword").value,newPassword:by("gcNewSelfPassword").value});
        by("gcPasswordForm").reset();
        by("gcPasswordFeedback").textContent="Password diubah. Silakan login ulang.";
-       state.user=null;state.revision=0;await showGate();
+       state.user=null;state.revision=0;await showGate("Password berhasil diubah. Silakan login ulang.");
      }catch(err){by("gcPasswordFeedback").textContent=err.message;}finally{button.disabled=false;}
    };
    by("gcUserCreate").onsubmit=async e=>{
@@ -153,7 +183,7 @@
      state.init=init;
      setupForms();
      try{const r=await request("/api/auth/me");state.user=r.user;await postAuth();}
-     catch{await showGate();}
+     catch(e){state.user=null;await showGate(e?.status===403?"Akun belum diaktifkan. Silakan periksa email atau hubungi Superadmin.":"");}
    },
    can(tab){return !!state.user&&(tab!=="parameter"&&tab!=="users"||state.user.role==="admin");},
    applyRole,
@@ -170,7 +200,7 @@
        const r=await request("/api/admin/users");
        tbody.innerHTML=(r.users||[]).map(u=>
          '<tr><td><b>'+safe(u.email)+'</b></td><td><span class="gc-role-tag">'+safe(u.role==="admin"?"Admin":"Maker")+'</span></td>'+
-         '<td>'+ (u.active?"Aktif":"Nonaktif") + '</td><td><div class="gc-user-actions">'+
+         '<td>'+ (u.active?(u.must_change_password?"Wajib Ganti Password":"Aktif"):"Nonaktif") + '</td><td><div class="gc-user-actions">'+
          (u.id===state.user.id?'<small>Akun sendiri</small>':
            '<button class="btn sm" data-user-action="role" data-user-id="'+safe(u.id)+'" data-role="'+safe(u.role)+'">Ubah Role</button>'+
            '<button class="btn sm" data-user-action="toggle" data-user-id="'+safe(u.id)+'" data-active="'+u.active+'">'+(u.active?"Nonaktifkan":"Aktifkan")+'</button>'+
