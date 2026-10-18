@@ -5570,78 +5570,202 @@ function renderWzAc(box) {
 
 function renderWzDinas(box) {
   const units = st().units || ["Kantor Pusat"];
-  box.innerHTML =
-    '<div class="form-stack">' +
-      '<h3 style="margin:0">✈️ Kalkulator Cepat: Perjalanan Dinas</h3>' +
-      '<div class="input-row-2">' +
-        '<label class="field-group"><span class="field-label">Unit Kerja</span><select id="wzD_unit">' + units.map(u => '<option value="' + esc(u) + '">' + esc(u) + '</option>').join("") + '</select></label>' +
-        '<label class="field-group"><span class="field-label">Kelas Penerbangan</span><select id="wzD_cls"><option value="Economy">Ekonomi</option><option value="Business">Bisnis</option></select></label>' +
-      '</div>' +
-      '<div class="input-row-2">' +
-        '<label class="field-group"><span class="field-label">Jarak Sekali Jalan (km)</span><input type="number" id="wzD_km" placeholder="mis. 950 (Pekanbaru-Jakarta)" min="0" step="any" inputmode="decimal"></label>' +
-        '<label class="field-group"><span class="field-label">Jumlah Penumpang</span><input type="number" id="wzD_pax" value="1" min="1" step="1" inputmode="numeric"></label>' +
-      '</div>' +
-      '<label class="field-group"><span class="field-label">Rute Perjalanan</span><select id="wzD_trip"><option value="pp">Pulang-Pergi (PP)</option><option value="sj">Sekali Jalan</option></select></label>' +
-      '<div class="result-box" id="wzD_res"><span>Masukkan jarak penerbangan dalam km.</span></div>' +
-      '<button class="btn primary" id="wzD_save" style="align-self:flex-start">Simpan ke Data Aktivitas</button>' +
-    '</div>';
+  const landModes = [
+    ["bus","Bus antarkota / umum"],["shuttle","Bus shuttle / travel (proxy bus)"],
+    ["taxi","Taksi"],["ride_hailing","Taksi online (proxy taksi)"],
+    ["train","Kereta antarkota"],["city_rail","KRL / MRT / LRT"],
+    ["car","Mobil rental (per kendaraan)"],["motorbike","Sepeda motor / ojek"]
+  ];
+  const seaModes = [
+    ["ferry","Kapal feri (proxy kapal penumpang)"],
+    ["ship","Kapal penumpang"],
+    ["speedboat","Speedboat / kapal cepat (butuh validasi faktor)"]
+  ];
+  const choice = pairs => pairs.map(([v,t])=>'<option value="'+esc(v)+'">'+esc(t)+'</option>').join("");
+  const field = (id,label,markup,attrs="") =>
+    '<label class="field-group" '+attrs+'><span class="field-label">'+label+'</span>'+markup+'</label>';
+  const input = (id,extra="") => '<input id="'+id+'" type="number" min="0" step="any" inputmode="decimal" '+extra+'>';
+  const select = (id,options) => '<select id="'+id+'">'+choice(options)+'</select>';
 
-  const calc = () => {
-    const km = parseNum($("#wzD_km").value);
-    const pax = parseNum($("#wzD_pax").value) || 1;
-    const cls = $("#wzD_cls").value;
-    const trip = $("#wzD_trip").value;
-    if (km != null && km > 0) {
-      try {
-        const inp = { m: "udara", cls, dist: String(km), dist_u: "km", pax: String(pax), trip };
-        const res = runCalc("s3_c6", inp, S.year);
-        $("#wzD_res").innerHTML =
-          '<span class="result-val">' + nf(res.t, 3) + ' tCO₂e</span>' +
-          '<span class="result-formula">' + cls + ' · ' + nf(km, 0) + ' km × ' + pax + ' pax × (' + (trip === "pp" ? "PP" : "Sekali") + ')</span>';
-        $("#wzD_res").dataset.valid = "1";
-        $("#wzD_res").dataset.km = String(km);
-      } catch(e) {
-        $("#wzD_res").innerHTML = '<span>' + esc(e.message) + '</span>';
-      }
-    } else {
-      $("#wzD_res").innerHTML = '<span>Masukkan jarak penerbangan dalam km.</span>';
-      delete $("#wzD_res").dataset.valid;
+  box.innerHTML = [
+    '<div class="form-stack gc-business-travel-wizard">',
+    '<div class="gc-travel-wz-heading"><div><span class="gc-travel-kicker">SCOPE 3 · KATEGORI 6</span>',
+    '<h3>✈️ Perjalanan Dinas &amp; Penginapan</h3>',
+    '<p>Hitung emisi pesawat, transportasi darat, kapal dan hotel menggunakan faktor Buku 3 CRMS OJK 2026.</p></div></div>',
+    field("wzD_unit","Unit kerja",select("wzD_unit",units.map(u=>[u,u]))),
+    field("wzD_mode","Pilih aktivitas",
+      select("wzD_mode",[["udara","✈ Penerbangan"],["darat","🚌 Darat: bus, taksi, kereta, dll"],["laut","⛴ Laut: feri, kapal, speedboat"],["hotel","🏨 Hotel / penginapan"]])),
+    '<div data-wzd="udara" class="gc-travel-section"><div class="input-row-2">',
+    field("wzD_region","Jenis penerbangan",select("wzD_region",[["domestik","Domestik (Indonesia)"],["internasional","Internasional (lintas negara)"]])),
+    field("wzD_cls","Kelas penerbangan",select("wzD_cls",[["Economy","Ekonomi"],["Premium Economy","Ekonomi Premium"],["Business","Bisnis"],["First","Utama"],["Unknown","Tidak diketahui"]])),
+    '</div></div>',
+    '<div data-wzd="darat" class="gc-travel-section" hidden>',
+    field("wzD_land","Moda transportasi darat",select("wzD_land",landModes)),
+    '</div>',
+    '<div data-wzd="laut" class="gc-travel-section" hidden>',
+    field("wzD_sea","Moda transportasi laut",select("wzD_sea",seaModes)),
+    '</div>',
+    '<div data-wzd="darat laut" class="gc-travel-section" hidden>',
+    field("wzD_basis","Metode perhitungan",select("wzD_basis",[["distance","Jarak per perjalanan"],["spend","Biaya tiket (IDR)"],["fuel","BBM aktual kapal (liter)"]])),
+    '</div>',
+    '<div data-wzd="udara darat laut" data-wzd-basis="distance" class="gc-travel-section">',
+    '<div class="input-row-2">',
+    field("wzD_km","Jarak sekali jalan (km)",input("wzD_km",'placeholder="mis. 950"')),
+    field("wzD_pax","Jumlah penumpang",input("wzD_pax",'value="1" min="1" step="1"')),
+    '</div>',
+    field("wzD_trip","Rute perjalanan",select("wzD_trip",[["sj","Sekali jalan"],["pp","Pulang-Pergi (PP)"]])),
+    '</div>',
+    '<div data-wzd="darat laut" data-wzd-basis="spend" class="gc-travel-section" hidden>',
+    field("wzD_expense","Total biaya tiket untuk seluruh perjalanan (Rp)",input("wzD_expense",'placeholder="mis. 1200000"')),
+    '<p class="gc-travel-inline-note">Metode biaya hanya digunakan bila jarak tidak tersedia. Jumlahnya sudah mencakup seluruh tiket—tidak dikalikan lagi dengan penumpang atau rute.</p>',
+    '</div>',
+    '<div data-wzd="laut" data-wzd-basis="fuel" class="gc-travel-section" hidden>',
+    '<div class="input-row-2">',
+    field("wzD_fuelType","Jenis bahan bakar",
+      select("wzD_fuelType",[["MINYAK-DIESEL","Solar/minyak diesel"],["MINYAK-BIO-SOLAR-CN-48","Bio Solar CN 48"],["MINYAK-DEX-SOLAR-CN-53","Dex Solar CN 53"],["BENSIN-RON-92-PERTAMAX","Pertamax RON 92"],["BENSIN-RON-90-PERTALITE","Pertalite RON 90"]])),
+    field("wzD_fuelLiters","BBM yang dialokasikan ke perjalanan (liter)",input("wzD_fuelLiters",'placeholder="mis. 120"')),
+    '</div><p class="gc-travel-inline-note">Untuk kapal operator pihak ketiga (Scope 3). Kapal yang dimiliki/dikendalikan bank masuk Scope 1. Masukkan konsumsi yang benar-benar teralokasi ke perjalanan ini.</p></div>',
+    '<div data-wzd="hotel" class="gc-travel-section" hidden>',
+    '<div class="input-row-2">',
+    field("wzD_hotelName","Nama hotel / penginapan",'<input type="text" id="wzD_hotelName" placeholder="Nama akomodasi">'),
+    field("wzD_hotelCity","Kota / negara hotel",'<input type="text" id="wzD_hotelCity" placeholder="mis. Pekanbaru, Indonesia">'),
+    '</div>',
+    field("wzD_hotelBasis","Metode data hotel",select("wzD_hotelBasis",[["guestnight","Tamu × malam (guest.night)"],["spend","Total biaya hotel (IDR)"]])),
+    '<div data-wzd-hotel="guestnight" class="input-row-2">',
+    field("wzD_guests","Jumlah tamu menginap",input("wzD_guests",'value="1" min="1" step="1"')),
+    field("wzD_nights","Malam per tamu",input("wzD_nights",'value="1" min="1" step="1"')),
+    '</div>',
+    '<div data-wzd-hotel="spend" hidden>',
+    field("wzD_hotelExpense","Biaya hotel total (Rp)",input("wzD_hotelExpense",'placeholder="mis. 2500000"')),
+    '</div>',
+    '<div class="input-row-2">',
+    field("wzD_rooms","Jumlah kamar (metadata)",input("wzD_rooms",'placeholder="mis. 2"')),
+    field("wzD_hotelClass","Kelas/bintang hotel (metadata)",select("wzD_hotelClass",[["","Tidak diketahui"],["1","1 bintang"],["2","2 bintang"],["3","3 bintang"],["4","4 bintang"],["5","5 bintang"]])),
+    '</div>',
+    '<p class="gc-travel-inline-note">Faktor dasar OJK berlaku per tamu-malam, bukan kamar-malam. Kategori/bintang dan kota tidak otomatis mengubah faktor. Metode biaya merupakan alternatif, jangan dijumlahkan dengan tamu-malam.</p>',
+    '</div>',
+    '<div class="gc-travel-factor-current" id="wzD_factorCurrent" aria-live="polite">Faktor emisi otomatis ditampilkan ketika input lengkap.</div>',
+    '<div class="result-box" id="wzD_res" aria-live="polite"><span>Masukkan rincian perjalanan untuk melihat estimasi emisi.</span></div>',
+    '<button class="btn primary" id="wzD_save" type="button" disabled>Simpan Perjalanan Dinas ke Aktivitas</button>',
+    '<details class="gc-travel-factor-catalog">',
+    '<summary>📚 Lihat seluruh faktor emisi perjalanan &amp; hotel</summary>',
+    '<div id="wzD_factorCatalog"></div>',
+    '<p>Referensi: Tabel Perjalanan Dinas Buku 3 CRMS OJK 2026. Faktor jarak yang dikonversi dari mil menggunakan konversi di GreenCal; CH₄/N₂O disetarakan memakai GWP dalam konfigurasi aktif. Nilai ferry/speedboat menggunakan faktor proxy kapal penumpang—bukan faktor spesifik operator.</p>',
+    '</details></div>'
+  ].join("");
+
+  const $w = id => box.querySelector("#"+id);
+  const modeSelected = () => $w("wzD_mode").value;
+  const inputData = () => {
+    const mode=modeSelected();
+    const input={m:mode};
+    if(mode==="udara"){
+      Object.assign(input,{region:$w("wzD_region").value,cls:$w("wzD_cls").value,
+        dist:$w("wzD_km").value,dist_u:"km",pax:$w("wzD_pax").value,trip:$w("wzD_trip").value});
+    }else if(mode==="darat"||mode==="laut"){
+      const basis=$w("wzD_basis").value;
+      Object.assign(input,{basis,
+        ...(mode==="darat"?{land:$w("wzD_land").value}:{sea:$w("wzD_sea").value})});
+      if(basis==="distance")Object.assign(input,{dist:$w("wzD_km").value,dist_u:"km",
+        pax:$w("wzD_pax").value,trip:$w("wzD_trip").value});
+      else if(basis==="spend")input.expense=$w("wzD_expense").value;
+      else if(basis==="fuel")Object.assign(input,{fuelType:$w("wzD_fuelType").value,
+        fuelLiters:$w("wzD_fuelLiters").value});
+    }else if(mode==="hotel"){
+      Object.assign(input,{hotelBasis:$w("wzD_hotelBasis").value,hotelName:$w("wzD_hotelName").value.trim(),
+        hotelCity:$w("wzD_hotelCity").value.trim(),hotelClass:$w("wzD_hotelClass").value,
+        rooms:$w("wzD_rooms").value,guests:$w("wzD_guests").value,nights:$w("wzD_nights").value,
+        hotelExpense:$w("wzD_hotelExpense").value});
+    }
+    return input;
+  };
+  const labelFor=()=>({
+    udara:($w("wzD_region").value==="domestik"?"Pesawat domestik":"Pesawat internasional")+" · "+$w("wzD_cls").value,
+    darat:$w("wzD_land").selectedOptions[0]?.text||"Darat",
+    laut:$w("wzD_sea").selectedOptions[0]?.text||"Laut",
+    hotel:"Hotel: "+($w("wzD_hotelName").value.trim()||"Akomodasi")+
+      ($w("wzD_hotelCity").value.trim()?" · "+$w("wzD_hotelCity").value.trim():"")
+  }[modeSelected()]);
+  let last=null;
+  const syncVisible=()=>{
+    const m=modeSelected(),basis=m==="udara"?"distance":$w("wzD_basis").value;
+    if(m==="darat"&&basis==="fuel")$w("wzD_basis").value="distance";
+    Array.from($w("wzD_basis").options).forEach(o=>{o.disabled=m==="darat"&&o.value==="fuel";});
+    box.querySelectorAll("[data-wzd]").forEach(el=>{
+      const modes=el.dataset.wzd.split(" ");
+      const method=el.dataset.wzdBasis;
+      el.hidden=!modes.includes(m) || (method!==undefined&&method!==(m==="udara"?"distance":$w("wzD_basis").value));
+    });
+    box.querySelectorAll("[data-wzd-hotel]").forEach(el=>{
+      el.hidden=m!=="hotel" || el.dataset.wzdHotel!==$w("wzD_hotelBasis").value;
+    });
+  };
+  const renderCatalog=()=>{
+    const kms=conv(1,"km","mile",S.year);
+    const modes=[
+      ["Bus","BUS-PASSENGER-MILES"],["Shuttle (proxy bus)","BUS-PASSENGER-MILES"],
+      ["Taksi / taksi online","TAXI-PASSENGER-MILES"],["Kereta antarkota","TRAIN-PASSENGER-MILES"],
+      ["KRL / MRT / LRT","CITY-RAIL-PASSENGER-MILES"],["Mobil rental (kendaraan)","CAR-MILES"],
+      ["Motor/ojek (kendaraan)","MOTORBIKE-MILES"],["Kapal penumpang","SHIP-PASSENGER-MILES"],
+      ["Kapal feri (proxy)","SHIP-PASSENGER-MILES"],["Speedboat (proxy)","SHIP-PASSENGER-MILES"],
+      ["Hotel per tamu-malam","HOTEL-GUEST-NIGHT"],["Hotel per IDR","HOTEL-IDR"]
+    ];
+    let out='<div class="gc-travel-factors-table"><table><thead><tr><th>Moda/metode</th><th>Faktor</th><th>Satuan</th></tr></thead><tbody>';
+    for(const [label,key] of modes){
+      try{
+        const r=R("travel",key,S.year);
+        const factor=r.unit.endsWith("miles")
+          ?(r.co2+nn(r.ch4)*gwpCH4(S.year)+nn(r.n2o)*gwpN2O(S.year))*kms:r.co2;
+        const u=r.unit==="passenger.miles"?"kgCO₂e/penumpang-km":
+          r.unit==="miles"?"kgCO₂e/kendaraan-km":
+          r.unit==="guest.night"?"kgCO₂/tamu-malam":"kgCO₂/IDR";
+        out+='<tr><td>'+esc(label)+'</td><td class="gc-travel-factor-number">'+esc(nfx(factor))+'</td><td>'+esc(u)+'</td></tr>';
+      }catch(e){}
+    }
+    out+='</tbody></table></div>';
+    $w("wzD_factorCatalog").innerHTML=out;
+  };
+  renderCatalog();
+  const calculate=()=>{
+    syncVisible();
+    const input=inputData();
+    last=null;
+    try{
+      const result=runCalc("s3_c6",input,S.year);
+      if(!Number.isFinite(result.t)||result.t<=0)throw new Error("Angka emisi harus positif");
+      last={input,res:result,summary:labelFor()};
+      $w("wzD_save").disabled=false;
+      $w("wzD_res").innerHTML='<strong class="result-val">'+nf(result.t,4)+' tCO₂e</strong>'+
+        result.L.map(s=>'<span class="result-formula">'+esc(s)+'</span>').join("");
+      const references=(result.refs||[]).map(x=>x.t+" / "+x.k).join(" · ");
+      $w("wzD_factorCurrent").innerHTML='<strong>Faktor aktif:</strong> '+esc(references)+
+        '<span> · Tahun pelaporan '+esc(String(S.year))+'</span>';
+    }catch(e){
+      $w("wzD_save").disabled=true;
+      $w("wzD_res").innerHTML='<span class="result-formula">'+esc(e.message)+'</span>';
+      $w("wzD_factorCurrent").textContent="Lengkapi data untuk menampilkan faktor dan hasil perhitungan.";
     }
   };
-
-  $("#wzD_km").oninput = calc;
-  $("#wzD_pax").oninput = calc;
-  $("#wzD_cls").onchange = calc;
-  $("#wzD_trip").onchange = calc;
-
-  $("#wzD_save").onclick = () => {
-    if (!$("#wzD_res").dataset.valid) { toast("Masukkan jarak penerbangan terlebih dahulu."); return; }
-    const km = $("#wzD_res").dataset.km;
-    const pax = $("#wzD_pax").value || "1";
-    const cls = $("#wzD_cls").value;
-    const trip = $("#wzD_trip").value;
-    const unit = $("#wzD_unit").value;
-    const inp = { m: "udara", cls, dist: km, dist_u: "km", pax, trip };
-    const res = runCalc("s3_c6", inp, S.year);
-
-    S.entries.unshift({
-      id: newId("e"),
-      year: S.year,
-      unitKerja: unit,
-      cat: "s3_c6",
-      inputs: inp,
-      summary: cls + " · " + nf(Number(km), 0) + " km · " + pax + " pax · " + (trip === "pp" ? "PP" : "Sekali"),
-      desc: "Tiket Perjalanan Dinas (Kalkulator Cepat)",
-      evidence: "E-Ticket Penerbangan & SPPD",
-      res,
-      at: nowIso(),
-      contoh: false
-    });
+  box.querySelectorAll("input,select").forEach(el=>{
+    el.addEventListener("input",calculate);
+    el.addEventListener("change",calculate);
+  });
+  $w("wzD_save").onclick=()=>{
+    if(!last){toast("Lengkapi rincian perjalanan dan periksa hasil kalkulasi.");return;}
+    const entry={
+      id:newId("e"),year:S.year,unitKerja:$w("wzD_unit").value,cat:"s3_c6",
+      inputs:{...last.input},summary:last.summary,
+      desc:"Perjalanan Dinas: "+last.summary,
+      evidence:"SPPD / e-ticket / invoice (cantumkan referensi bukti setelah simpan)",
+      res:last.res,at:nowIso(),contoh:false
+    };
+    S.entries.unshift(entry);
     saveStateToStorage();
     renderAll();
-    toast("Data perjalanan dinas " + nf(res.t, 3) + " tCO₂e berhasil disimpan!");
+    toast("Perjalanan dinas "+nf(last.res.t,4)+" tCO₂e tersimpan ke Data Aktivitas.");
     setTab("aktivitas");
   };
+  calculate();
 }
 
 /* Sector catalog for PCAF debtor classification.
