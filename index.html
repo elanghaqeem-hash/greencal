@@ -2634,6 +2634,50 @@ dialog.modal-sheet .modal-foot { background:var(--surface); }
 }
 @media(max-width:360px){.gc-auth-gate .gc-auth-card{padding-left:18px;padding-right:18px}.gc-auth-mobilebrand img{width:119px}}
 
+
+/* GreenCal Activity v5 polished functional mobile controls */
+#view-aktivitas .carbon-hero {background:linear-gradient(120deg,#064834,#0a7351 68%,#078968);box-shadow:0 14px 32px rgba(6,87,57,.15)}
+#view-aktivitas .carbon-hero-top {letter-spacing:.02em;text-transform:none;font-size:13px}
+#view-aktivitas .carbon-hero-foot {display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}
+#view-aktivitas .carbon-mini-stat {min-width:0;overflow-wrap:anywhere;border:1px solid rgba(255,255,255,.22);background:#e7f7ee;color:#084b38;border-radius:13px;padding:12px 10px;display:flex;gap:8px;align-items:center;font-size:11px;line-height:1.4}
+#view-aktivitas .carbon-mini-stat b {font-size:17px;font-weight:850}
+#view-aktivitas .carbon-mini-stat small {display:block;font-size:10px}
+#view-aktivitas .carbon-mini-stat.carbon-hero-warning {background:#fff0cc;color:#6f4808;border-color:#f5dda4}
+#view-aktivitas .carbon-stat-icon {display:grid;place-items:center;flex:0 0 28px;width:28px;height:28px;border-radius:50%;background:rgba(11,120,78,.12);font-size:17px}
+#view-aktivitas .carbon-scope-filters {display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;margin-top:15px;overflow:visible;padding:5px;background:rgba(255,255,255,.15);border-radius:18px}
+#view-aktivitas .carbon-scope-filters button {padding:9px 4px;white-space:normal;font-size:11px;min-width:0;min-height:44px;line-height:1.25}
+#view-aktivitas .activity-controls-row {grid-template-columns:minmax(0,1.5fr) minmax(0,.8fr) minmax(0,1fr)}
+#view-aktivitas #btnSaveActivityDraft {border:1px solid var(--line);background:var(--surface)}
+#view-aktivitas #aSave {background:linear-gradient(120deg,#0b7655,#086246)}
+#view-aktivitas .calc-step-badge {text-transform:uppercase;letter-spacing:.03em}
+#view-aktivitas button:focus-visible,#view-aktivitas summary:focus-visible,#view-aktivitas select:focus-visible {outline:3px solid #56cba2;outline-offset:2px}
+@media(max-width:620px){
+ #view-aktivitas .carbon-hero {padding:20px 16px 17px;border-radius:20px;margin-bottom:16px}
+ #view-aktivitas .carbon-hero-main {margin:12px 0}
+ #view-aktivitas .carbon-total {font-size:clamp(28px,8.3vw,43px)}
+ #view-aktivitas .carbon-hero-illustration {width:56px;height:56px;border-radius:18px}
+ #view-aktivitas .carbon-hero-illustration svg {width:33px;height:33px}
+ #view-aktivitas .carbon-hero-foot {grid-template-columns:repeat(2,minmax(0,1fr))}
+ #view-aktivitas .carbon-mini-stat.carbon-hero-warning {grid-column:1/-1}
+ #view-aktivitas .carbon-scope-filters {gap:4px}
+ #view-aktivitas .carbon-scope-filters button {font-size:10px;padding:8px 2px}
+ #view-aktivitas .activity-controls-row {display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,.75fr) minmax(0,1fr);gap:6px}
+ #view-aktivitas .activity-view-toggle button {font-size:11px;padding:7px 3px}
+ #view-aktivitas .activity-filter-details > summary {padding:8px 5px;font-size:11px;min-height:45px}
+ #view-aktivitas .activity-sort-label {padding:0 4px;gap:2px;min-height:45px}
+ #view-aktivitas .activity-sort-label > span {font-size:15px}
+ #view-aktivitas #fActSort {font-size:11px;padding-right:10px}
+ #view-aktivitas #actForm {padding:17px 14px;border-radius:18px}
+ #view-aktivitas .activity-form-heading h3 {font-size:18px}
+ #view-aktivitas .activity-form-actions .btn {flex:1 1 0;min-width:0;padding:10px 8px;font-size:12px}
+ #view-aktivitas .activity-form-actions #aCancel:not([hidden]) {flex:1 1 100%}
+}
+@media(max-width:340px){
+ #view-aktivitas .activity-controls-row {grid-template-columns:repeat(2,minmax(0,1fr))}
+ #view-aktivitas .activity-view-toggle {grid-column:1/-1}
+ #view-aktivitas .carbon-scope-filters {grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+
 </style>
 </head>
 <body>
@@ -3061,7 +3105,7 @@ dialog.modal-sheet .modal-foot { background:var(--surface); }
             <div class="activity-search-row">
               <div class="search-input-wrap activity-search">
                 <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-                <input type="search" id="fSearch" aria-label="Cari aktivitas" placeholder="Cari unit, kategori, bukti, deskripsi...">
+                <input type="search" id="fSearch" aria-label="Cari aktivitas" placeholder="Cari unit, kategori, bukti, atau deskripsi...">
               </div>
               <button class="btn sm activity-clear-search" type="button" id="btnClearActivitySearch" hidden aria-label="Bersihkan pencarian">×</button>
             </div>
@@ -5729,7 +5773,7 @@ function renderCarbonActivityHero() {
   const options = [["","Semua",current.length],["1","Scope 1",counts["1"]],["2","Scope 2",counts["2"]],["3","Scope 3",counts["3"]]];
   host.innerHTML =
     '<section class="carbon-hero" aria-label="Ringkasan jejak karbon operasional">' +
-      '<div class="carbon-hero-top">' + leaf + '<span>Jejak Karbon Operasional · ' + esc(S.year) + '</span></div>' +
+      '<div class="carbon-hero-top">' + leaf + '<span>Total Emisi GRK · ' + esc(S.year) + '</span></div>' +
       '<div class="carbon-hero-main">' +
         '<div class="carbon-total">' + nf(total,3) + ' <span>tCO₂e</span></div>' +
         '<div class="carbon-hero-illustration" aria-hidden="true">' + leaf + '</div>' +
