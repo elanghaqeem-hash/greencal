@@ -38,7 +38,7 @@ test("issuer selector is a single native select with its original value and look
  assert.match(code,/e\("wzS_sector"\)\.disabled=sovereign\|\|!eligible/);
  assert.match(code,/e\("wzS_sector"\)\.value==="__custom__"/);
  assert.match(code,/e\("wzS_sector"\)\.dispatchEvent\(new Event\("change"\)\)/);
- assert.match(code,/sector:sectorValue/);
+ assert.match(code,/const sector=t\.group==="sovereign"\?"Pemerintah \/ Sovereign":sectorValue\(\)/);
  assert.match(code,/GC_PCAF_SECTOR_INDEX\.get\(sector\)/);
 });
 
