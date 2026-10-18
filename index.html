@@ -1962,6 +1962,93 @@ dialog.modal-sheet .modal-foot { background:var(--surface); }
       .brand-sub { font-size: 10px; }
     }
 
+  
+    /* GreenCal carbon composition v2 — compact mobile editorial dashboard */
+    .emission-panel {
+      background:
+        radial-gradient(ellipse at 100% 0%,color-mix(in srgb,var(--primary) 14%,transparent),transparent 47%),
+        linear-gradient(145deg,color-mix(in srgb,var(--primary-soft) 37%,var(--surface)),var(--surface) 58%);
+      border:1px solid var(--primary-border);
+    }
+    .emission-panel-header {margin-bottom:13px}
+    #scopeDonut .carbon-message {
+      display:flex; align-items:center; gap:11px; padding:12px 14px; border-radius:15px;
+      background:linear-gradient(112deg,#0b513d,#137458); color:#fff;
+      box-shadow:0 6px 18px rgba(5,81,57,.14); margin:0 0 14px; min-width:0;
+    }
+    #scopeDonut .carbon-message-icon {
+      display:grid;place-items:center;flex-shrink:0;width:35px;height:35px;border-radius:11px;
+      background:rgba(255,255,255,.13);font-size:20px;color:#b8f4d9
+    }
+    #scopeDonut .carbon-message-content {display:flex;flex-direction:column;gap:2px;min-width:0}
+    #scopeDonut .carbon-message small {font-size:9px;line-height:1.3;font-weight:800;letter-spacing:.1em;color:#c5f3df}
+    #scopeDonut .carbon-message strong {font-size:13px;line-height:1.42;font-weight:800;letter-spacing:-.01em;overflow-wrap:anywhere}
+    #scopeDonut .carbon-main {grid-template-columns:minmax(0,160px) minmax(0,1fr);gap:13px;margin:0 0 15px;align-items:center}
+    #scopeDonut .carbon-ring-shell {padding:0}
+    #scopeDonut .carbon-ring {width:min(100%,160px)}
+    #scopeDonut .carbon-ring-center strong {font-size:clamp(17px,3.4vw,24px);letter-spacing:-.075em}
+    #scopeDonut .carbon-ring-kicker {font-size:8px;letter-spacing:.06em}
+    #scopeDonut .carbon-ring-unit {font-size:11px}
+    #scopeDonut .carbon-ring-year {font-size:9px;margin-top:3px}
+    #scopeDonut .carbon-insight {
+      display:flex;flex-direction:column;justify-content:center;
+      min-height:144px;border:1px solid var(--primary-border);
+      background:linear-gradient(155deg,var(--primary-soft),color-mix(in srgb,var(--surface) 65%,var(--primary-soft)));
+      padding:13px;border-radius:15px;
+    }
+    #scopeDonut .carbon-insight-top {display:flex;flex-direction:column;align-items:flex-start;gap:7px;margin-bottom:6px}
+    #scopeDonut .carbon-insight-tag {font-size:10px}
+    #scopeDonut .carbon-insight-pct {font-size:clamp(23px,4vw,31px);color:var(--primary);letter-spacing:-.05em}
+    #scopeDonut .carbon-insight h4 {font-size:13px;line-height:1.4;letter-spacing:-.025em;margin:0 0 4px}
+    #scopeDonut .carbon-insight p {font-size:10.5px;line-height:1.45;overflow-wrap:anywhere}
+    #scopeDonut .carbon-breakdown-title {margin:10px 0 8px}
+    #scopeDonut .carbon-breakdown {gap:7px}
+    #scopeDonut .carbon-source {padding:10px;border-radius:13px;grid-template-columns:36px minmax(0,1fr) 76px 9px;gap:8px}
+    #scopeDonut .carbon-source-icon {height:36px;width:36px;border-radius:10px}
+    #scopeDonut .carbon-source-icon svg {width:19px;height:19px}
+    #scopeDonut .carbon-source-text b {font-size:11.5px}
+    #scopeDonut .carbon-source-text small {font-size:10.5px}
+    #scopeDonut .carbon-source-side strong {font-size:13.5px}
+    #scopeDonut .carbon-chevron {font-size:17px}
+    #scopeDonut .carbon-footnote {font-size:10px;margin-top:10px}
+    @container (min-width:570px) {
+      #scopeDonut .carbon-main {grid-template-columns:minmax(0,200px) minmax(0,1fr);gap:22px}
+      #scopeDonut .carbon-ring {width:195px}
+      #scopeDonut .carbon-insight {min-height:165px;padding:19px}
+      #scopeDonut .carbon-insight-top {flex-direction:row;align-items:center}
+      #scopeDonut .carbon-insight h4 {font-size:16px}
+      #scopeDonut .carbon-insight p {font-size:12px}
+    }
+    @container (min-width:290px) and (max-width:569px) {
+      #scopeDonut .carbon-main {grid-template-columns:minmax(0,42%) minmax(0,1fr);gap:10px;align-items:stretch}
+      #scopeDonut .carbon-ring {width:100%;max-width:170px}
+      #scopeDonut .carbon-insight {min-height:0;padding:11px 10px}
+      #scopeDonut .carbon-insight-top {gap:5px;margin-bottom:5px}
+      #scopeDonut .carbon-insight-tag {font-size:9px}
+      #scopeDonut .carbon-insight-pct {font-size:clamp(21px,5vw,28px)}
+      #scopeDonut .carbon-insight h4 {font-size:clamp(11px,3.1vw,13px)}
+      #scopeDonut .carbon-insight p {font-size:10px;line-height:1.35}
+      #scopeDonut .carbon-ring-center strong {font-size:clamp(15px,4.1vw,21px)}
+      #scopeDonut .carbon-ring-kicker {font-size:7px}
+      #scopeDonut .carbon-ring-unit {font-size:10px}
+      #scopeDonut .carbon-source {grid-template-columns:33px minmax(0,1fr) 70px;gap:8px;padding:9px}
+      #scopeDonut .carbon-source-icon {width:33px;height:33px}
+      #scopeDonut .carbon-chevron {display:none}
+    }
+    @container (max-width:289px) {
+      #scopeDonut .carbon-main {grid-template-columns:1fr;gap:10px}
+      #scopeDonut .carbon-ring {width:154px}
+      #scopeDonut .carbon-insight {min-height:0}
+      #scopeDonut .carbon-source {grid-template-columns:31px minmax(0,1fr) 61px;gap:6px;padding:8px}
+      #scopeDonut .carbon-source-icon {width:31px;height:31px}
+      #scopeDonut .carbon-chevron {display:none}
+      #scopeDonut .carbon-source-text b {font-size:10.5px}
+      #scopeDonut .carbon-source-side strong {font-size:12px}
+      #scopeDonut .carbon-message {padding:10px}
+      #scopeDonut .carbon-message strong {font-size:11px}
+    }
+    [data-theme="dark"] #scopeDonut .carbon-message {background:linear-gradient(112deg,#124c39,#146547)}
+
   </style>
 </head>
 <body>
@@ -3849,7 +3936,13 @@ function renderDonutChart(el, items) {
       '<span class="carbon-source-side"><strong>' + nf(p,1) + '%</strong><span class="carbon-track"><i style="width:' + p.toFixed(3) + '%"></i></span></span>' +
       '<span class="carbon-chevron" aria-hidden="true">›</span></button>';
   }).join('');
+  const leading = items[topIndex];
+  const leadingPct = nf(pct(leading.val),1);
+  const message = topIndex === 3
+    ? leadingPct + '% emisi berasal dari portofolio pembiayaan.'
+    : leadingPct + '% emisi berasal dari ' + leading.label + '.';
   el.innerHTML =
+    '<div class="carbon-message"><span class="carbon-message-icon" aria-hidden="true">♻</span><span class="carbon-message-content"><small>PROFIL EMISI KARBON · ' + esc(String(S.year)) + '</small><strong>' + esc(message) + '</strong></span></div>' +
     '<div class="carbon-main">' +
       '<div class="carbon-ring-shell"><div class="carbon-ring" role="img" aria-label="Total emisi ' + nf(tot,1) + ' tCO₂e, tahun ' + esc(String(S.year)) + '">' +
         '<svg class="carbon-ring-svg" viewBox="0 0 240 240" aria-hidden="true">' +
@@ -3859,9 +3952,9 @@ function renderDonutChart(el, items) {
       '</div></div>' +
       '<div class="carbon-insight" aria-live="polite">' +
         '<div class="carbon-insight-top"><span class="carbon-insight-tag">' + (isTop ? 'Insight utama' : 'Rincian scope') + '</span><strong class="carbon-insight-pct">' + nf(pct(chosen.val),1) + '%</strong></div>' +
-        '<h4>' + (isTop ? 'Emisi terbesar berasal dari ' : 'Kontribusi emisi dari ') + esc(chosen.label) + '</h4>' +
-        '<p>Berjumlah <strong>' + nf(Math.max(0,Number(chosen.val)||0),2) + ' tCO₂e</strong> atau ' + nf(pct(chosen.val),1) + '% dari total emisi tahun ' + esc(String(S.year)) + '. ' +
-        (isTop ? 'Fokuskan penelusuran sumber emisi dan kualitas data pada kategori ini.' : 'Bandingkan kontribusinya dengan scope lain untuk memahami profil emisi.') + '</p>' +
+        '<h4>' + esc(chosen.label) + '</h4>' +
+        '<p><strong>' + nf(Math.max(0,Number(chosen.val)||0),2) + ' tCO₂e.</strong> ' +
+        (isTop && active === 3 ? 'Fokus analisis: emisi terbiayai dan kualitas data portofolio.' : isTop ? 'Sumber utama emisi yang perlu ditelusuri.' : 'Bandingkan terhadap scope lainnya.') + '</p>' +
       '</div>' +
     '</div>' +
     '<div class="carbon-breakdown-title"><span>Rincian sumber emisi</span><small>Ketuk untuk melihat insight</small></div>' +
