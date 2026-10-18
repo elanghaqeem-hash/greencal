@@ -31,7 +31,16 @@ const validEmail=e=>typeof e==="string"&&/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e)&&e
 const strongPwd=p=>typeof p==="string"&&p.length>=12&&p.length<=128;
 export default {async fetch(request,env){
  const url=new URL(request.url),path=url.pathname;
- if(!path.startsWith("/api/"))return env.ASSETS.fetch(request);
+ if(!path.startsWith("/api/")){
+  if(path==="/login.html")return env.ASSETS.fetch(request);
+  if(path==="/admin.html" || path==="/" || path==="/index.html"){
+    if(!env.DB)return new Response("GreenCal authentication not configured",{status:503});
+    const u=await identity(request,env);
+    if(!u)return Response.redirect(url.origin+"/login.html",302);
+    if(path==="/admin.html"&&u.role!=="admin")return new Response("Forbidden: Admin only",{status:403});
+  }
+  return env.ASSETS.fetch(request);
+ }
  if(!env.DB)return json({error:"Database not configured"},503);
  const method=request.method;
  if(!["GET","POST","PUT","PATCH","DELETE"].includes(method))return json({error:"Method not allowed"},405);
