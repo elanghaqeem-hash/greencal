@@ -3193,6 +3193,7 @@ dialog.modal-sheet .modal-foot { background:var(--surface); }
 @media(prefers-reduced-motion:reduce){.gc-ai-editor-panel .gc-ai-action{transition:none}}
 
 </style>
+  <script src="/assets/guide-learning.js"></script>
 </head>
 <body>
 
@@ -7824,30 +7825,7 @@ function pAudit(body) {
 }
 
 /* ---------- PANDUAN PENGGUNAAN OJK 2026 ---------- */
-function renderGuide() {
-  const g = $("#guide");
-  if (g.dataset.done) return;
-  g.dataset.done = "1";
-  g.innerHTML =
-    '<div class="form-stack">' +
-      '<h3 style="margin:0">Panduan Teknis Climate Risk Management &amp; Scenario Analysis (CRMS) OJK 2026</h3>' +
-      '<p>Aplikasi ini dirancang sebagai alat bantu komprehensif bagi perbankan di Indonesia untuk menghitung, mengelola, dan melaporkan emisi Gas Rumah Kaca (GRK) sesuai standar OJK Buku 1–7 dan GHG Protocol.</p>' +
-      '<h4>Alur Kerja Perhitungan Emisi</h4>' +
-      '<ol style="padding-left:20px;line-height:1.7">' +
-        '<li><b>Lini 1 (Unit Bisnis &amp; Cabang):</b> Mencatat konsumsi energi primer (Listrik PLN, BBM Genset, Mobil Operasional, AC, Perjalanan Dinas) melalui tab <b>Data Aktivitas</b> atau <b>Kalkulator Cepat</b>.</li>' +
-        '<li><b>Lini 1 / Tim Manajemen Risiko (Pembiayaan):</b> Menginput portofolio pembiayaan debitur di tab <b>Investasi &amp; Pembiayaan</b> untuk menghitung Scope 3 Kategori 15 (PCAF Financed Emissions).</li>' +
-        '<li><b>Lini 2 (Manajemen Risiko &amp; Kepatuhan):</b> Menganalisis <b>Risiko Transisi</b> per skenario NGFS (Net Zero 2050, Delayed Transition) dan mengelola versi faktor emisi di tab <b>Parameter</b>.</li>' +
-        '<li><b>Lini 3 (Audit Internal / Eksternal):</b> Menguji jejak bukti (nomor faktur/rekening) dan kesiapan pengungkapan pada tab <b>Ringkasan</b>.</li>' +
-      '</ol>' +
-      '<h4>Rumus Dasar yang Diterapkan</h4>' +
-      '<div class="result-box" style="font-size:12.5px">' +
-        '<b>Total CO₂e (kg)</b> = CO₂ (kg) + CH₄ (g)/1.000 × GWP CH₄ + N₂O (g)/1.000 × GWP N₂O + Gas Lain (kgCO₂e)<br>' +
-        '<b>Scope 2 Listrik</b> = Konsumsi (kWh) × Faktor Grid Sistem (kgCO₂e/kWh)<br>' +
-        '<b>PCAF Financed Emissions</b> = Attribution Factor (Outstanding ÷ Total Ekuitas+Utang) × Emisi Debitur (tCO₂e)<br>' +
-        '<b>Biaya Karbon NGFS</b> = Emisi Debitur × % Penurunan Emisi × Harga Karbon (Rp/tCO₂e)' +
-      '</div>' +
-    '</div>';
-}
+function renderGuide() { return renderEducationalGuide(); }
 
 /* ---------- DIALOG / MODAL ENGINE ---------- */
 function openDlg(title, html, actions) {
