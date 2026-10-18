@@ -2682,43 +2682,96 @@ dialog.modal-sheet .modal-foot { background:var(--surface); }
 </head>
 <body>
 
-  <!-- AUTH: standalone overlay; protected shared state is never initialized anonymously. -->
+  <!-- ACCESS: only the login experience is redesigned; Cloudflare Access and D1 enforce identity and role. -->
   <div id="gcAuthGate" class="gc-auth-gate" role="region" aria-label="Login GreenCal">
     <div class="gc-auth-layout">
-      <aside class="gc-auth-aside" aria-label="Tentang GreenCal">
-        <div class="gc-auth-bank"><img src="/assets/brks-syariah.svg" alt="Logo BRK Syariah"><span>BRK SYARIAH · GREEN FINANCE</span></div>
-        <div class="gc-auth-hero">
-          <span class="gc-auth-kicker">GREEN CALCULATOR · CRMS &amp; PCAF</span>
-          <h2>Dari data emisi menuju keputusan berkelanjutan.</h2>
-          <p>Kelola emisi Scope 1, 2, 3 dan financed emissions melalui sistem yang dilengkapi jejak data, analisis, serta kontrol akses berbasis peran.</p>
-          <div class="gc-auth-keypoints"><span>◈ Kalkulasi emisi</span><span>◈ Analisis risiko iklim</span><span>◈ Data pembiayaan PCAF</span></div>
+      <aside class="gc-auth-aside" aria-label="GreenCal dan perbankan hijau">
+        <div class="gc-auth-bank">
+          <span class="gc-auth-logo" aria-hidden="true">
+            <svg viewBox="0 0 44 44" fill="none"><path d="M22 36c-12-5-15-16-11-27 8 0 13 3 16 8 4-6 9-7 15-7 0 13-7 23-20 26Z" fill="#37A86D"/><path d="M22 36V22m0 6L11 16m11 14 12-14" stroke="#fff" stroke-width="2.7" stroke-linecap="round"/></svg>
+          </span>
+          <div><strong>Green<span>Cal</span></strong><small>PT Bank Riau Kepri Syariah (Perseroda)</small></div>
         </div>
-        <small>PT Bank Riau Kepri Syariah (Perseroda)</small>
+        <div class="gc-auth-hero">
+          <span class="gc-auth-kicker"><span aria-hidden="true">✦</span> GREEN FINANCE · CARBON INTELLIGENCE</span>
+          <h2>Bersama untuk <em>masa depan yang lebih hijau.</em></h2>
+          <p>Ukur, kelola, dan pahami emisi karbon untuk keputusan perbankan yang lebih berkelanjutan.</p>
+        </div>
+        <div class="gc-auth-landscape" aria-hidden="true">
+          <svg viewBox="0 0 690 315" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMax meet">
+            <defs><linearGradient id="gcSky" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#cceee0"/><stop offset="1" stop-color="#e8f7ec"/></linearGradient><linearGradient id="gcHill" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#60b78a"/><stop offset="1" stop-color="#2f976d"/></linearGradient></defs>
+            <circle cx="530" cy="65" r="43" fill="#F9DF99" opacity=".8"/>
+            <path d="M0 242q102-80 209-10 127-109 260-44 116-93 221 7v120H0Z" fill="#b1ddc0"/>
+            <path d="M0 276q150-114 290-36 138-75 400-48v123H0Z" fill="url(#gcHill)"/>
+            <g fill="#eaf9f5" opacity=".94"><path d="M190 200V116h55v84z"/><path d="M256 197V86h53v111z"/><path d="M318 187V110h78v77z"/><path d="M409 188V64h57v124z"/><path d="M476 197v-84h40v84z"/></g>
+            <g stroke="#81bcaa" stroke-width="3" opacity=".65"><path d="M203 132h29m-29 20h29m-29 20h29m36-67h28m-28 22h28m-28 22h28m70-23h37m-37 20h37m19-64h30m-30 23h30m-30 23h30"/></g>
+            <g fill="none" stroke="#f7fffa" stroke-width="5" stroke-linecap="round"><path d="M112 232V130m0 0-48-18m48 18 16-50m-16 50 45 32"/><path d="M557 216V136m0 0-39-16m39 16 22-39m-22 39 37 25"/></g>
+            <g transform="translate(310 211)"><path d="M0 30h83L70 0H15Z" fill="#114c50"/><path d="M12 8h52L73 27H3Z" fill="#5ec0c0"/><path d="M25 7 14 27m26-20-2 20m19-20 7 20M7 18h61" stroke="#e9ffff" stroke-width="2" opacity=".8"/></g>
+            <g fill="#146d51"><path d="M50 253q-20-46 17-68 36 27 7 65z"/><path d="M80 254q-3-62 30-70 36 53-16 75z"/><path d="M603 239q-9-58 30-67 24 55-13 76z"/><path d="M632 242q4-56 41-58 12 54-21 64z"/></g>
+            <path d="M0 269Q174 232 356 283T690 258v57H0Z" fill="#0e5e48" opacity=".35"/>
+          </svg>
+        </div>
+        <div class="gc-auth-aside-foot">
+          <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="16" height="16"><path d="m4 13 5 5L20 6"/></svg> Scope 1 · 2 · 3</span>
+          <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="16" height="16"><path d="M4 19h16M7 15V9m5 6V5m5 10v-4"/></svg> Financed Emissions</span>
+          <span>OJK CRMS · PCAF</span>
+        </div>
       </aside>
+
       <div class="gc-auth-card">
-        <div class="gc-auth-mobilebrand"><img src="/assets/brks-syariah.svg" alt="BRK Syariah"><span>GreenCal</span></div>
-        <div class="gc-auth-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="25" height="25" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/><path d="M12 15v2"/></svg></div>
-        <span class="gc-auth-eyebrow">AREA PENGGUNA TERDAFTAR</span>
-        <h2 id="gcAuthHeading">Masuk ke GreenCal</h2>
-        <p id="gcAuthDescription">Gunakan alamat email terdaftar serta password yang telah dikirim melalui email.</p>
+        <div class="gc-auth-mobilebrand">
+          <span class="gc-auth-logo" aria-hidden="true"><svg viewBox="0 0 44 44" fill="none"><path d="M22 36c-12-5-15-16-11-27 8 0 13 3 16 8 4-6 9-7 15-7 0 13-7 23-20 26Z" fill="#37A86D"/><path d="M22 36V22m0 6L11 16m11 14 12-14" stroke="#fff" stroke-width="2.7" stroke-linecap="round"/></svg></span>
+          <span class="gc-mobile-brand-text"><b>Green<span>Cal</span></b><small>PT Bank Riau Kepri Syariah (Perseroda)</small></span>
+          <img src="/assets/brks-syariah.svg" alt="Logo BRK Syariah" loading="eager">
+        </div>
+        <div class="gc-auth-card-head">
+          <span class="gc-auth-eyebrow"><span class="gc-auth-verified-dot" aria-hidden="true"></span> PORTAL PENGGUNA TERDAFTAR</span>
+          <h2 id="gcAuthHeading">Masuk ke GreenCal</h2>
+          <p id="gcAuthDescription">Akses sistem perhitungan emisi karbon untuk Admin dan Maker.</p>
+        </div>
+
+        <div class="gc-auth-identity" id="gcIdentityInfo" hidden aria-live="polite">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" width="19" height="19" aria-hidden="true"><path d="M12 3 4 7v5c0 6 4.5 9 8 10 3.5-1 8-4 8-10V7z"/><path d="m8.5 12.5 2.2 2.1 4.8-5"/></svg>
+          <div><strong>Identitas email terverifikasi</strong><span id="gcVerifiedEmail"></span></div>
+          <span class="gc-auth-role" id="gcVerifiedRole"></span>
+        </div>
+
         <form id="gcLoginForm" hidden autocomplete="on">
-          <label for="gcLoginEmail">Email pengguna<input id="gcLoginEmail" type="email" autocomplete="username" required placeholder="Masukkan email Anda" spellcheck="false"></label>
-          <label for="gcLoginPassword">Password<input id="gcLoginPassword" type="password" autocomplete="current-password" required placeholder="Masukkan password"></label>
-          <button type="submit">Masuk ke Dashboard <span aria-hidden="true">→</span></button>
-          <p class="gc-auth-helper">Akses hanya untuk Superadmin dan Maker. Akun baru harus membuat password setelah verifikasi email.</p>
+          <label class="gc-auth-label" for="gcLoginEmail">Email terdaftar
+            <span class="gc-auth-input-wrap">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="m4 7 8 6 8-6"/></svg>
+              <input id="gcLoginEmail" type="email" autocomplete="username" required placeholder="nama@perusahaan.co.id" inputmode="email" spellcheck="false">
+            </span>
+          </label>
+          <label class="gc-auth-label" for="gcLoginPassword">Password GreenCal
+            <span class="gc-auth-input-wrap">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="10" width="14" height="11" rx="2"/><path d="M8 10V7a4 4 0 1 1 8 0v3"/></svg>
+              <input id="gcLoginPassword" type="password" autocomplete="current-password" required placeholder="Masukkan password Anda">
+              <button id="gcTogglePassword" type="button" class="gc-password-toggle" aria-label="Tampilkan password" aria-pressed="false" aria-controls="gcLoginPassword">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2.5 12c2.2-4 5.3-6 9.5-6s7.3 2 9.5 6c-2.2 4-5.3 6-9.5 6s-7.3-2-9.5-6Z"/><circle cx="12" cy="12" r="2.8"/></svg>
+              </button>
+            </span>
+          </label>
+          <button type="button" id="gcForgotPassword" class="gc-auth-forgot">Lupa password?</button>
+          <div id="gcForgotHelp" class="gc-auth-help" hidden role="status">Untuk reset password GreenCal, hubungi Admin melalui kanal resmi. Verifikasi OTP saja tidak mereset password aplikasi.</div>
+          <button class="gc-auth-submit" type="submit"><span>Masuk ke GreenCal</span><span aria-hidden="true">→</span></button>
+          <div class="gc-auth-divider"><span>atau perlu ganti akun?</span></div>
+          <a id="gcOtpAgain" class="gc-auth-otp" href="/cdn-cgi/access/logout"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="m5 8 7 5 7-5"/></svg> Verifikasi ulang OTP Email <span aria-hidden="true">↗</span></a>
+          <p class="gc-auth-helper">Login dua tahap: verifikasi email melalui Cloudflare Access, lalu masukkan password GreenCal.</p>
         </form>
+
         <form id="gcActivationForm" hidden autocomplete="off">
-          <div class="gc-auth-changeinfo">Setelah memasukkan kode verifikasi yang dikirim ke email, buat password pertama Anda. Password tidak dikirim atau disimpan melalui chat.</div>
+          <div class="gc-auth-changeinfo">Email Anda telah diverifikasi melalui Cloudflare Access. Buat password pribadi untuk mengaktifkan akun GreenCal. Gunakan minimal 12 karakter, huruf besar, kecil, angka, dan simbol.</div>
           <label for="gcActivatePassword">Buat password baru<input id="gcActivatePassword" type="password" autocomplete="new-password" minlength="12" maxlength="128" required placeholder="Minimal 12 karakter"></label>
           <label for="gcActivateConfirm">Konfirmasi password<input id="gcActivateConfirm" type="password" autocomplete="new-password" minlength="12" maxlength="128" required placeholder="Ulangi password baru"></label>
-          <button type="submit">Aktivasi dan Simpan Password</button>
+          <button type="submit">Aktivasi Akun <span aria-hidden="true">→</span></button>
         </form>
         <form id="gcForcePasswordForm" hidden autocomplete="off">
-          <div class="gc-auth-changeinfo">Aktivasi keamanan akun · Password baru minimal 12 karakter dan harus berisi huruf besar, kecil, angka, dan simbol.</div>
-          <label for="gcForceOld">Password sementara dari email<input id="gcForceOld" type="password" autocomplete="current-password" required></label>
+          <div class="gc-auth-changeinfo">Demi keamanan, password sementara harus diganti sebelum menggunakan GreenCal. Minimal 12 karakter dengan huruf besar, kecil, angka, dan simbol.</div>
+          <label for="gcForceOld">Password lama<input id="gcForceOld" type="password" autocomplete="current-password" required></label>
           <label for="gcForceNew">Password baru<input id="gcForceNew" type="password" autocomplete="new-password" minlength="12" maxlength="128" required></label>
           <label for="gcForceConfirm">Konfirmasi password baru<input id="gcForceConfirm" type="password" autocomplete="new-password" minlength="12" maxlength="128" required></label>
-          <button type="submit">Simpan Password Baru</button>
+          <button type="submit">Simpan Password Baru <span aria-hidden="true">→</span></button>
         </form>
         <form id="gcBootstrapForm" hidden aria-hidden="true">
           <label>Email Admin<input id="gcSetupEmail" type="email"></label>
@@ -2726,8 +2779,10 @@ dialog.modal-sheet .modal-foot { background:var(--surface); }
           <label>Kode Aktivasi<input id="gcSetupCode" type="password"></label>
           <button type="submit">Aktivasi Akun Admin</button>
         </form>
+
         <p id="gcAuthError" class="gc-auth-error" role="alert" hidden></p>
-        <div class="gc-auth-foot"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="5" y="10" width="14" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg> Akses terlindungi · Sesi terenkripsi · Hak akses per peran</div>
+        <div class="gc-auth-access" aria-label="Tipe akses"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="18" height="18" aria-hidden="true"><circle cx="8" cy="8" r="3"/><circle cx="17" cy="9" r="2.5"/><path d="M2.5 20c0-4 2.2-6 5.5-6s5.5 2 5.5 6m1-4c3-1 6.5 0 7 4"/></svg> Akses terbatas untuk <strong>Admin</strong> dan <strong>Maker</strong></div>
+        <div class="gc-auth-foot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M12 2 4 6v6c0 6 4.2 9.2 8 10 3.8-.8 8-4 8-10V6Z"/><path d="m8.5 12 2.4 2.4L16 9"/></svg><span><strong>Akses aman, berbasis peran</strong><small>Identitas dilindungi Cloudflare Access · Aktivitas dicatat</small></span></div>
       </div>
     </div>
   </div>
