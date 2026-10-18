@@ -93,15 +93,25 @@ test("rail ticket/spend and bus fare are total spending, not re-multiplied",()=>
  assert.match(one.explanation,/Metode berbasis biaya/);
 });
 
-test("ferry and speedboat distance explicitly flag ship proxy",()=>{
+test("ferry and speedboat distance clearly explain the approximation",()=>{
  for(const sea of ["ferry","speedboat"]){
   const r=calc({m:"laut",sea,basis:"distance",dist:"26",pax:"3",trip:"sj"});
   assert.equal(r.refs[0][1],"SHIP-PASSENGER-MILES");
-  assert.match(r.explanation,/PROXY/);
+  assert.match(r.explanation,/pendekatan/);
   assert.ok(r.kg>0);
  }
 });
 
+
+test("ferry and speedboat menus use concise terminology without unwanted labels",()=>{
+ for(const unwanted of ["proxy kapal penumpang","butuh validasi faktor"]){
+  assert.equal(html.toLowerCase().includes(unwanted),false,"unexpected label: "+unwanted);
+ }
+ for(const display of ['["ferry","Kapal feri"]','["speedboat","Speedboat / kapal cepat"]']){
+  assert.ok(html.includes(display),"expected clean option "+display);
+ }
+ assert.match(html,/faktor kapal penumpang sebagai pendekatan/);
+});
 test("sea operator fuel derives from original OJK per-gallon factors",()=>{
  const diesel=R("mobile","MINYAK-DIESEL",2026);
  const result=calc({m:"laut",sea:"speedboat",basis:"fuel",fuelType:"MINYAK-DIESEL",fuelLiters:"35"});
