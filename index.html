@@ -1341,6 +1341,253 @@
       padding: 10px 12px;
       border-radius: var(--radius-md);
     }
+
+    /* GreenCal UI v2 — responsive banking-grade layout.
+       Presentation only: existing emission formulas/data flow are untouched. */
+    :root {
+      --radius-sm: 10px;
+      --radius-md: 14px;
+      --radius-lg: 20px;
+      --radius-xl: 24px;
+      --shadow-sm: 0 2px 8px rgba(17, 48, 35, .035);
+      --shadow-md: 0 10px 32px rgba(17, 48, 35, .075);
+      --shadow-lg: 0 20px 48px rgba(17, 48, 35, .14);
+    }
+    html { -webkit-text-size-adjust: 100%; }
+    body { overflow-x: clip; }
+    body, button, input, select, textarea { text-rendering: optimizeLegibility; }
+    button, a, input, select, textarea { touch-action: manipulation; }
+    button:focus-visible, a:focus-visible, input:focus-visible,
+    select:focus-visible, textarea:focus-visible,
+    [role="tab"]:focus-visible {
+      outline: 3px solid var(--primary);
+      outline-offset: 3px;
+    }
+    .container { max-width: 1320px; }
+    .header-inner, .header-actions, .brand-info, .brand-block,
+    .panel, .panel-header, .view-title-group, .view-actions, .kpi-card,
+    .grid-2 > *, .kpi-grid > *, .form-stack > *, .field-group,
+    .input-row-2 > *, .data-card, .modal-head, .modal-body {
+      min-width: 0;
+    }
+    .brand-title { line-height: 1.25; }
+    .brand-title .chip { flex: 0 0 auto; }
+    .brand-logo { border-radius: 14px; }
+    .year-select-wrap { white-space: nowrap; }
+    nav.desktop-nav { gap: 3px; }
+    nav.desktop-nav button { padding: 10px 14px; min-height: 42px; }
+    nav.mobile-nav { isolation: isolate; }
+    .nav-item { min-width: 0; font-size: 10.5px; }
+    .nav-item span { white-space: nowrap; }
+    .nav-item[aria-selected="true"] { font-weight: 800; }
+    .fab-btn { display: none !important; } /* Bottom "Kalkulator" already provides this action. */
+    main.container { padding-top: clamp(14px, 2.4vw, 28px); }
+    .view-header { margin-bottom: 20px; }
+    .view-title-group h2 { font-size: clamp(21px, 2vw, 29px); line-height: 1.24; }
+    .view-title-group p { line-height: 1.6; font-size: 13px; }
+    .view-actions { align-items: center; }
+    .view-actions > * { max-width: 100%; }
+    .btn, .btn.sm { min-height: 42px; }
+    .btn.primary { box-shadow: 0 4px 12px rgba(12, 94, 64, .17); }
+    .btn:disabled { opacity: .65; cursor: wait; }
+    .banner { align-items: flex-start; padding: 14px 16px; line-height: 1.5; }
+    .banner-content { min-width: 0; align-items: flex-start; }
+    .banner-content svg { flex-shrink: 0; margin-top: 2px; }
+    .banner-content span { min-width: 0; }
+    .banner .btn { flex-shrink: 0; }
+    .kpi-grid { gap: 12px; }
+    .kpi-card { padding: 18px; gap: 8px; }
+    .kpi-card.hero {
+      background: linear-gradient(125deg, #086044 0%, #074331 55%, #072c24 100%);
+      box-shadow: 0 12px 28px rgba(8, 65, 47, .16);
+    }
+    .kpi-value, .kpi-card.hero .kpi-value {
+      font-size: clamp(22px, 3vw, 32px);
+      overflow-wrap: anywhere;
+    }
+    .kpi-label { font-size: 11px; line-height: 1.45; letter-spacing: .045em; }
+    .kpi-sub { line-height: 1.5; }
+    .panel { padding: clamp(16px, 2.15vw, 24px); margin-bottom: 16px; }
+    .panel-header { margin-bottom: 20px; }
+    .panel-header h3 { font-size: clamp(15px, 1.4vw, 18px); line-height: 1.35; }
+    .panel-header p { line-height: 1.55; }
+    .grid-2 { gap: 16px; margin-bottom: 2px; }
+    .donut-wrap { min-width: 0; padding: 14px 0 2px; gap: clamp(18px, 3vw, 34px); }
+    .donut-wrap > div { max-width: 100%; }
+    .donut-legend { flex: 1 1 210px; min-width: 0; max-width: 100%; }
+    .legend-item {
+      display: grid;
+      grid-template-columns: 12px minmax(0,1fr);
+      gap: 3px 10px;
+      align-items: start;
+      padding: 6px 0;
+      border-bottom: 1px solid var(--line-subtle);
+    }
+    .legend-item:last-child { border-bottom: 0; }
+    .legend-dot { grid-row: 1 / span 2; margin-top: 4px; }
+    .legend-item > span:nth-child(2) { white-space: normal; overflow-wrap: anywhere; }
+    .legend-item > span:nth-child(3) {
+      grid-column: 2;
+      font-size: 11.5px;
+      color: var(--ink-muted);
+      overflow-wrap: anywhere;
+    }
+    .bar-row { min-width: 0; grid-template-columns: minmax(100px, 175px) minmax(0,1fr) auto; }
+    .bar-val { white-space: nowrap; }
+    .table-responsive { max-width: 100%; }
+    .table-responsive table { min-width: 560px; }
+    .ai-grade-row { display: flex; align-items: baseline; flex-wrap: wrap; gap: 6px 12px; margin: 8px 0; }
+    .ai-result-actions { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; }
+    #aiContentBox .kpi-card.hero { padding: clamp(18px, 3vw, 28px); }
+    #aiContentBox .kpi-card.hero .kpi-sub { overflow-wrap: anywhere; }
+    #aiContentBox .kpi-card.hero .ai-grade-row > span:first-child {
+      font-size: clamp(29px, 5.6vw, 44px) !important;
+      white-space: nowrap;
+    }
+    #aiContentBox .kpi-card.hero .ai-grade-row > span:last-child { line-height: 1.5; }
+    #aiContentBox .wizard-card { min-width: 0; }
+    dialog.modal-sheet[open] {
+      display: flex;
+      flex-direction: column;
+      width: min(680px, calc(100vw - 28px));
+      max-height: min(780px, calc(100dvh - 28px));
+      overflow: hidden;
+      overscroll-behavior: contain;
+    }
+    dialog.modal-sheet .modal-head {
+      padding: 18px 22px;
+      flex: 0 0 auto;
+      gap: 12px;
+    }
+    dialog.modal-sheet .modal-head h3 { font-size: clamp(16px, 2vw, 19px); line-height: 1.4; }
+    dialog.modal-sheet .modal-body {
+      flex: 1 1 auto;
+      min-height: 0;
+      max-height: none;
+      overflow-x: hidden;
+      overflow-y: auto;
+      padding: 20px 22px;
+      overscroll-behavior: contain;
+      scrollbar-gutter: stable;
+    }
+    dialog.modal-sheet .modal-foot {
+      flex: 0 0 auto;
+      padding: 14px 22px;
+      background: var(--surface);
+      gap: 10px;
+      box-shadow: 0 -4px 20px rgba(0, 0, 0, .045);
+    }
+    dialog.modal-sheet .modal-foot button { min-height: 44px; white-space: normal; }
+    .ai-tier-options { display: grid; gap: 10px; margin-top: 8px; }
+    .ai-tier-option {
+      display: grid;
+      grid-template-columns: 20px minmax(0,1fr);
+      align-items: start;
+      gap: 12px;
+      padding: 14px 16px;
+      cursor: pointer;
+      border-width: 1.5px;
+      box-shadow: none;
+      line-height: 1.45;
+    }
+    .ai-tier-option b { display: block; line-height: 1.45; }
+    .ai-tier-option div { min-width: 0; }
+    .ai-tier-option .ai-tier-input {
+      appearance: auto;
+      width: 18px;
+      height: 18px;
+      min-height: 18px;
+      margin: 2px 0 0;
+      accent-color: var(--primary);
+    }
+    .ai-tier-option:has(.ai-tier-input:checked) {
+      border-color: var(--primary);
+      background: var(--primary-soft);
+      box-shadow: 0 0 0 1px var(--primary-border);
+    }
+    .ai-cloud-options {
+      border-top: 1px solid var(--line);
+      padding-top: 16px;
+    }
+    .ai-credential-note { margin: 9px 0 0; font-size: 11.5px; line-height: 1.5; color: var(--ink-muted); }
+    .input-row-2 { min-width: 0; }
+    .input-row-2 input, .input-row-2 select { min-width: 0; width: 100%; }
+    @media (min-width: 860px) {
+      main.container { padding-top: 28px; }
+      .kpi-grid { gap: 16px; }
+      .grid-2 { gap: 18px; }
+      .view-title-row { align-items: center; }
+    }
+    @media (max-width: 859px) {
+      :root { --bottom-nav-h: 66px; }
+      body { padding-bottom: calc(var(--bottom-nav-h) + var(--safe-bottom) + 16px); }
+      header.app-header { box-shadow: 0 3px 16px rgba(17,48,35,.04); }
+      .container { padding-left: max(14px, var(--safe-left)); padding-right: max(14px, var(--safe-right)); }
+      .header-inner { min-height: 70px; height: auto; padding-top: 10px; padding-bottom: 10px; }
+      .brand-logo { width: 40px; height: 40px; }
+      .brand-block { gap: 9px; flex: 1 1 auto; overflow: hidden; }
+      .brand-info { flex: 1 1 auto; overflow: hidden; }
+      .brand-title { display: block; font-size: 16px; line-height: 1.23; overflow-wrap: anywhere; }
+      .brand-title .chip { display: none; }
+      .brand-sub { font-size: 11px; max-width: 100%; }
+      .header-actions { gap: 7px; flex: 0 0 auto; }
+      .year-select-wrap { padding: 7px 9px; font-size: 12px; }
+      .year-select-wrap > span { display: none; }
+      .year-select-wrap select { font-size: 13px; max-width: 68px; }
+      .icon-btn { width: 40px; height: 40px; }
+      .view-title-row { gap: 12px; }
+      .view-title-group h2 { font-size: clamp(20px, 4.8vw, 26px); }
+      .view-actions { gap: 8px; width: 100%; }
+      .panel { border-radius: 19px; }
+      .kpi-card { border-radius: 17px; padding: 16px; }
+      nav.mobile-nav .nav-item { padding: 7px 1px 6px; }
+    }
+    @media (max-width: 520px) {
+      .view-actions .btn-group { margin-right: 0; }
+      .view-actions .btn { white-space: nowrap; }
+      .kpi-grid { gap: 10px; }
+      .kpi-card.hero { min-height: 150px; }
+      .donut-wrap { flex-direction: column; align-items: stretch; }
+      .donut-wrap > div:first-child { align-self: center; }
+      .donut-legend { flex-basis: auto; width: 100%; }
+      .bar-row { grid-template-columns: minmax(0,1fr) auto; gap: 7px 8px; padding: 6px 0; }
+      .bar-name { grid-column: 1; grid-row: 1; white-space: normal; overflow: visible; text-overflow: clip; overflow-wrap: anywhere; }
+      .bar-val { grid-column: 2; grid-row: 1; text-align: right; font-size: 11.5px; }
+      .bar-track { grid-column: 1 / -1; grid-row: 2; height: 11px; }
+      .banner { flex-direction: column; gap: 10px; font-size: 12.5px; padding: 12px 14px; }
+      .banner .btn { align-self: flex-start; }
+      .view-actions .btn { min-height: 42px; }
+      .panel-header { margin-bottom: 14px; }
+      dialog.modal-sheet[open] { width: calc(100vw - 16px); max-height: calc(100dvh - 16px); border-radius: 20px; }
+      dialog.modal-sheet .modal-head { padding: 14px 16px; }
+      dialog.modal-sheet .modal-body { padding: 16px; scrollbar-gutter: auto; }
+      dialog.modal-sheet .modal-foot { padding: 12px 16px calc(12px + var(--safe-bottom)); }
+      dialog.modal-sheet .modal-foot button { flex: 1 1 0; padding: 8px 11px; font-size: 12px; }
+      .ai-tier-option { padding: 12px; gap: 10px; }
+      .ai-tier-option b { font-size: 13px; }
+      .ai-tier-option div div { font-size: 11.5px !important; line-height: 1.5; }
+      .input-row-2 { grid-template-columns: minmax(0,1fr); }
+      #aiContentBox .kpi-card.hero > div:first-child { flex-direction: column; align-items: stretch !important; }
+      #aiContentBox .ai-result-actions { width: 100%; }
+      #aiContentBox .ai-result-actions .btn { flex: 1 1 120px; }
+    }
+    @media (max-width: 360px) {
+      .header-inner { gap: 7px; }
+      .brand-logo { width: 35px; height: 35px; }
+      .brand-title { font-size: 14px; }
+      .year-select-wrap { padding: 5px 6px; }
+      .year-select-wrap svg { display: none; }
+      .year-select-wrap select { font-size: 12px; max-width: 55px; }
+      .icon-btn { width: 35px; height: 35px; }
+      .nav-item { font-size: 9px; }
+      nav.mobile-nav .nav-item svg { width: 19px; height: 19px; }
+      .kpi-card { padding: 13px; }
+      .kpi-card .kpi-value { font-size: 21px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .view, .kpi-card, .wizard-card, .nav-item svg { animation: none !important; transition: none !important; }
+    }
+
   </style>
 </head>
 <body>
@@ -5366,6 +5613,7 @@ async function runAiAnalysisUi() {
 function displayAiResult(res) {
   const box = $("#aiContentBox");
   const s = summary(S.year, S.method);
+  const demoCount = S.entries.filter(e => e.contoh).length + S.exposures.filter(e => e.contoh).length;
 
   const gradeColors = {
     A: "var(--ok)",
@@ -5375,18 +5623,18 @@ function displayAiResult(res) {
   };
   const gColor = gradeColors[res.grade] || "var(--primary)";
 
-  let html = 
+  let html = (demoCount > 0 ? '<div class="banner" role="status"><span><b>Hasil analisis bersifat simulasi.</b> Ada ' + demoCount + ' data contoh; skor dan rekomendasi belum dapat digunakan sebagai hasil audit atau pelaporan resmi.</span></div>' : '') +
     '<div class="kpi-card hero" style="margin-bottom:20px;background:linear-gradient(135deg, #0A4230, #06271D)">' +
       '<div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:12px">' +
         '<div>' +
           '<span class="kpi-label" style="color:rgba(255,255,255,0.85)"><i class="kpi-dot" style="background:#4ADE80"></i>Skor Kematangan Emisi (Emission Maturity)</span>' +
-          '<div style="display:flex;align-items:baseline;gap:12px;margin:6px 0">' +
+          '<div class="ai-grade-row">' +
             '<span style="font-family:var(--font-num);font-size:42px;font-weight:900;color:#FFFFFF;line-height:1">Grade ' + res.grade + '</span>' +
             '<span style="font-size:15px;color:rgba(255,255,255,0.9);font-weight:600">' + esc(res.gradeLabel) + '</span>' +
           '</div>' +
           '<div class="kpi-sub">Indeks Kesiapan Audit: <b>' + res.score + '/100</b> · Mesin: <b>' + esc(res.tierUsed) + '</b></div>' +
         '</div>' +
-        '<div style="display:flex;gap:8px">' +
+        '<div class="ai-result-actions">' +
           '<button class="btn sm" id="btnCopyAi" style="background:rgba(255,255,255,0.15);color:#FFFFFF;border:0">Salin Analisa</button>' +
           '<button class="btn sm" id="btnDownloadAi" style="background:rgba(255,255,255,0.15);color:#FFFFFF;border:0">Unduh Laporan</button>' +
         '</div>' +
@@ -5523,25 +5771,25 @@ function openAiConfigDialog() {
       
       '<div class="field-group">' +
         '<span class="field-label">Pilihan AI Berjenjang</span>' +
-        '<div style="display:flex;flex-direction:column;gap:10px;margin-top:6px">' +
-          '<label class="data-card" style="cursor:pointer;flex-direction:row;align-items:flex-start;gap:12px;padding:12px">' +
-            '<input type="radio" name="aiTierRadio" value="tier1"' + (cfg.tier === "tier1" ? " checked" : "") + ' style="margin-top:3px">' +
+        '<div class="ai-tier-options">' +
+          '<label class="data-card ai-tier-option">' +
+            '<input class="ai-tier-input" type="radio" name="aiTierRadio" value="tier1"' + (cfg.tier === "tier1" ? " checked" : "") + ' style="margin-top:3px">' +
             '<div>' +
               '<b>Tier 1: AI Heuristik &amp; Aturan Regulasi OJK</b>' +
               '<div style="font-size:12px;color:var(--ink-muted);margin-top:2px">100% lokal &amp; instan. Audit checklist kepatuhan Buku 1-7 OJK CRMS 2026, jejak bukti, dan scoring kematangan tanpa butuh internet.</div>' +
             '</div>' +
           '</label>' +
 
-          '<label class="data-card" style="cursor:pointer;flex-direction:row;align-items:flex-start;gap:12px;padding:12px">' +
-            '<input type="radio" name="aiTierRadio" value="tier2"' + (cfg.tier === "tier2" ? " checked" : "") + ' style="margin-top:3px">' +
+          '<label class="data-card ai-tier-option">' +
+            '<input class="ai-tier-input" type="radio" name="aiTierRadio" value="tier2"' + (cfg.tier === "tier2" ? " checked" : "") + ' style="margin-top:3px">' +
             '<div>' +
               '<b>Tier 2: AI Rekomendasi ESG &amp; Dekarbonisasi Strategis (Disarankan)</b>' +
               '<div style="font-size:12px;color:var(--ink-muted);margin-top:2px">Pemodelan strategi reduksi emisi nyata: PLTS Atap kantor cabang, elektrifikasi armada kendaraan dinas, efisiensi energi AC, dan Transition Finance portofolio.</div>' +
             '</div>' +
           '</label>' +
 
-          '<label class="data-card" style="cursor:pointer;flex-direction:row;align-items:flex-start;gap:12px;padding:12px">' +
-            '<input type="radio" name="aiTierRadio" value="tier3"' + (cfg.tier === "tier3" ? " checked" : "") + ' style="margin-top:3px">' +
+          '<label class="data-card ai-tier-option">' +
+            '<input class="ai-tier-input" type="radio" name="aiTierRadio" value="tier3"' + (cfg.tier === "tier3" ? " checked" : "") + ' style="margin-top:3px">' +
             '<div>' +
               '<b>Tier 3: Cloud LLM Generative AI (Gemini / OpenAI API)</b>' +
               '<div style="font-size:12px;color:var(--ink-muted);margin-top:2px">Menggunakan model bahasa besar cloud untuk menghasilkan draf narasi Sustainability Report profesional siap saji. Memerlukan API Key.</div>' +
@@ -5550,7 +5798,7 @@ function openAiConfigDialog() {
         '</div>' +
       '</div>' +
 
-      '<div id="tier3OptionsBox" style="display:' + (cfg.tier === "tier3" ? "block" : "none") + ';border-top:1px solid var(--line);padding-top:14px">' +
+      '<div class="ai-cloud-options" id="tier3OptionsBox" style="display:' + (cfg.tier === "tier3" ? "block" : "none") + ';border-top:1px solid var(--line);padding-top:14px">' +
         '<div class="input-row-2">' +
           '<label class="field-group">' +
             '<span class="field-label">Provider Cloud AI</span>' +
@@ -5565,8 +5813,9 @@ function openAiConfigDialog() {
           '</label>' +
         '</div>' +
         '<label class="field-group" style="margin-top:10px">' +
-          '<span class="field-label">API Key (Tersimpan Lokal di Browser)</span>' +
-          '<input type="password" id="cfgAiKey" placeholder="mis. AIzaSy..." value="' + esc(cfg.apiKey || "") + '">' +
+          '<span class="field-label">API Key (khusus pengujian)</span>' +
+          '<input type="password" id="cfgAiKey" autocomplete="off" placeholder="Masukkan API Key" value="' + esc(cfg.apiKey || "") + '">' +
+          '<p class="ai-credential-note">Untuk penggunaan produksi, simpan kunci API melalui secret backend/Cloudflare Worker, bukan di browser.</p>' +
         '</label>' +
       '</div>' +
 
@@ -5582,7 +5831,7 @@ function openAiConfigDialog() {
       '</div>' +
     '</div>';
 
-  openDlg("⚙️ Pengaturan AI Berjenjang (Admin)", html, [
+  openDlg("Pengaturan AI Berjenjang · Admin", html, [
     {
       t: "Simpan Konfigurasi",
       primary: true,
