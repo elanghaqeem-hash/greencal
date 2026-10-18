@@ -8031,7 +8031,7 @@ function bindEvents() {
   const btnCfgAi = $("#btnConfigureAi");
   if (btnCfgAi) btnCfgAi.onclick = openAiConfigDialog;
   const btnRunAi = $("#btnRunAi");
-  if (btnRunAi) btnRunAi.onclick = runAiAnalysisUi;
+  if (btnRunAi) btnRunAi.onclick = () => runAiAnalysisUi(true);
 
   // NGFS Scenarios
   ["#tScen", "#tYr"].forEach(s => { const el = $(s); if (el) el.onchange = renderTrans; });
@@ -8051,7 +8051,7 @@ function bindEvents() {
   $("#btnBackupJson").onclick = backupJson;
   $("#btnClearPublicData").onclick = () => confirmDlg("Hapus data perangkat?", "Semua aktivitas, pembiayaan, dan offset yang disimpan di browser ini akan dihapus. Unduh cadangan JSON terlebih dahulu bila diperlukan.", "Hapus Data Lokal", () => { S.entries=[]; S.exposures=[]; S.offsets=[]; S.narrativeDrafts={}; S.audit=[]; saveStateToStorage(); LAST_AI_RESULT=null; renderAll(); toast("Perubahan reset sedang disimpan."); });
   $("#fileRestoreJson").onchange = restoreJson;
-  // Per-user browser working copy, isolated by the IP verified by Cloudflare.
+  // Per-browser D1 workspace, isolated using a server-issued HttpOnly cookie.
   const scopeResetBtn=document.createElement("button");
   scopeResetBtn.type="button";
   scopeResetBtn.className="btn sm danger";
@@ -8076,7 +8076,7 @@ function bindEvents() {
     }
   );
   $("#btnResetData").onclick = () => {
-    if (!GC_AUTH.isAdmin) { toast("Hanya Admin yang dapat mereset data."); return; }
+    if (!GC_AUTH.scopeReady) { toast("Database belum tersedia."); return; }
     confirmDlg("Reset Aktivitas?", "Semua aktivitas, eksposur dan offset bersama akan dikosongkan.", "Reset Data", () => { S.entries=[]; S.exposures=[]; S.offsets=[]; S.narrativeDrafts={}; saveStateToStorage(); renderAll(); toast("Menyimpan perubahan."); });
   };}
 
@@ -8805,11 +8805,13 @@ async function runAiTier3(summaryData, year, config) {
 }
 
 /* Master AI Runner */
-async function executeAiAnalysis() {
+async function executeAiAnalysis(useCloud = false) {
   const cfg = getAiConfig();
   const s = summary(S.year, S.method);
   
-  if (cfg.tier === "tier1") {
+  if (useCloud) {
+    return await runAiTier3(s, S.year, cfg);
+  } else if (cfg.tier === "tier1") {
     return runAiTier1(s, S.year);
   } else if (cfg.tier === "tier3") {
     return await runAiTier3(s, S.year, cfg);
@@ -8851,7 +8853,7 @@ function renderAiView() {
   }
 }
 
-async function runAiAnalysisUi() {
+async function runAiAnalysisUi(useCloud = false) {
   if(!gcAiEnsureSaved())return;
   const box = $("#aiContentBox");
   box.innerHTML = 
@@ -8862,7 +8864,7 @@ async function runAiAnalysisUi() {
     '</div>';
 
   try {
-    const res = await executeAiAnalysis();
+    const res = await executeAiAnalysis(useCloud);
     LAST_AI_RESULT = res;
     LAST_AI_FINGERPRINT = gcAiFingerprint(S.year);
     displayAiResult(res);
