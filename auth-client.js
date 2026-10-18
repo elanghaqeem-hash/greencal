@@ -2,7 +2,12 @@
    Each browser has its own private local working copy. */
 (function(){
   "use strict";
-  const STORE="greencal_public_data_v1";
+  const LEGACY_STORE="greencal_public_data_v1";
+  const LEGACY_APP_STORE="green_calc_storage_v1";
+  let scopedStore=null;
+  let scopeReady=false;
+  // Older unscoped data must never load automatically after network isolation is enabled.
+  try{localStorage.removeItem(LEGACY_STORE);localStorage.removeItem(LEGACY_APP_STORE);}catch(_){} 
   const guest=Object.freeze({role:"public",email:null,permissions:{viewDashboard:true,manageAiKeys:false,viewUsers:false,manageParameters:false}});
   let debounce=null;
   const get=id=>document.getElementById(id);
@@ -21,7 +26,7 @@
   };
   function read(){
     try{
-      const raw=localStorage.getItem(STORE);
+      const raw=scopedStore ? localStorage.getItem(scopedStore) : null;
       if(!raw)return null;
       const obj=JSON.parse(raw);
       if(!obj||typeof obj!=="object"||Array.isArray(obj))return null;
@@ -33,7 +38,8 @@
     try{
       const p=snapshot();
       const clean={entries:p.entries,exposures:p.exposures,offsets:p.offsets,updatedAt:new Date().toISOString()};
-      localStorage.setItem(STORE,JSON.stringify(clean));
+      if(!scopeReady || !scopedStore)throw Error("IP scope not verified");
+      localStorage.setItem(scopedStore,JSON.stringify(clean));
       const status=get("gcSyncStatus");if(status){status.hidden=true;status.textContent="";}
     }catch(e){
       const status=get("gcSyncStatus");
@@ -45,12 +51,34 @@
     get isAdmin(){return false;},
     async start(init){
       removePrivateUi();
-      if(typeof init==="function")init(read());
+      let restored=null;
+      try{
+        const response=await fetch("/api/client-scope",{credentials:"same-origin",cache:"no-store"});
+        if(!response.ok)throw Error("IP identity unavailable");
+        const result=await response.json();
+        if(!/^[a-f0-9]{64}$/.test(result.scope||""))throw Error("Invalid IP scope");
+        scopedStore="greencal_ip_scope_v1_"+result.scope;
+        scopeReady=true;
+        restored=read();
+      }catch(error){
+        scopeReady=false;
+        scopedStore=null;
+        const status=get("gcSyncStatus");
+        if(status){status.hidden=false;status.textContent="Jaringan tidak dapat diverifikasi. Semua input tampil kosong; penyimpanan dinonaktifkan sampai koneksi tersedia.";}
+      }
+      if(typeof init==="function")init(restored);
       removePrivateUi();
     },
+    resetCurrentScope(){
+      if(!scopeReady||!scopedStore)throw Error("Jaringan belum terverifikasi. Reset tidak tersedia.");
+      clearTimeout(debounce);
+      localStorage.removeItem(scopedStore);
+      return true;
+    },
+    get scopeReady(){return scopeReady;},
     can(tab){return !["users","parameter"].includes(tab);},
     applyRole:removePrivateUi,
-    queue(snapshot){clearTimeout(debounce);debounce=setTimeout(()=>save(snapshot),160);},
+    queue(snapshot){if(!scopeReady)return;clearTimeout(debounce);debounce=setTimeout(()=>save(snapshot),160);},
     async renderUsers(){}
   };
 })();
