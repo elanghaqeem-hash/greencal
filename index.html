@@ -2918,11 +2918,11 @@ dialog.modal-sheet .modal-foot { background:var(--surface); }
             </span>
           </label>
           <button type="button" id="gcForgotPassword" class="gc-auth-forgot">Lupa password?</button>
-          <div id="gcForgotHelp" class="gc-auth-help" hidden role="status">Untuk reset password GreenCal, hubungi Admin melalui kanal resmi. Verifikasi OTP saja tidak mereset password aplikasi.</div>
+          <div id="gcForgotHelp" class="gc-auth-help" hidden role="status">Untuk reset password GreenCal, hubungi Admin melalui kanal resmi. Biometrik perangkat tidak secara otomatis mereset password aplikasi.</div>
           <button class="gc-auth-submit" type="submit"><span>Masuk ke GreenCal</span><span aria-hidden="true">→</span></button>
-          <div class="gc-auth-divider"><span>atau perlu ganti akun?</span></div>
-          <a id="gcOtpAgain" class="gc-auth-otp" href="/cdn-cgi/access/logout"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="m5 8 7 5 7-5"/></svg> Verifikasi ulang OTP Email <span aria-hidden="true">↗</span></a>
-          <p class="gc-auth-helper">Login dua tahap: verifikasi email melalui Cloudflare Access, lalu masukkan password GreenCal.</p>
+          <div class="gc-auth-divider"><span>keamanan biometrik</span></div>
+          <a id="gcEnrollBiometrics" class="gc-auth-otp" href="https://green-heart-e2b0.cloudflareaccess.com/AddMfaDevice" target="_blank" rel="noopener noreferrer" aria-label="Daftarkan sidik jari atau wajah pada Cloudflare Access"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M5 9a7 7 0 0 1 14 0M3 12c0 5 3 9 9 9m9-9c0 5-3 9-9 9M9 9a3 3 0 0 1 6 0m-6 3c0 3 1 5 3 6m3-6c0 3-1 5-3 6"/></svg> Daftarkan Biometrik Perangkat <span aria-hidden="true">↗</span></a>
+          <p class="gc-auth-helper">Untuk penggunaan sidik jari / pengenalan wajah, pilih <b>Biometrics → Register biometrics</b> pada Cloudflare Access. Pendaftaran dilakukan sekali per perangkat. Aktivasi dan penerapan wajib biometrik dilakukan secara bertahap.</p>
         </form>
 
         <form id="gcActivationForm" hidden autocomplete="off">
@@ -3794,6 +3794,11 @@ dialog.modal-sheet .modal-foot { background:var(--surface); }
           <button class="btn primary" type="submit">Ubah Password Akun</button>
         </form>
         <p id="gcPasswordFeedback" role="status" style="font-size:12px;color:var(--ink-muted)"></p>
+        <div class="gc-biometric-profile" style="margin-top:16px;padding:15px;border-radius:14px;background:var(--primary-soft);border:1px solid var(--primary-border)">
+          <strong style="display:block;font-size:13px;color:var(--primary);margin-bottom:6px">Biometrik Perangkat</strong>
+          <p style="font-size:12px;line-height:1.6;color:var(--ink-muted);margin:0 0 12px">Daftarkan sidik jari atau wajah pada Cloudflare Access melalui perangkat pribadi. Tidak ada foto wajah atau data sidik jari yang disimpan GreenCal.</p>
+          <a id="gcProfileBiometrics" class="btn sm" href="https://green-heart-e2b0.cloudflareaccess.com/AddMfaDevice" target="_blank" rel="noopener noreferrer">Daftarkan Biometrik <span aria-hidden="true">↗</span></a>
+        </div>
       </div>
       <div class="panel">
         <h3 style="margin:0 0 4px">Penyimpanan &amp; Cadangan Data</h3>

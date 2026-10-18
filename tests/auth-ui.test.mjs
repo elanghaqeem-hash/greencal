@@ -12,7 +12,7 @@ test("login and activation forms exist exactly once",()=>{
   "gcForcePasswordForm","gcForceOld","gcForceNew","gcForceConfirm",
   "gcBootstrapForm","gcSetupEmail","gcSetupPassword","gcSetupCode",
   "gcAuthHeading","gcAuthDescription","gcIdentityInfo","gcVerifiedEmail","gcVerifiedRole",
-  "gcOtpAgain","gcForgotPassword","gcForgotHelp","gcTogglePassword"];
+  "gcEnrollBiometrics","gcForgotPassword","gcForgotHelp","gcTogglePassword"];
  for(const id of ids){
   const count=html.split('id="'+id+'"').length-1;
   assert.equal(count,1,id+" duplicate/missing");
@@ -28,10 +28,13 @@ test("responsive GreenCal visual design has no unsafe external image requests",(
  assert.doesNotMatch(html,/id="gcLoginPassword"[^>]*value=/);
 });
 
-test("OTP link means re-verification, not password reset",()=>{
- assert.match(html,/id="gcOtpAgain"[^>]*href="\/cdn-cgi\/access\/logout"/);
- assert.match(html,/Verifikasi ulang OTP Email/);
- assert.match(html,/Verifikasi OTP saja tidak mereset password aplikasi/);
+test("biometric enrollment uses official Cloudflare Access route",()=>{
+ assert.match(html,/id="gcEnrollBiometrics"/);
+ assert.match(html,/https:\/\/green-heart-e2b0\.cloudflareaccess\.com\/AddMfaDevice/);
+ assert.match(html,/Daftarkan Biometrik Perangkat/);
+ assert.match(html,/Biometrik perangkat tidak secara otomatis mereset password aplikasi/);
+ assert.match(html,/id="gcProfileBiometrics"/);
+ assert.doesNotMatch(html,/Verifikasi ulang OTP Email/);
  assert.match(client,/gcForgotHelp/);
  assert.match(client,/gcTogglePassword/);
 });
