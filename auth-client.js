@@ -3,7 +3,7 @@
 (function(){
  "use strict";
  const by=id=>document.getElementById(id);
- const state={user:null,revision:0,init:null,pending:false,saving:false,failed:false};
+ const state={user:null,access:null,revision:0,init:null,pending:false,saving:false,failed:false};
  const request=async(path,method="GET",data)=>{
    const rsp=await fetch(path,{method,credentials:"same-origin",cache:"no-store",
      headers:data===undefined?{}:{"content-type":"application/json"},
@@ -14,6 +14,19 @@
  };
  const msg=text=>{by("gcAuthError").textContent=text;by("gcAuthError").hidden=!text;};
  const status=msg=>{const box=by("gcSyncStatus");if(box){box.textContent=msg;box.hidden=!msg;}};
+ const updateVerifiedIdentity=(access)=>{
+   state.access=access||null;
+   const box=by("gcIdentityInfo"),emailField=by("gcVerifiedEmail"),role=by("gcVerifiedRole");
+   if(!box||!emailField||!role)return;
+   const verified=typeof access?.email==="string"&&access.email.includes("@");
+   box.hidden=!verified;
+   if(!verified)return;
+   emailField.textContent=access.email;
+   role.textContent=access.role==="admin"?"Admin":access.role==="maker"?"Maker":"Akses terbatas";
+   const loginEmail=by("gcLoginEmail");
+   if(loginEmail){loginEmail.value=access.email;loginEmail.readOnly=true;loginEmail.title="Email telah diverifikasi. Untuk mengganti akun, gunakan tombol Verifikasi ulang OTP Email.";}
+ };
+
  const showGate=async(message="")=>{
    const overlay=by("gcAuthGate");if(!overlay)return;
    overlay.hidden=false;
@@ -22,7 +35,7 @@
    by("gcForcePasswordForm").hidden=true;
    by("gcActivationForm").hidden=true;
    by("gcAuthHeading").textContent="Masuk ke GreenCal";
-   by("gcAuthDescription").textContent="Masukkan email terdaftar serta password dari email aktivasi atau password pribadi Anda.";
+   by("gcAuthDescription").textContent="Identitas email diverifikasi melalui Cloudflare Access. Masukkan password pribadi GreenCal untuk melanjutkan.";
    msg(message);
  };
  const forcePasswordChange=()=>{
@@ -44,7 +57,7 @@
    by("gcForcePasswordForm").hidden=true;
    by("gcActivationForm").hidden=false;
    by("gcAuthHeading").textContent="Aktivasi Akun Pertama";
-   by("gcAuthDescription").textContent="Email "+email+" sudah diverifikasi melalui kode satu kali Cloudflare Access. Buat password pribadi untuk pertama kalinya.";
+   by("gcAuthDescription").textContent="Email "+email+" sudah diverifikasi melalui Cloudflare Access. Buat password pribadi untuk pertama kali.";
    by("gcActivationForm").reset();
    msg("");
  };
@@ -81,6 +94,14 @@
    await postAuth();
  }
  function setupForms(){
+   const toggle=by("gcTogglePassword"),forgot=by("gcForgotPassword");
+   if(toggle)toggle.onclick=()=>{
+     const input=by("gcLoginPassword"),visible=input.type==="password";
+     input.type=visible?"text":"password";
+     toggle.setAttribute("aria-pressed",String(visible));
+     toggle.setAttribute("aria-label",visible?"Sembunyikan password":"Tampilkan password");
+   };
+   if(forgot)forgot.onclick=()=>{const help=by("gcForgotHelp");help.hidden=!help.hidden;forgot.setAttribute("aria-expanded",String(!help.hidden));};
    by("gcActivationForm").onsubmit=async e=>{
      e.preventDefault();
      const btn=e.currentTarget.querySelector('button[type="submit"]'),pass=by("gcActivatePassword").value;
@@ -184,13 +205,14 @@
    async start(init){
      state.init=init;
      setupForms();
-     try{const r=await request("/api/auth/me");state.user=r.user;await postAuth();}
+     try{const r=await request("/api/auth/me");state.user=r.user;updateVerifiedIdentity(r.user);await postAuth();}
      catch(e){
        state.user=null;
        try{
-         const status=await request("/api/auth/status");
-         if(status.activationRequired){showActivation(status.email);return;}
-         if(!status.accountEnabled){await showGate("Akun belum diaktifkan. Hubungi pengelola GreenCal.");return;}
+         const accessStatus=await request("/api/auth/status");
+         updateVerifiedIdentity(accessStatus);
+         if(accessStatus.activationRequired){showActivation(accessStatus.email);return;}
+         if(!accessStatus.accountEnabled){await showGate("Akun ini belum tercatat atau belum aktif. Hubungi pengelola GreenCal dan pastikan email yang digunakan sudah sesuai.");return;}
        }catch(_){}
        await showGate();
      }
