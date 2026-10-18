@@ -1,0 +1,28 @@
+name: GreenCal business travel & hotel regression
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'index.html'
+      - 'tests/business-travel.test.mjs'
+      - '.github/workflows/business-travel-tests.yml'
+  pull_request:
+    paths:
+      - 'index.html'
+      - 'tests/business-travel.test.mjs'
+      - '.github/workflows/business-travel-tests.yml'
+permissions:
+  contents: read
+jobs:
+  travel-calculation:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Validate Scope 3 Cat 6 and current login role protections
+        run: |
+          node --test tests/business-travel.test.mjs tests/auth-ui.test.mjs tests/rbac.test.mjs
+          node --check src/worker.js
+          node --check auth-client.js
