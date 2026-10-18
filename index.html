@@ -2231,7 +2231,16 @@ dialog.modal-sheet .modal-foot { background:var(--surface); }
       .gc-fuel-form .field-group{min-width:0;}
     }
 
-  </style>
+  
+/* GreenCal PCAF sector selection: full, searchable industry catalog */
+#wzX_sec{width:100%;min-width:0;min-height:46px;text-overflow:ellipsis;font-size:14px;}
+.gc-pcaf-sector-note{margin:4px 0 0;font-size:11px;line-height:1.5;color:var(--ink-muted);}
+#wzX_secOtherWrap{margin-top:10px;gap:7px;}
+#wzX_secOtherWrap[hidden]{display:none!important;}
+#wzX_secOther{width:100%;min-width:0;min-height:46px;}
+@media(max-width:620px){#wzX_sec{font-size:14px;}#wzX_secOther{font-size:16px;}}
+
+</style>
 </head>
 <body>
 
@@ -4565,13 +4574,105 @@ function renderWzDinas(box) {
   };
 }
 
+/* Sector catalog for PCAF debtor classification.
+   Business-sector choices are descriptive, NOT emission factors or automatic taxonomy compliance. */
+const GC_PCAF_SECTOR_GROUPS = [
+  {label:"Pertanian, Peternakan, Kehutanan & Perikanan",crsa:"Pertanian dan Peternakan",items:[
+    "Pertanian Tanaman Pangan","Hortikultura dan Perkebunan","Perkebunan Kelapa Sawit","Perkebunan Karet",
+    "Perkebunan Kopi, Teh dan Kakao","Peternakan Sapi dan Kerbau","Peternakan Unggas","Pertanian dan Peternakan",
+    "Kehutanan dan Hasil Hutan","Perikanan Tangkap","Perikanan Budidaya"
+  ]},
+  {label:"Pertambangan & Penggalian",crsa:"Pertambangan dan Penggalian",items:[
+    "Pertambangan Batu Bara","Pertambangan Minyak dan Gas Bumi","Pertambangan Mineral Logam",
+    "Pertambangan Nikel","Pertambangan Pasir, Batu dan Bahan Galian","Jasa Penunjang Pertambangan"
+  ]},
+  {label:"Industri Pengolahan / Manufaktur",crsa:"Industri Pengolahan",items:[
+    "Industri Pengolahan","Industri Makanan dan Minuman","Industri Pengolahan Kelapa Sawit",
+    "Industri Tekstil dan Pakaian Jadi","Industri Kayu, Furnitur dan Kertas","Industri Pulp dan Kertas",
+    "Industri Kimia dan Farmasi","Industri Plastik dan Karet","Industri Semen dan Bahan Bangunan",
+    "Industri Logam dan Baja","Industri Mesin dan Peralatan","Industri Otomotif dan Komponen",
+    "Industri Elektronik","Industri Pengolahan Hasil Laut"
+  ]},
+  {label:"Ketenagalistrikan, Gas & Energi",crsa:"Pengadaan Listrik, Gas, Uap/Air Panas dan Udara Dingin",items:[
+    "Pembangkit Listrik Batu Bara","Pembangkit Listrik Gas","Pembangkit Energi Terbarukan",
+    "Transmisi dan Distribusi Listrik","Pengadaan Listrik, Gas, Uap/Air Panas dan Udara Dingin",
+    "Distribusi Gas dan Energi"
+  ]},
+  {label:"Air Bersih, Limbah & Sanitasi",crsa:"Lainnya",items:[
+    "Pengelolaan Air Bersih","Pengolahan Air Limbah","Pengelolaan Sampah dan Daur Ulang"
+  ]},
+  {label:"Konstruksi & Infrastruktur",crsa:"Konstruksi, termasuk Real Estat",items:[
+    "Konstruksi, termasuk Real Estat","Konstruksi Gedung","Konstruksi Jalan, Jembatan dan Infrastruktur",
+    "Kontraktor Sipil dan Mekanikal Elektrikal","Pengembang Kawasan Industri"
+  ]},
+  {label:"Perdagangan Besar & Eceran",crsa:"Lainnya",items:[
+    "Perdagangan Besar / Distributor","Perdagangan Eceran / Ritel","Perdagangan Kendaraan Bermotor",
+    "Perdagangan Bahan Bakar","E-commerce dan Perdagangan Digital"
+  ]},
+  {label:"Transportasi, Logistik & Pergudangan",crsa:"Transportasi dan Pergudangan",items:[
+    "Transportasi dan Pergudangan","Transportasi Darat dan Angkutan Barang","Transportasi Laut dan Pelayaran",
+    "Transportasi Udara","Logistik, Ekspedisi dan Kurir","Pergudangan dan Cold Storage",
+    "Jasa Kepelabuhanan"
+  ]},
+  {label:"Akomodasi, Pariwisata & Kuliner",crsa:"Lainnya",items:[
+    "Hotel dan Akomodasi","Restoran dan Jasa Boga","Pariwisata dan Perjalanan Wisata"
+  ]},
+  {label:"Informasi, Digital & Telekomunikasi",crsa:"Lainnya",items:[
+    "Telekomunikasi","Pusat Data dan Cloud Computing","Teknologi Informasi dan Perangkat Lunak",
+    "Media, Penyiaran dan Konten Digital"
+  ]},
+  {label:"Jasa Keuangan & Asuransi",crsa:"Lainnya",items:[
+    "Perbankan dan Lembaga Pembiayaan","Asuransi dan Reasuransi",
+    "Fintech dan Jasa Keuangan Digital","Pasar Modal dan Jasa Penunjang Keuangan"
+  ]},
+  {label:"Properti & Real Estat",crsa:"Konstruksi, termasuk Real Estat",items:[
+    "Pengembang Properti Residensial","Properti Komersial dan Perkantoran",
+    "Pengelolaan dan Persewaan Properti"
+  ]},
+  {label:"Jasa Profesional & Penunjang Bisnis",crsa:"Lainnya",items:[
+    "Jasa Konsultansi dan Manajemen","Jasa Hukum, Akuntansi dan Audit",
+    "Arsitektur, Rekayasa dan Penelitian","Jasa Administrasi dan Outsourcing",
+    "Jasa Keamanan dan Kebersihan"
+  ]},
+  {label:"Layanan Publik, Sosial & Pendidikan",crsa:"Lainnya",items:[
+    "Pemerintahan dan Pelayanan Publik","Pendidikan Dasar dan Menengah",
+    "Perguruan Tinggi dan Pelatihan","Yayasan dan Organisasi Sosial"
+  ]},
+  {label:"Kesehatan & Layanan Medis",crsa:"Lainnya",items:[
+    "Rumah Sakit dan Klinik","Laboratorium dan Diagnostik Kesehatan","Jasa Kesehatan Lainnya"
+  ]},
+  {label:"Seni, Hiburan & Jasa Lainnya",crsa:"Lainnya",items:[
+    "Seni dan Hiburan","Olahraga dan Rekreasi","Jasa Perawatan dan Layanan Pribadi",
+    "Jasa Reparasi dan Pemeliharaan"
+  ]}
+];
+const GC_PCAF_SECTOR_INDEX = new Map(
+  GC_PCAF_SECTOR_GROUPS.flatMap(g => g.items.map(name => [name,{name,crsa:g.crsa,group:g.label}]))
+);
+function gcPcafSectorOptions() {
+  return '<option value="">Pilih sektor usaha debitur...</option>' +
+    GC_PCAF_SECTOR_GROUPS.map(g =>
+      '<optgroup label="' + esc(g.label) + '">' +
+      g.items.map(name => '<option value="' + esc(name) + '">' + esc(name) + '</option>').join("") +
+      '</optgroup>'
+    ).join("") +
+    '<option value="__custom__">Lainnya — tulis sektor usaha sendiri</option>';
+}
+function gcPcafSectorValue() {
+  const selected = $("#wzX_sec").value;
+  return selected === "__custom__" ? $("#wzX_secOther").value.trim() : selected;
+}
+
 function renderWzDebitur(box) {
   box.innerHTML =
     '<div class="form-stack">' +
       '<h3 style="margin:0">💼 Kalkulator Cepat: Pembiayaan Debitur (PCAF)</h3>' +
       '<div class="input-row-2">' +
         '<label class="field-group"><span class="field-label">Nama Debitur / Nasabah</span><input type="text" id="wzX_name" placeholder="mis. PT Samudera Perkasa"></label>' +
-        '<label class="field-group"><span class="field-label">Sektor Usaha</span><input type="text" id="wzX_sec" placeholder="mis. Industri Pengolahan"></label>' +
+        '<div class="field-group"><label class="field-label" for="wzX_sec">Sektor Usaha</label>' +
+        '<select id="wzX_sec" required>' + gcPcafSectorOptions() + '</select>' +
+        '<p class="gc-pcaf-sector-note" id="wzX_sectorHint">Pilih sektor usaha yang sesuai dengan kegiatan utama debitur.</p>' +
+        '<div id="wzX_secOtherWrap" class="field-group" hidden><label class="field-label" for="wzX_secOther">Sektor Usaha Lainnya</label><input type="text" id="wzX_secOther" maxlength="160" placeholder="Tulis sektor usaha debitur"></div></div>' +
       '</div>' +
       '<div class="input-row-2">' +
         '<label class="field-group"><span class="field-label">Outstanding Pembiayaan (Rp Miliar)</span><input type="number" id="wzX_os" placeholder="mis. 50" min="0" step="any" inputmode="decimal"></label>' +
@@ -4603,6 +4704,15 @@ function renderWzDebitur(box) {
   $("#wzX_os").oninput = calc;
   $("#wzX_denom").oninput = calc;
   $("#wzX_emis").oninput = calc;
+  $("#wzX_sec").onchange = () => {
+    const code = $("#wzX_sec").value;
+    const custom = code === "__custom__";
+    $("#wzX_secOtherWrap").hidden = !custom;
+    $("#wzX_sectorHint").textContent = custom
+      ? "Masukkan nama sektor yang belum tersedia. Klasifikasi CRSA dicatat sebagai Lainnya untuk ditinjau."
+      : code ? "Kategori CRSA: " + (GC_PCAF_SECTOR_INDEX.get(code)?.crsa || "Lainnya")
+        : "Pilih sektor usaha yang sesuai dengan kegiatan utama debitur.";
+  };
 
   $("#wzX_save").onclick = () => {
     const name = $("#wzX_name").value.trim();
@@ -4612,7 +4722,9 @@ function renderWzDebitur(box) {
     const os = parseNum($("#wzX_os").value);
     const denom = parseNum($("#wzX_denom").value);
     const emis = parseNum($("#wzX_emis").value);
-    const sector = $("#wzX_sec").value.trim() || "Industri Pengolahan";
+    const sector = gcPcafSectorValue();
+    if (!sector) { toast("Pilih sektor usaha atau isi sektor lainnya terlebih dahulu."); $("#wzX_sec").focus(); return; }
+    const crsa = GC_PCAF_SECTOR_INDEX.get(sector)?.crsa || "Lainnya";
 
     S.exposures.unshift({
       id: newId("x"),
@@ -4627,7 +4739,7 @@ function renderWzDebitur(box) {
       emis,
       pct: null,
       investKey: null,
-      crsa: sector,
+      crsa,
       tier: "2",
       tplan: "ada_nv",
       profit: null,
@@ -5032,7 +5144,10 @@ function renderFinForm() {
   fillSelect($("#xBasis"), BASIS.map(b => ({ v: b.k, t: b.t })));
   fillSelect($("#xCrsa"), (st().crsaSectors || []).map(c => ({ v: c, t: c })));
   fillSelect($("#xInv"), rowsFor("invest", y).sort((a, b) => a.name.localeCompare(b.name)).map(r => ({ v: r.key, t: r.name + " · " + nfx(r.ef) })));
-  $("#sectorList").innerHTML = Array.from(new Set(S.exposures.map(x => x.sector).filter(Boolean))).map(s => '<option value="' + esc(s) + '">').join("");
+  $("#sectorList").innerHTML = Array.from(new Set([
+    ...GC_PCAF_SECTOR_GROUPS.flatMap(g => g.items),
+    ...S.exposures.map(x => x.sector).filter(Boolean)
+  ])).map(s => '<option value="' + esc(s) + '">').join("");
   updFin();
 }
 
@@ -6687,7 +6802,7 @@ window.displayAiResult = displayAiResult;
   const list = sheet.querySelector(".gc-choice-options");
   let active = null;
   const allowed = sel => !!sel && !sel.disabled && sel.options.length >= 4 &&
-    (sel.id === "aUnit" || sel.id === "aCat" || sel.id === "wzL_unit" || sel.id === "wzL_grid" || sel.id === "wzB_fuel" ||
+    (sel.id === "aUnit" || sel.id === "aCat" || sel.id === "wzL_unit" || sel.id === "wzL_grid" || sel.id === "wzB_fuel" || sel.id === "wzX_sec" ||
       !!sel.closest("#aFields")) &&
     window.matchMedia("(max-width: 859px)").matches;
   const draw = () => {
