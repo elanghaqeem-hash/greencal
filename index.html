@@ -3192,6 +3192,48 @@ dialog.modal-sheet .modal-foot { background:var(--surface); }
 }
 @media(prefers-reduced-motion:reduce){.gc-ai-editor-panel .gc-ai-action{transition:none}}
 
+
+/* GreenCal education center */
+#guide.gc-learning{padding:0;overflow:hidden}
+.gc-learning .edu-hero{padding:26px;background:linear-gradient(120deg,var(--primary-soft),var(--surface) 77%);border-bottom:1px solid var(--line)}
+.gc-learning .edu-eyebrow{font-size:11px;letter-spacing:.1em;text-transform:uppercase;font-weight:800;color:var(--primary)}
+.gc-learning .edu-hero h3{font-size:clamp(21px,2.7vw,30px);line-height:1.3;margin:7px 0}
+.gc-learning .edu-hero p{max-width:810px;color:var(--ink-muted);margin:0}
+.gc-learning .edu-layout{display:grid;grid-template-columns:235px minmax(0,1fr);align-items:start;gap:22px;padding:22px}
+.gc-learning .edu-nav{position:sticky;top:165px;display:grid;gap:6px}
+.gc-learning .edu-nav button{width:100%;text-align:left;border:1px solid transparent;background:transparent;border-radius:10px;padding:11px 12px;color:var(--ink-muted);font-weight:700;cursor:pointer}
+.gc-learning .edu-nav button[aria-selected="true"]{background:var(--primary-soft);border-color:var(--primary-border);color:var(--primary)}
+.gc-learning .edu-content{min-width:0}
+.gc-learning .edu-pane[hidden]{display:none!important}
+.gc-learning .edu-pane h4{font-size:20px;margin:0 0 9px}
+.gc-learning .edu-pane p{color:var(--ink-muted);line-height:1.7}
+.gc-learning .edu-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:18px 0}
+.gc-learning .edu-card{padding:17px;background:var(--surface);border:1px solid var(--line);border-radius:14px;min-width:0}
+.gc-learning .edu-card strong{display:block;font-size:15px;margin:7px 0}
+.gc-learning .edu-card p{font-size:13px;margin:0}
+.gc-learning .edu-ico{display:grid;place-items:center;width:40px;height:40px;background:var(--primary-soft);color:var(--primary);border-radius:12px;font-size:24px}
+.gc-learning .edu-flow{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:20px 0}
+.gc-learning .edu-step{position:relative;background:var(--surface-2);border:1px solid var(--line);border-radius:12px;padding:14px;min-width:0;font-size:12px}
+.gc-learning .edu-step b{display:block;font-size:14px;margin-bottom:4px}
+.gc-learning .edu-step span{color:var(--ink-muted)}
+.gc-learning .edu-visual{border:1px solid var(--line);border-radius:15px;padding:16px;background:var(--surface);margin:16px 0}
+.gc-learning .edu-visual svg{display:block;width:100%;height:auto;max-height:240px}
+.gc-learning .edu-callout{padding:14px 16px;background:var(--primary-soft);border-left:4px solid var(--primary);border-radius:8px;margin:16px 0;font-size:13px;line-height:1.6}
+.gc-learning .edu-formula{padding:14px 16px;border:1px solid var(--line);background:var(--surface-2);border-radius:10px;overflow-wrap:anywhere;margin:12px 0;font-size:14px}
+.gc-learning .edu-demo{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;background:var(--surface-2);border-radius:14px;padding:17px;margin:16px 0}
+.gc-learning .edu-demo label{display:grid;gap:6px;font-weight:700;font-size:13px}
+.gc-learning .edu-demo input{width:100%;min-width:0;padding:10px;border:1px solid var(--line);border-radius:8px;background:var(--surface)}
+.gc-learning .edu-result{grid-column:1/-1;font-size:22px;font-weight:800;color:var(--primary);padding:10px 0}
+.gc-learning .edu-table{width:100%;border-collapse:collapse;font-size:13px}
+.gc-learning .edu-table th,.gc-learning .edu-table td{border-bottom:1px solid var(--line);padding:10px;text-align:left;vertical-align:top}
+.gc-learning .edu-table th{background:var(--surface-2)}
+.gc-learning .edu-progress{height:7px;background:var(--line);border-radius:10px;overflow:hidden;margin:10px 0}
+.gc-learning .edu-progress span{display:block;height:100%;background:var(--primary);transition:width .2s}
+.gc-learning .edu-check{display:flex;align-items:start;gap:10px;margin:10px 0;font-size:14px;cursor:pointer}
+.gc-learning .edu-check input{margin-top:4px}
+@media(max-width:860px){.gc-learning .edu-layout{grid-template-columns:1fr;padding:14px}.gc-learning .edu-nav{position:static;display:flex;overflow-x:auto;padding:0 0 8px;gap:7px}.gc-learning .edu-nav button{flex:0 0 auto;width:auto;white-space:nowrap}.gc-learning .edu-grid{grid-template-columns:1fr 1fr}.gc-learning .edu-flow{grid-template-columns:1fr 1fr}}
+@media(max-width:520px){.gc-learning .edu-grid,.gc-learning .edu-flow{grid-template-columns:1fr}.gc-learning .edu-demo{grid-template-columns:1fr}.gc-learning .edu-hero{padding:18px}.gc-learning .edu-layout{padding:12px}.gc-learning .edu-card{padding:14px}}
+
 </style>
   <script src="/assets/guide-learning.js"></script>
 </head>
@@ -7825,7 +7867,102 @@ function pAudit(body) {
 }
 
 /* ---------- PANDUAN PENGGUNAAN OJK 2026 ---------- */
-function renderGuide() { return renderEducationalGuide(); }
+function renderGuide() {
+  const g = $("#guide");
+  if (!g || g.dataset.done) return;
+  g.dataset.done = "1";
+  g.classList.add("gc-learning");
+  g.innerHTML = `
+    <div class="edu-hero"><div class="edu-eyebrow">GreenCal Learning Center · CRMS &amp; Carbon Accounting</div>
+      <h3>Panduan praktis pengukuran emisi dan risiko iklim perbankan</h3>
+      <p>Pelajari konsep, input data, perhitungan, risiko pembiayaan, dan pemeriksaan bukti melalui enam modul. Contoh dan latihan di halaman ini bersifat edukatif; angka resmi harus diperiksa pada sumber, tahun, dan konteks penerapannya.</p>
+    </div>
+    <div class="edu-layout">
+      <nav class="edu-nav" aria-label="Navigasi materi GreenCal">
+        <button type="button" data-edu-tab="dasar" aria-selected="true">01 · Dasar CRMS</button>
+        <button type="button" data-edu-tab="scope" aria-selected="false">02 · Scope 1, 2 &amp; 3</button>
+        <button type="button" data-edu-tab="hitung" aria-selected="false">03 · Rumus &amp; Simulasi</button>
+        <button type="button" data-edu-tab="pcaf" aria-selected="false">04 · Financed Emissions</button>
+        <button type="button" data-edu-tab="risiko" aria-selected="false">05 · Skenario Risiko</button>
+        <button type="button" data-edu-tab="audit" aria-selected="false">06 · Tata Kelola &amp; Audit</button>
+      </nav>
+      <div class="edu-content">
+        <section class="edu-pane" data-edu-pane="dasar">
+          <h4>Memahami Climate Risk Management &amp; Scenario Analysis</h4>
+          <p>CRMS membantu bank mengenali bagaimana bahaya iklim dan perubahan menuju ekonomi rendah karbon dapat memengaruhi debitur, aset, kualitas kredit/pembiayaan, likuiditas, dan strategi bisnis. Inventarisasi emisi GRK adalah salah satu masukan, bukan pengganti penilaian risiko.</p>
+          <div class="edu-grid">
+            <div class="edu-card"><span class="edu-ico" aria-hidden="true">☀</span><strong>Risiko fisik</strong><p>Banjir, kekeringan, panas ekstrem, dan kejadian kronis yang mengganggu aset atau operasional.</p></div>
+            <div class="edu-card"><span class="edu-ico" aria-hidden="true">↗</span><strong>Risiko transisi</strong><p>Perubahan kebijakan, teknologi, harga karbon, pasar, dan preferensi konsumen.</p></div>
+            <div class="edu-card"><span class="edu-ico" aria-hidden="true">▤</span><strong>Risiko keuangan</strong><p>Dampak potensial terhadap arus kas debitur, PD, LGD, agunan, dan konsentrasi portofolio.</p></div>
+          </div>
+          <h4>Alur kerja data hingga keputusan</h4>
+          <div class="edu-flow"><div class="edu-step"><b>1. Identifikasi</b><span>Sumber emisi dan eksposur pembiayaan</span></div><div class="edu-step"><b>2. Ukur</b><span>Aktivitas × faktor emisi terverifikasi</span></div><div class="edu-step"><b>3. Analisis</b><span>Materialitas dan skenario risiko</span></div><div class="edu-step"><b>4. Validasi</b><span>Review, pengungkapan, tindak lanjut</span></div></div>
+          <div class="edu-callout"><b>Referensi pembelajaran:</b> Gunakan dokumen CRMS OJK Buku 1–7 sesuai topik dan edisi resmi yang berlaku, disertai GHG Protocol, PCAF, dan publikasi NGFS. Perbedaan metodologi harus dicatat; GreenCal bukan sertifikasi kepatuhan OJK.</div>
+        </section>
+        <section class="edu-pane" data-edu-pane="scope" hidden>
+          <h4>Peta sumber emisi GRK: Scope 1, 2, dan 3</h4>
+          <p>Batas organisasi, batas operasional, tahun inventarisasi, dan kategori kegiatan perlu ditentukan lebih dahulu. Emisi pembiayaan merupakan bagian dari Scope 3 Kategori 15, bukan Scope 1 bank.</p>
+          <div class="edu-visual" role="img" aria-label="Infografis alur Scope 1 berupa emisi langsung, Scope 2 berupa listrik yang dibeli, dan Scope 3 berupa rantai nilai termasuk emisi pembiayaan">
+            <svg viewBox="0 0 680 190" xmlns="http://www.w3.org/2000/svg"><rect x="8" y="24" width="205" height="145" rx="14" fill="#dcfce7"/><rect x="237" y="24" width="205" height="145" rx="14" fill="#fef3c7"/><rect x="466" y="24" width="205" height="145" rx="14" fill="#dbeafe"/><g font-family="Arial,sans-serif" fill="#172d26"><text x="24" y="57" font-weight="bold" font-size="19">SCOPE 1</text><text x="253" y="57" font-weight="bold" font-size="19">SCOPE 2</text><text x="482" y="57" font-weight="bold" font-size="19">SCOPE 3</text><text x="24" y="90" font-size="16">🚗  BBM kendaraan</text><text x="24" y="121" font-size="15">Genset, refrigeran</text><text x="253" y="90" font-size="16">⚡  Listrik dibeli</text><text x="253" y="121" font-size="15">Energi tidak langsung</text><text x="482" y="90" font-size="16">🏦  Pembiayaan</text><text x="482" y="121" font-size="15">Perjalanan, pemasok</text><text x="24" y="150" font-size="12">Emisi langsung</text><text x="253" y="150" font-size="12">Energi impor</text><text x="482" y="150" font-size="12">Rantai nilai</text></g></svg>
+          </div>
+          <div class="edu-grid"><div class="edu-card"><strong>Data aktivitas</strong><p>kWh listrik, liter BBM, kg refrigeran, km perjalanan, dan nilai pembiayaan.</p></div><div class="edu-card"><strong>Faktor emisi</strong><p>Simpan nilai, unit, wilayah, tahun berlaku, dan sumber referensi.</p></div><div class="edu-card"><strong>Mutu data</strong><p>Pisahkan data primer, estimasi, asumsi, dan keterbatasan cakupan.</p></div></div>
+          <div class="edu-callout">Hindari penghitungan ganda dalam satu inventarisasi. Penggabungan emisi operasional bank dengan emisi portofolio wajib disertai penjelasan batas dan kategori.</div>
+        </section>
+        <section class="edu-pane" data-edu-pane="hitung" hidden>
+          <h4>Rumus dasar dan kalkulator pembelajaran</h4>
+          <p>Untuk sumber energi dengan faktor emisi dalam kg CO₂e per satuan aktivitas, hasil tCO₂e diperoleh dengan membagi kg CO₂e dengan 1.000. Untuk gas terpisah, gunakan GWP dan unit massa yang konsisten.</p>
+          <div class="edu-formula"><b>Emisi (tCO₂e) = Aktivitas × Faktor Emisi (kgCO₂e/unit) ÷ 1.000</b></div>
+          <div class="edu-demo" aria-label="Simulasi emisi listrik">
+            <label>Konsumsi listrik (kWh)<input id="edu-kwh" type="number" inputmode="decimal" min="0" step="any" value="12000"></label>
+            <label>Faktor emisi contoh (kgCO₂e/kWh)<input id="edu-factor" type="number" inputmode="decimal" min="0" step="any" value="0.85"></label>
+            <div class="edu-result" id="edu-result" aria-live="polite">10,200 tCO₂e</div>
+            <small style="grid-column:1/-1;color:var(--ink-muted)">Faktor 0,85 hanya angka latihan, bukan faktor grid resmi. Pilih faktor sesuai periode, jaringan, dan metodologi pada tab Parameter.</small>
+          </div>
+          <table class="edu-table"><thead><tr><th>Aktivitas</th><th>Data yang dikumpulkan</th><th>Catatan</th></tr></thead><tbody>
+          <tr><td>Listrik</td><td>kWh, lokasi, periode</td><td>Scope 2; tentukan metode dan faktor grid</td></tr><tr><td>BBM</td><td>Liter menurut jenis bahan bakar</td><td>Scope 1 jika sumber dimiliki/dikendalikan</td></tr><tr><td>Refrigeran</td><td>Massa kebocoran per jenis gas</td><td>Gunakan GWP yang terdokumentasi</td></tr><tr><td>Perjalanan bisnis</td><td>Moda, jarak, kelas, frekuensi</td><td>Umumnya Scope 3; identifikasi faktor relevan</td></tr></tbody></table>
+        </section>
+        <section class="edu-pane" data-edu-pane="pcaf" hidden>
+          <h4>Menghitung emisi yang dibiayai (Financed Emissions)</h4>
+          <p>Metodologi PCAF mengatribusikan sebagian emisi debitur/proyek kepada lembaga keuangan. Denominator atribusi tidak selalu sama: bergantung kelas aset, struktur pembiayaan, dan ketentuan metode yang dipilih.</p>
+          <div class="edu-visual"><svg viewBox="0 0 650 140" xmlns="http://www.w3.org/2000/svg"><g font-family="Arial,sans-serif" text-anchor="middle"><rect x="7" y="30" width="172" height="78" rx="12" fill="#dbeafe"/><rect x="239" y="30" width="172" height="78" rx="12" fill="#dcfce7"/><rect x="471" y="30" width="172" height="78" rx="12" fill="#ede9fe"/><g fill="#152a30" font-size="16" font-weight="bold"><text x="93" y="60">Eksposur bank</text><text x="325" y="60">Faktor atribusi</text><text x="557" y="60">Emisi teratribusi</text></g><g font-size="12" fill="#334155"><text x="93" y="84">Outstanding pembiayaan</text><text x="325" y="84">Pembilang ÷ denominator</text><text x="557" y="84">Faktor × emisi debitur</text></g><g fill="#64748b" font-size="27"><text x="209" y="77">→</text><text x="441" y="77">→</text></g></g></svg></div>
+          <div class="edu-formula"><b>Emisi pembiayaan (tCO₂e) = Faktor atribusi × Emisi debitur (tCO₂e)</b><p style="margin:6px 0 0;font-size:13px">Contoh ilustratif: atribusi 10% × emisi debitur 2.000 tCO₂e = <b>200 tCO₂e</b>.</p></div>
+          <div class="edu-grid"><div class="edu-card"><strong>1. Klasifikasi aset</strong><p>Tentukan jenis pembiayaan, investasi atau proyek dan metodologi PCAF yang sesuai.</p></div><div class="edu-card"><strong>2. Verifikasi data</strong><p>Nilai pembiayaan, denominator, emisi debitur, tahun data, dan sumber bukti.</p></div><div class="edu-card"><strong>3. Skor kualitas</strong><p>Catat tingkat kualitas data PCAF dan prioritas perbaikan estimasi.</p></div></div>
+          <div class="edu-callout">Contoh denominator outstanding ÷ (ekuitas + utang) hanya tepat pada kelas aset/metode tertentu. Jangan terapkan rumus yang sama untuk seluruh portofolio.</div>
+        </section>
+        <section class="edu-pane" data-edu-pane="risiko" hidden>
+          <h4>Risiko iklim melalui skenario NGFS</h4>
+          <p>Analisis skenario bukan ramalan tunggal. Gunakan beberapa jalur perubahan iklim dan transisi untuk menguji ketahanan portofolio dalam horizon pendek, menengah, dan panjang.</p>
+          <div class="edu-grid"><div class="edu-card"><span class="edu-ico">↘</span><strong>Net Zero 2050</strong><p>Ilustrasi transisi lebih awal dan terkoordinasi; besaran dampak mengikuti versi skenario.</p></div><div class="edu-card"><span class="edu-ico">⏱</span><strong>Delayed Transition</strong><p>Perubahan kebijakan yang tertunda dapat menimbulkan penyesuaian lebih tajam.</p></div><div class="edu-card"><span class="edu-ico">☁</span><strong>Current Policies</strong><p>Memperhatikan potensi risiko fisik lebih tinggi dalam jangka panjang.</p></div></div>
+          <div class="edu-flow"><div class="edu-step"><b>Bahaya / kebijakan</b><span>Banjir atau biaya karbon</span></div><div class="edu-step"><b>Debitur</b><span>Biaya naik; pendapatan turun</span></div><div class="edu-step"><b>Risiko kredit</b><span>PD, LGD, nilai agunan</span></div><div class="edu-step"><b>Bank</b><span>Kerugian, modal, konsentrasi</span></div></div>
+          <div class="edu-callout">Asumsi harga karbon, perubahan emisi, sensitivitas PD/LGD dan periode proyeksi harus diberi label skenario, bukan hasil kepastian. Simpan sumber/versi NGFS dan validasi model internal.</div>
+        </section>
+        <section class="edu-pane" data-edu-pane="audit" hidden>
+          <h4>Tata kelola tiga lini dan kesiapan audit</h4>
+          <table class="edu-table"><thead><tr><th>Lini</th><th>Tanggung jawab utama</th><th>Bukti minimum</th></tr></thead><tbody><tr><td>1 · Unit kerja</td><td>Input dan validasi awal data aktivitas/debitur</td><td>Tagihan, meter, dokumen pembiayaan</td></tr><tr><td>2 · Risiko &amp; Kepatuhan</td><td>Metodologi, faktor emisi, limit dan kajian skenario</td><td>Register parameter, review, persetujuan</td></tr><tr><td>3 · Audit Internal</td><td>Uji independen desain dan efektivitas kontrol</td><td>Sampling, kertas kerja, temuan, tindak lanjut</td></tr></tbody></table>
+          <h4 style="margin-top:22px">Checklist kelengkapan pengungkapan</h4><p>Tandai setiap kontrol untuk melihat kemajuan persiapan dokumen. Checklist ini hanya berada di halaman panduan, bukan bukti persetujuan audit.</p>
+          <div id="edu-checks"><label class="edu-check"><input type="checkbox"> Batas organisasi, tahun, dan sumber data terdokumentasi</label><label class="edu-check"><input type="checkbox"> Faktor emisi memiliki sumber, unit, dan tahun berlaku</label><label class="edu-check"><input type="checkbox"> Scope dan kategori dihitung tanpa duplikasi internal</label><label class="edu-check"><input type="checkbox"> Asumsi dan kualitas data pembiayaan dicatat</label><label class="edu-check"><input type="checkbox"> Hasil dan skenario direview secara berjenjang</label><label class="edu-check"><input type="checkbox"> Bukti, keterbatasan, dan koreksi siap diaudit</label></div>
+          <div class="edu-progress" aria-label="Progres checklist"><span id="edu-progress" style="width:0%"></span></div><p id="edu-check-status">0 dari 6 pemeriksaan ditandai</p>
+        </section>
+      </div>
+    </div>`;
+  g.querySelectorAll("[data-edu-tab]").forEach(button => button.addEventListener("click", () => {
+    const id = button.dataset.eduTab;
+    g.querySelectorAll("[data-edu-tab]").forEach(b => b.setAttribute("aria-selected", String(b === button)));
+    g.querySelectorAll("[data-edu-pane]").forEach(p => { p.hidden = p.dataset.eduPane !== id; });
+  }));
+  const updateDemo = () => {
+    const amount = Number(g.querySelector("#edu-kwh").value), factor = Number(g.querySelector("#edu-factor").value);
+    g.querySelector("#edu-result").textContent = Number.isFinite(amount) && Number.isFinite(factor) && amount >= 0 && factor >= 0
+      ? (amount * factor / 1000).toLocaleString("id-ID", {minimumFractionDigits:3,maximumFractionDigits:3}) + " tCO₂e" : "Masukkan nilai ≥ 0";
+  };
+  g.querySelectorAll("#edu-kwh,#edu-factor").forEach(x => x.addEventListener("input",updateDemo));
+  updateDemo();
+  g.querySelectorAll("#edu-checks input").forEach(x => x.addEventListener("change", () => {
+    const all = [...g.querySelectorAll("#edu-checks input")], done = all.filter(c => c.checked).length;
+    g.querySelector("#edu-progress").style.width = (done / all.length * 100) + "%";
+    g.querySelector("#edu-check-status").textContent = done + " dari " + all.length + " pemeriksaan ditandai";
+  }));
+}
 
 /* ---------- DIALOG / MODAL ENGINE ---------- */
 function openDlg(title, html, actions) {
