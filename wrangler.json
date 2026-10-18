@@ -1,0 +1,17 @@
+{
+  "name": "greencal",
+  "main": "src/worker.js",
+  "compatibility_date": "2026-10-18",
+  "assets": {
+    "directory": "./dist",
+    "binding": "ASSETS",
+    "run_worker_first": true
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "greencal-db",
+      "database_id": "f9169067-32bc-425c-bef8-1cb86a4d5fcd"
+    }
+  ]
+}
