@@ -3393,7 +3393,7 @@ const S = {
   audit: [],
   editActId: null,
   editFinId: null,
-  isAdmin: true,
+  isAdmin: false,
   psub: "tabel",
   ptab: "stationary"
 };
@@ -3476,20 +3476,12 @@ function loadStateFromStorage() {
 }
 
 function saveStateToStorage() {
-  try {
-    const dataToSave = {
-      settings: S.settings,
-      tables: S.tables,
-      classes: S.classes,
-      entries: S.entries,
-      exposures: S.exposures,
-      offsets: S.offsets,
-      audit: S.audit
-    };
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(dataToSave));
-  } catch(e) {
-    console.error("Storage save error:", e);
-  }
+  // API server owns shared data; Maker never sends Admin-only config to the server.
+  if (!window.GC_AUTH || !GC_AUTH.user) return;
+  GC_AUTH.queue(() => {
+    const common = {entries:S.entries,exposures:S.exposures,offsets:S.offsets};
+    return GC_AUTH.isAdmin ? Object.assign(common,{settings:S.settings,tables:S.tables,classes:S.classes}) : common;
+  });
 }
 
 async function logAudit(action, target, detail) {
@@ -4025,13 +4017,16 @@ function renderAll() {
     parameter: renderParams,
     panduan: renderGuide,
     ai: renderAiView,
-    menu: () => {}
+    menu: () => {},
+    users: () => GC_AUTH.renderUsers()
   };
 
   if (views[S.tab]) views[S.tab]();
+  if (window.GC_AUTH) GC_AUTH.applyRole();
 }
 
 function setTab(tab) {
+  if (!window.GC_AUTH || !GC_AUTH.can(tab)) { toast('Akses menu ini hanya untuk Admin.'); return; }
   S.tab = tab;
 
   // Update desktop navigation
@@ -5271,7 +5266,8 @@ function renderActList() {
     '</tbody><tfoot><tr><td>Total (' + rows.length + ' Baris)</td><td></td><td class="r num"><b>' + nf(tot, 3) + '</b></td><td colspan="2"></td></tr></tfoot>';
 
   // Bind Actions
-  $$("[data-ea]").forEach(b => b.onclick = () => loadAct(b.dataset.ea));
+  if (!S.isAdmin) $("[data-ed]").forEach(b => b.remove());
+  $("[data-ea]").forEach(b => b.onclick = () => loadAct(b.dataset.ea));
   $$("[data-ed]").forEach(b => b.onclick = () => {
     confirmDlg("Hapus Data Aktivitas?", "Data aktivitas ini akan dihapus permanen.", "Hapus", () => {
       S.entries = S.entries.filter(x => x.id !== b.dataset.ed);
@@ -5559,6 +5555,7 @@ function renderFinList() {
     }).join("") +
     '</tbody><tfoot><tr><td colspan="2">Total Portofolio</td><td class="r num"><b>' + nf(osAll) + '</b></td><td></td><td></td><td class="r num"><b>' + nf(fin, 1) + '</b></td><td class="r num">' + (dqW != null ? nf(dqW, 1) : "–") + '</td><td></td></tr></tfoot>';
 
+  if (!S.isAdmin) $$("[data-xd]").forEach(b => b.remove());
   $$("[data-xa]").forEach(b => b.onclick = () => loadFin(b.dataset.xa));
   $$("[data-xd]").forEach(b => b.onclick = () => {
     confirmDlg("Hapus Eksposur Debitur?", "Data eksposur ini akan dihapus permanen.", "Hapus", () => {
@@ -5780,6 +5777,7 @@ function renderOff() {
       '</tr>'
     ).join("") + '</tbody>';
 
+  if (!S.isAdmin) $$("[data-od]").forEach(b => b.remove());
   $$("[data-od]").forEach(b => {
     b.onclick = () => {
       confirmDlg("Hapus Catatan Offset?", "Catatan offset ini akan dihapus permanen.", "Hapus", () => {
@@ -6385,22 +6383,31 @@ function bindEvents() {
   $("#btnBackupJson").onclick = backupJson;
   $("#fileRestoreJson").onchange = restoreJson;
   $("#btnResetData").onclick = () => {
-    confirmDlg("Reset Seluruh Data?", "Semua data aktivitas & pembiayaan akan dikembalikan ke data default awal.", "Reset Data", () => {
-      localStorage.removeItem(STORAGE_KEY);
-      loadStateFromStorage();
-      renderAll();
-      toast("Data berhasil direset ke kondisi default!");
+    if (!GC_AUTH.isAdmin) { toast("Hanya Admin yang dapat mereset data."); return; }
+    confirmDlg("Reset Data Aktivitas?", "Data aktivitas, pembiayaan, dan offset bersama akan dikosongkan. Parameter faktor emisi tidak diubah.", "Reset Data", () => {
+      S.entries = []; S.exposures = []; S.offsets = [];
+      saveStateToStorage(); renderAll();
+      toast("Perubahan reset akan disimpan ke database.");
     });
-  };
-}
+  };}
 
-function boot() {
+async function boot() {
   initTheme();
-  loadStateFromStorage();
   bindEvents();
-  renderAll();
-  setTab("ringkasan");
-  console.log("Green Calculator CRMS 2026 loaded successfully!");
+  await GC_AUTH.start(data => {
+    // First login starts from clean entries; local browser data can be imported by Admin explicitly.
+    S.entries = Array.isArray(data?.entries) ? data.entries : [];
+    S.exposures = Array.isArray(data?.exposures) ? data.exposures : [];
+    S.offsets = Array.isArray(data?.offsets) ? data.offsets : [];
+    S.audit = [];
+    S.settings = data?.settings || clone(DEFAULT_SETTINGS);
+    S.tables = data?.tables || clone(BASE.tables);
+    S.classes = data?.classes || clone(DEFAULT_CLASSES);
+    S.isAdmin = GC_AUTH.isAdmin;
+    S.tab = "ringkasan";
+    renderAll();
+    setTab("ringkasan");
+  });
 }
 
 function closeDlg() {
@@ -6880,6 +6887,7 @@ function displayAiResult(res) {
 
 /* Admin provider priority. Keys are Cloudflare Worker secrets — never browser fields. */
 async function openAiConfigDialog() {
+  if (!GC_AUTH.isAdmin) { toast("Pengaturan AI hanya untuk Admin."); return; }
   let status,reply;
   try{
     reply=await fetch("/api/ai/status",{credentials:"same-origin",cache:"no-store"});
