@@ -21,10 +21,14 @@ GreenCal ditayangkan pada **https://greencal.elang-haqeem.workers.dev** melalui 
 
 - **Sumber produksi:** repository `elanghaqeem-hash/greencal`, branch `main`.
 - **Pemicu:** Cloudflare Workers Builds terhubung ke GitHub dan `auto_build_enabled` aktif. Setiap push/merge ke `main` seharusnya memicu build baru; branch pengembangan tidak langsung masuk ke produksi.
-- **Build command:** `mkdir -p dist && cp index.html dist/index.html`.
+- **Build command:** `mkdir -p dist && cp index.html dist/index.html && if [ -f assets/brks-syariah.svg ]; then mkdir -p dist/assets && cp assets/brks-syariah.svg dist/assets/brks-syariah.svg; fi`.
 - **Deploy command:** `npx wrangler deploy --assets ./dist --name greencal --compatibility-date 2026-10-18`.
 - **Entry point:** hanya `index.html` yang dipublikasikan sebagai aset web produksi. File `Kalkulator Emisi CRMS.html` adalah versi standalone cadangan.
 - **Verifikasi:** periksa status **Builds** dan **Deployments** di [Cloudflare Dashboard](https://dash.cloudflare.com/), lalu uji halaman publik di HP dan laptop.
 - **Keamanan:** token build disimpan dan dikelola pada Cloudflare Workers Builds, tidak di-commit ke GitHub.
 
 Jika terjadi build gagal, periksa log di Cloudflare terlebih dahulu. Jangan menganggap merge GitHub sebagai bukti deployment berhasil tanpa status **SUCCESS** dan versi deployment terbaru.
+
+## Branding BRK Syariah
+
+Logo sumber dari pengguna disimpan sebagai `assets/brks-syariah.svg` (berisi raster transparan berukuran ringan) dan ditampilkan di header aplikasi pada HP dan laptop. Pengaturan Workers Builds menyalin logo ke `dist/assets/` agar ikut terdeploy. Di tema gelap logo tetap memiliki latar putih demi keterbacaan. Sediakan file `assets/` jika membuka versi standalone dari repositori secara lokal.
