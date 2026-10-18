@@ -5066,9 +5066,79 @@ function renderActForm() {
 
 function renderAct() {
   renderActForm();
+  renderActivityDraftState();
   renderActList();
 }
 
+
+
+/* Data draft is device-local and excluded from saved activity calculations. */
+const ACTIVITY_DRAFT_KEY = "green_activity_draft_v1";
+function getActivityDraft() {
+  try {
+    const raw = localStorage.getItem(ACTIVITY_DRAFT_KEY);
+    if (!raw) return null;
+    const d = JSON.parse(raw);
+    return d && typeof d === "object" && d.cat ? d : null;
+  } catch(err) { return null; }
+}
+function renderActivityDraftState() {
+  const host = $("#actDraftNotice");
+  if (!host) return;
+  const d = getActivityDraft();
+  host.hidden = !d;
+  if (!d) { host.innerHTML = ""; return; }
+  const stamp = d.savedAt ? new Date(d.savedAt) : null;
+  const when = stamp && !Number.isNaN(stamp.getTime()) ?
+    stamp.toLocaleString("id-ID",{dateStyle:"medium",timeStyle:"short"}) : "sebelumnya";
+  host.innerHTML =
+    '<div class="activity-draft-text"><b>Draft aktivitas tersedia</b><small>Disimpan '+esc(when)+' · hanya di perangkat ini</small></div>' +
+    '<div class="activity-draft-controls"><button class="btn sm" type="button" id="btnRestoreActivityDraft">Lanjutkan</button>' +
+    '<button class="btn sm" type="button" id="btnRemoveActivityDraft">Hapus draft</button></div>';
+  $("#btnRestoreActivityDraft").onclick = restoreActivityDraft;
+  $("#btnRemoveActivityDraft").onclick = () => {
+    try { localStorage.removeItem(ACTIVITY_DRAFT_KEY); }
+    catch(err) { toast("Tidak dapat menghapus draft."); return; }
+    renderActivityDraftState();
+    toast("Draft telah dihapus.");
+  };
+}
+function saveActivityDraft() {
+  const d = {
+    year:Number($("#aYear").value) || S.year,
+    unit:$("#aUnit").value,cat:$("#aCat").value,
+    inputs:readActInputs(),
+    desc:$("#aDesc").value,evidence:$("#aEvidence").value,
+    savedAt:new Date().toISOString()
+  };
+  try { localStorage.setItem(ACTIVITY_DRAFT_KEY,JSON.stringify(d)); }
+  catch(err) { toast("Penyimpanan lokal tidak diizinkan browser."); return; }
+  renderActivityDraftState();
+  toast("Draft tersimpan di browser. Belum termasuk data emisi.");
+}
+function restoreActivityDraft() {
+  const d = getActivityDraft();
+  if (!d) return;
+  if (S.editActId) { toast("Batalkan proses edit sebelum memulihkan draft."); return; }
+  fillYear($("#aYear"),d.year);
+  fillSelect($("#aUnit"),(st().units||[]).map(u=>({v:u,t:u})),d.unit);
+  fillSelect($("#aCat"),catOptions(),d.cat);
+  renderActFields(d.inputs||{});
+  $("#aDesc").value=d.desc||"";
+  $("#aEvidence").value=d.evidence||"";
+  calcAct();
+  $("#actForm").scrollIntoView({behavior:"smooth",block:"start"});
+  toast("Draft dipulihkan. Periksa kembali sebelum menyimpan.");
+}
+function clearActivityFilters() {
+  $("#fScope").value="";
+  $("#fSearch").value="";
+  $("#fQuality").value="all";
+  $("#fActSort").value="category";
+  $("#actFilterDetails").open=false;
+  renderActList();
+  toast("Semua filter aktivitas direset.");
+}
 
 /* GC-CARBON-EXPERIENCE-v2: overview is derived exclusively from registered activity data */
 function renderCarbonActivityHero() {
@@ -5101,9 +5171,9 @@ function renderCarbonActivityHero() {
       '</div>' +
       '<p class="carbon-hero-note">' + (current.length ? 'Total emisi dari aktivitas Scope 1, 2, dan 3 yang tercatat pada tahun terpilih. Angka bukan klaim penurunan emisi.' : 'Belum ada data aktivitas untuk periode ini. Tambahkan data agar jejak karbon dapat dihitung.') + '</p>' +
       '<div class="carbon-hero-foot">' +
-        '<span class="carbon-mini-pill">' + current.length + ' aktivitas tercatat</span>' +
-        '<span class="carbon-mini-pill">' + calculated + ' hasil perhitungan</span>' +
-        (sampleCount ? '<span class="carbon-mini-pill carbon-hero-warning">Termasuk ' + sampleCount + ' data contoh · belum terverifikasi</span>' : '') +
+        '<div class="carbon-mini-stat"><span class="carbon-stat-icon" aria-hidden="true">▤</span><span><b>' + current.length + '</b> aktivitas tercatat</span></div>' +
+        '<div class="carbon-mini-stat"><span class="carbon-stat-icon" aria-hidden="true">▦</span><span><b>' + calculated + '</b> hasil perhitungan</span></div>' +
+        (sampleCount ? '<div class="carbon-mini-stat carbon-hero-warning"><span class="carbon-stat-icon" aria-hidden="true">!</span><span><b>' + sampleCount + ' data contoh</b><small>Belum terverifikasi</small></span></div>' : '') +
       '</div>' +
       '<div class="carbon-scope-filters" id="carbonScopeFilters" aria-label="Filter berdasarkan scope">' +
         options.map(o => '<button type="button" data-carbon-scope="' + o[0] + '" aria-pressed="' + String(filter === o[0]) + '">' + o[1] + ' · ' + o[2] + '</button>').join("") +
@@ -5121,11 +5191,26 @@ function renderActList() {
   const sc = $("#fScope").value;
   const q = ($("#fSearch").value || "").trim().toLowerCase();
 
+  const quality = $("#fQuality")?.value || "all";
+  const sorting = $("#fActSort")?.value || "category";
   const rows = S.entries.filter(e =>
     e.year === y &&
-    (!sc || (CAT(e.cat) || {}).s === sc) &&
-    (!q || (e.unitKerja + " " + ((CAT(e.cat) || {}).t || "") + " " + (e.desc || "") + " " + (e.evidence || "")).toLowerCase().includes(q))
-  ).sort((a, b) => CATS.indexOf(CAT(a.cat)) - CATS.indexOf(CAT(b.cat)));
+    (!sc || String((CAT(e.cat) || {}).s) === sc) &&
+    (quality === "all" ||
+      (quality === "real" && !e.contoh) ||
+      (quality === "sample" && !!e.contoh) ||
+      (quality === "missing" && !String(e.evidence || "").trim()) ||
+      (quality === "stale" && entryStale(e))) &&
+    (!q || (String(e.unitKerja || "") + " " + ((CAT(e.cat) || {}).t || "") + " " + (e.desc || "") + " " + (e.evidence || "") + " " + (e.summary || "")).toLowerCase().includes(q))
+  ).sort((a, b) => {
+    if (sorting === "latest") return String(b.at || "").localeCompare(String(a.at || ""));
+    if (sorting === "highest") return (Number(entryT(b, S.method)) || 0) - (Number(entryT(a, S.method)) || 0);
+    if (sorting === "lowest") return (Number(entryT(a, S.method)) || 0) - (Number(entryT(b, S.method)) || 0);
+    if (sorting === "unit") return String(a.unitKerja || "").localeCompare(String(b.unitKerja || ""), "id");
+    return CATS.indexOf(CAT(a.cat)) - CATS.indexOf(CAT(b.cat));
+  });
+  $("#actResultsCount").textContent = "Menampilkan " + rows.length + " dari " + S.entries.filter(e => e.year === y).length + " aktivitas";
+  $("#btnClearActivitySearch").hidden = !q;
 
   const stale = S.entries.filter(e => e.year === y && entryStale(e)).length;
   const br = $("#btnRecalc");
@@ -5142,7 +5227,7 @@ function renderActList() {
   });
 
   if (!rows.length) {
-    const emptyHtml = '<div class="empty-state"><p>Belum ada data aktivitas untuk filter ini. Klik <b>+ Tambah Data</b> atau gunakan <b>Kalkulator Cepat</b>.</p></div>';
+    const emptyHtml = '<div class="empty-state"><p>Tidak ada aktivitas sesuai filter ini. Ubah filter, atau gunakan tombol <b>Reset filter</b>.</p></div>';
     $("#actCardsList").innerHTML = emptyHtml;
     $("#actTable").innerHTML = '<tbody><tr><td class="empty-state">' + emptyHtml + '</td></tr></tbody>';
     return;
@@ -5260,8 +5345,8 @@ function resetAct() {
   S.editActId = null;
   $("#aDesc").value = "";
   $("#aEvidence").value = "";
-  $("#actFormTitle").textContent = "Catat Aktivitas";
-  $("#aSave").textContent = "Simpan Data";
+  $("#actFormTitle").textContent = "Tambah Data Aktivitas";
+  $("#aSave").textContent = "Tambah Aktivitas";
   $("#aCancel").hidden = true;
   renderActFields({});
 }
@@ -5299,6 +5384,7 @@ async function saveAct(ev) {
   }
 
   saveStateToStorage();
+  try { localStorage.removeItem(ACTIVITY_DRAFT_KEY); } catch (err) {}
   resetAct();
   renderAll();
 }
@@ -6277,7 +6363,12 @@ function bindEvents() {
   $("#aCat").onchange = () => renderActFields({});
   $("#fSearch").oninput = renderActList;
   $("#fScope").onchange = renderActList;
+  $("#fQuality").onchange = renderActList;
+  $("#fActSort").onchange = renderActList;
   $("#btnRecalc").onclick = recalcAll;
+  $("#btnClearActivitySearch").onclick = () => { $("#fSearch").value = ""; renderActList(); $("#fSearch").focus(); };
+  $("#btnResetActivityFilters").onclick = clearActivityFilters;
+  $("#btnSaveActivityDraft").onclick = saveActivityDraft;
 
   $("#finForm").onsubmit = saveFin;
   $("#xCancel").onclick = resetFin;
