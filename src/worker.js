@@ -28,7 +28,7 @@ const readBody=async request=>{
 // a second verification step and MUST be rotated before application API access.
 async function identity(req,db,actor){
   if(!actor||!actor.email||!["Admin","Maker"].includes(actor.role))return null;
-  const user=await db.prepare("SELECT id,email,role,active,salt,password_hash,must_change_password FROM gc_users WHERE email=?")
+  const user=await db.prepare("SELECT id,email,role,active,salt,password_hash,must_change_password,password_updated_at FROM gc_users WHERE email=?")
     .bind(actor.email.toLowerCase()).first();
   if(!user||!user.active||user.role!==(actor.role==="Admin"?"admin":"maker"))return null;
   return user;
@@ -41,6 +41,22 @@ async function sessionUser(req,db,accessActor){
   if(!row||row.expires_at<=Date.now()||!row.active||row.email.toLowerCase()!==accessActor.email.toLowerCase()||
       row.role!==(accessActor.role==="Admin"?"admin":"maker"))return null;
   return row;
+}
+async function activateFirstPassword(req,db,actor){
+  const user=await identity(req,db,actor);
+  if(!user||!user.active)return err("Akun belum terdaftar.",403);
+  if(user.password_updated_at!==null&&user.password_updated_at!==undefined)
+    return err("Akun sudah diaktifkan. Silakan login dengan password Anda.",409);
+  const body=await readBody(req),pass=body.password;
+  if(!validPassword(pass)||!/[A-Z]/.test(pass)||!/[a-z]/.test(pass)||
+     !/[0-9]/.test(pass)||!/[^a-zA-Z0-9]/.test(pass))
+    return err("Password minimal 12 karakter dengan huruf besar, kecil, angka, dan simbol.",400);
+  const salt=rand(16),hash=await passHash(pass,salt);
+  const result=await db.prepare("UPDATE gc_users SET salt=?,password_hash=?,must_change_password=0,password_updated_at=? WHERE id=? AND password_updated_at IS NULL")
+    .bind(salt,hash,Date.now(),user.id).run();
+  if(result.meta?.changes!==1)return err("Akun sudah diaktifkan.",409);
+  await audit(db,user.id,"auth.activated","verified_email_otp");
+  return C({ok:true,readyToLogin:true});
 }
 async function login(req,db,actor){
   const body=await readBody(req),addr=email(body.email),pwd=body.password;
@@ -92,8 +108,14 @@ async function router(req,env) {
     if(!origin||origin!==url.origin)return err("Origin permintaan tidak valid",403);
     if(req.headers.get("content-type")?.split(";")[0].trim()!=="application/json")return err("Content-Type harus application/json",415);
   }
-  if(path==="/api/auth/status"&&method==="GET")return C({loginMethod:"password-and-cloudflare-access",passwordPolicy:"must-change-first-login"});
+  if(path==="/api/auth/status"&&method==="GET"){
+    const account=await identity(req,db,actor);
+    return C({loginMethod:"email-otp-plus-password",email:actor.email,
+      activationRequired:!!account&&account.password_updated_at==null,
+      accountEnabled:!!account,role:account?.role||null});
+  }
   if(path==="/api/auth/bootstrap"&&method==="POST")return err("Bootstrap publik ditutup.",403);
+  if(path==="/api/auth/activate"&&method==="POST")return activateFirstPassword(req,db,actor);
   if(path==="/api/auth/login"&&method==="POST")return login(req,db,actor);
   if(path==="/api/auth/logout"&&method==="POST"){
     const token=getCookie(req);
