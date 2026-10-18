@@ -2317,6 +2317,7 @@ dialog.modal-sheet .modal-foot { background:var(--surface); }
 .gc-ai-provider-body .field-label{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
 .gc-ai-key-state{font-size:10px;font-weight:700;color:var(--ink-muted)}
 .gc-ai-provider-body input[type=text]{width:100%;min-height:39px;font-size:12px;padding:7px 9px}
+.gc-ai-provider-body input.gc-ai-key{width:100%;min-height:39px;padding:7px 9px;font-size:13px;}
 .gc-ai-switch{display:flex;align-items:center;gap:7px;font-size:11px;color:var(--ink-muted)}
 .gc-ai-movers{display:grid;gap:5px}
 .gc-ai-movers button{border:1px solid var(--line);background:var(--surface-2);border-radius:7px;height:31px;font-size:16px;cursor:pointer}
@@ -6797,6 +6798,9 @@ async function openAiConfigDialog() {
       '<div class="gc-ai-provider-body"><label class="field-label">'+esc(names[p.provider]||p.provider)+
       ' <span class="gc-ai-key-state">'+(p.hasKey?'Secret tersedia':'Secret belum dipasang')+'</span></label>'+
       '<input class="gc-ai-model" aria-label="Model '+esc(p.provider)+'" type="text" value="'+esc(p.model)+'" maxlength="100">'+
+      '<label class="field-label">API Key baru (opsional, hanya Admin)</label>'+
+      '<input class="gc-ai-key" type="password" autocomplete="new-password" placeholder="'+(p.hasKey?'Key telah tersedia; biarkan kosong untuk mempertahankan':'Masukkan API Key server')+'" aria-label="API Key '+esc(p.provider)+'">'+
+      '<label class="gc-ai-switch"><input type="checkbox" class="gc-ai-remove">Hapus key tersimpan di GreenCal</label>'+
       '<label class="gc-ai-switch"><input type="checkbox" class="gc-ai-enabled"'+(p.enabled?' checked':'')+'>Aktifkan model</label>'+
       '</div><div class="gc-ai-movers"><button type="button" class="gc-ai-up" aria-label="Naikkan prioritas">↑</button>'+
       '<button type="button" class="gc-ai-down" aria-label="Turunkan prioritas">↓</button></div></div>'
@@ -6804,11 +6808,13 @@ async function openAiConfigDialog() {
   openDlg("Admin · Pengaturan Prioritas AI",
     '<div class="form-stack"><p class="gc-ai-explainer">Urutan paling atas dicoba terlebih dahulu. Bila API gagal, sistem otomatis berpindah ke model aktif berikutnya. Hanya Admin yang dapat mengubah konfigurasi.</p>'+
     '<div id="gcAiChain">'+rows+'</div>'+
-    '<p class="gc-ai-explainer"><b>Keamanan:</b> API key tidak diisi atau disimpan di browser. Admin memasang secret <code>AI_KEY_GEMINI</code>, <code>AI_KEY_OPENAI</code>, <code>AI_KEY_OPENROUTER</code> atau <code>AI_KEY_GROQ</code> pada Cloudflare Worker → Settings → Variables and Secrets.</p></div>',
+    '<p class="gc-ai-explainer"><b>Keamanan:</b> Key baru dikirim sekali melalui HTTPS, dienkripsi AES-GCM oleh Worker dan disimpan di Cloudflare KV; tidak disimpan di browser atau dikembalikan oleh API. Key alternatif dapat dipasang sebagai Secret <code>AI_KEY_GEMINI</code>, <code>AI_KEY_OPENAI</code>, <code>AI_KEY_OPENROUTER</code> atau <code>AI_KEY_GROQ</code> di Cloudflare.</p></div>',
     [{t:"Simpan Prioritas AI",primary:true,fn:async()=>{
       const order=Array.from(document.querySelectorAll("#gcAiChain .gc-ai-provider")).map(row=>({
         provider:row.dataset.aiProvider,model:row.querySelector(".gc-ai-model").value.trim(),
-        enabled:row.querySelector(".gc-ai-enabled").checked
+        enabled:row.querySelector(".gc-ai-enabled").checked,
+        newKey:row.querySelector(".gc-ai-key").value,
+        removeKey:row.querySelector(".gc-ai-remove").checked
       }));
       let r,data;
       try{
