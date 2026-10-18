@@ -3113,7 +3113,7 @@ dialog.modal-sheet .modal-foot { background:var(--surface); }
           </div>
         </div>
 
-        <div class="data-card" onclick="setTab('parameter')" style="cursor:pointer">
+        <div class="data-card" data-admin-only onclick="setTab('parameter')" style="cursor:pointer">
           <div class="data-card-head">
             <div style="display:flex;align-items:center;gap:12px">
               <div class="wizard-icon-box" style="width:40px;height:40px;font-size:20px">⚙️</div>
@@ -3142,14 +3142,14 @@ dialog.modal-sheet .modal-foot { background:var(--surface); }
 
       <div class="panel">
         <h3 style="margin:0 0 4px">Penyimpanan &amp; Cadangan Data</h3>
-        <p style="margin:0 0 14px;font-size:12.5px;color:var(--ink-muted)">Data Anda otomatis tersimpan di browser perangkat HP ini. Cadangkan ke file untuk dipindahkan ke laptop/komputer lain.</p>
+        <p style="margin:0 0 14px;font-size:12.5px;color:var(--ink-muted)">Data setelah login disimpan pada database bersama Cloudflare D1. Cadangkan data secara berkala untuk audit.</p>
         <div style="display:flex;gap:10px;flex-wrap:wrap">
           <button class="btn sm" id="btnBackupJson">Unduh Cadangan (JSON)</button>
-          <label class="btn sm" style="cursor:pointer">
-            <span>Pulihkan Cadangan</span>
+          <label class="btn sm" style="cursor:pointer" data-admin-only>
+            <span>Pulihkan Cadangan (Admin)</span>
             <input type="file" id="fileRestoreJson" accept=".json" style="display:none">
           </label>
-          <button class="btn sm danger" id="btnResetData">Reset ke Data Default</button>
+          <button class="btn sm danger" data-admin-only id="btnResetData">Reset ke Data Default</button>
         </div>
       </div>
     </section>
@@ -5534,6 +5534,7 @@ function renderFinList() {
     }).join("") +
     '</tbody><tfoot><tr><td colspan="2">Total Portofolio</td><td class="r num"><b>' + nf(osAll) + '</b></td><td></td><td></td><td class="r num"><b>' + nf(fin, 1) + '</b></td><td class="r num">' + (dqW != null ? nf(dqW, 1) : "–") + '</td><td></td></tr></tfoot>';
 
+  if (!S.isAdmin) $$("[data-xd]").forEach(b => b.remove());
   $$("[data-xa]").forEach(b => b.onclick = () => loadFin(b.dataset.xa));
   $$("[data-xd]").forEach(b => b.onclick = () => {
     confirmDlg("Hapus Eksposur Debitur?", "Data eksposur ini akan dihapus permanen.", "Hapus", () => {
@@ -5755,6 +5756,7 @@ function renderOff() {
       '</tr>'
     ).join("") + '</tbody>';
 
+  if (!S.isAdmin) $$("[data-od]").forEach(b => b.remove());
   $$("[data-od]").forEach(b => {
     b.onclick = () => {
       confirmDlg("Hapus Catatan Offset?", "Catatan offset ini akan dihapus permanen.", "Hapus", () => {
@@ -6360,11 +6362,14 @@ function bindEvents() {
   $("#btnBackupJson").onclick = backupJson;
   $("#fileRestoreJson").onchange = restoreJson;
   $("#btnResetData").onclick = () => {
-    confirmDlg("Reset Seluruh Data?", "Semua data aktivitas & pembiayaan akan dikembalikan ke data default awal.", "Reset Data", () => {
-      localStorage.removeItem(STORAGE_KEY);
-      loadStateFromStorage();
+    if (!GC_AUTH.isAdmin) { toast("Hanya Admin yang dapat mereset data."); return; }
+    confirmDlg("Reset Seluruh Data?", "Data aktivitas, pembiayaan, dan offset bersama akan DIKOSONGKAN. Parameter faktor emisi tetap dipertahankan.", "Reset Data", () => {
+      S.entries = [];
+      S.exposures = [];
+      S.offsets = [];
+      saveStateToStorage();
       renderAll();
-      toast("Data berhasil direset ke kondisi default!");
+      toast("Permintaan reset dikirim untuk disimpan ke database.");
     });
   };
 }
