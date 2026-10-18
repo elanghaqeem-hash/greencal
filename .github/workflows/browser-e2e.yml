@@ -1,0 +1,29 @@
+name: GreenCal browser end-to-end
+on:
+  pull_request:
+    paths:
+      - 'index.html'
+      - 'auth-client.js'
+      - 'src/**'
+      - 'tests/browser-server.mjs'
+      - 'tests/greencal.browser.spec.mjs'
+      - '.github/workflows/browser-e2e.yml'
+  workflow_dispatch:
+jobs:
+  chromium-e2e:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Install Playwright test runner and Chromium
+        run: |
+          npm install --no-save @playwright/test
+          npx playwright install --with-deps chromium
+      - name: Run browser tests with isolated simulated database/API
+        run: |
+          node tests/browser-server.mjs > /tmp/greencal-test-server.log 2>&1 &
+          for i in {1..30}; do curl --fail --silent http://127.0.0.1:4173/ > /dev/null && break; sleep 1; done
+          npx playwright test tests/greencal.browser.spec.mjs --workers=1 --reporter=line

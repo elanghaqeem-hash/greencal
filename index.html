@@ -8270,7 +8270,7 @@ function bindEvents() {
   const btnCfgAi = $("#btnConfigureAi");
   if (btnCfgAi) btnCfgAi.onclick = openAiConfigDialog;
   const btnRunAi = $("#btnRunAi");
-  if (btnRunAi) btnRunAi.onclick = runAiAnalysisUi;
+  if (btnRunAi) btnRunAi.onclick = () => runAiAnalysisUi(true);
 
   // NGFS Scenarios
   ["#tScen", "#tYr"].forEach(s => { const el = $(s); if (el) el.onchange = renderTrans; });
@@ -8288,34 +8288,34 @@ function bindEvents() {
 
   // Menu Backup & Restore
   $("#btnBackupJson").onclick = backupJson;
-  $("#btnClearPublicData").onclick = () => confirmDlg("Hapus data perangkat?", "Semua aktivitas, pembiayaan, dan offset yang disimpan di browser ini akan dihapus. Unduh cadangan JSON terlebih dahulu bila diperlukan.", "Hapus Data Lokal", () => { S.entries=[]; S.exposures=[]; S.offsets=[]; S.narrativeDrafts={}; S.audit=[]; saveStateToStorage(); LAST_AI_RESULT=null; renderAll(); toast("Data lokal perangkat berhasil dikosongkan."); });
+  $("#btnClearPublicData").onclick = () => confirmDlg("Hapus data perangkat?", "Semua aktivitas, pembiayaan, dan offset yang disimpan di browser ini akan dihapus. Unduh cadangan JSON terlebih dahulu bila diperlukan.", "Hapus Data Lokal", () => { S.entries=[]; S.exposures=[]; S.offsets=[]; S.narrativeDrafts={}; S.audit=[]; saveStateToStorage(); LAST_AI_RESULT=null; renderAll(); toast("Perubahan reset sedang disimpan."); });
   $("#fileRestoreJson").onchange = restoreJson;
-  // Per-user browser working copy, isolated by the IP verified by Cloudflare.
+  // Per-browser D1 workspace, isolated using a server-issued HttpOnly cookie.
   const scopeResetBtn=document.createElement("button");
   scopeResetBtn.type="button";
   scopeResetBtn.className="btn sm danger";
   scopeResetBtn.id="btnResetNetworkData";
   scopeResetBtn.textContent="Reset Data Saya";
-  scopeResetBtn.setAttribute("aria-label","Hapus seluruh data aktivitas, pembiayaan, dan offset pada jaringan ini");
+  scopeResetBtn.setAttribute("aria-label","Hapus seluruh data aktivitas, pembiayaan, dan offset perangkat ini");
   const backupPanel=document.querySelector("#btnResetData")?.parentElement;
   if(backupPanel)backupPanel.appendChild(scopeResetBtn);
   scopeResetBtn.onclick=()=>confirmDlg(
-    "Reset seluruh input pada IP ini?",
-    "Aktivitas, data pembiayaan dan offset pada browser dan jaringan saat ini akan dihapus. Tindakan ini tidak dapat dibatalkan. Cadangkan terlebih dahulu bila diperlukan.",
+    "Reset seluruh input perangkat ini?",
+    "Aktivitas, data pembiayaan, dan offset perangkat ini akan dihapus dari penyimpanan GreenCal. Cadangkan terlebih dahulu.",
     "Ya, Hapus Data Saya",
-    ()=>{
+    async ()=>{
       try{
-        GC_AUTH.resetCurrentScope();
+        await GC_AUTH.resetCurrentScope();
         S.entries=[];S.exposures=[];S.offsets=[];S.narrativeDrafts={};S.audit=[];
         S.editActId=null;S.editFinId=null;
         LAST_AI_RESULT=null;
         renderAll();setTab("ringkasan");
-        toast("Data pada jaringan ini berhasil dikosongkan.");
+        toast("Data perangkat ini berhasil dikosongkan.");
       }catch(error){toast(error.message);}
     }
   );
   $("#btnResetData").onclick = () => {
-    if (!GC_AUTH.isAdmin) { toast("Hanya Admin yang dapat mereset data."); return; }
+    if (!GC_AUTH.scopeReady) { toast("Database belum tersedia."); return; }
     confirmDlg("Reset Aktivitas?", "Semua aktivitas, eksposur dan offset bersama akan dikosongkan.", "Reset Data", () => { S.entries=[]; S.exposures=[]; S.offsets=[]; S.narrativeDrafts={}; saveStateToStorage(); renderAll(); toast("Menyimpan perubahan."); });
   };}
 
@@ -9033,7 +9033,7 @@ async function runAiTier3(summaryData, year, config) {
     response=await fetch("/api/ai/analyze",{method:"POST",headers:{"Content-Type":"application/json"},
       body:JSON.stringify(payload),credentials:"same-origin",cache:"no-store"});
     result=await response.json();
-  }catch(e){throw Error("Tidak bisa menjangkau layanan AI server. Periksa koneksi atau autentikasi Cloudflare Access.");}
+  }catch(e){throw Error("Tidak dapat menjangkau layanan AI server. Periksa koneksi internet.");}
   if(!response.ok||!result.ok)throw Error(result.message||("Layanan AI gagal (HTTP "+response.status+")."));
   const local=runAiTier2(s,year);
   return Object.assign({},local,{
@@ -9048,11 +9048,13 @@ async function runAiTier3(summaryData, year, config) {
 }
 
 /* Master AI Runner */
-async function executeAiAnalysis() {
+async function executeAiAnalysis(useCloud = false) {
   const cfg = getAiConfig();
   const s = summary(S.year, S.method);
   
-  if (cfg.tier === "tier1") {
+  if (useCloud) {
+    return await runAiTier3(s, S.year, cfg);
+  } else if (cfg.tier === "tier1") {
     return runAiTier1(s, S.year);
   } else if (cfg.tier === "tier3") {
     return await runAiTier3(s, S.year, cfg);
@@ -9094,7 +9096,7 @@ function renderAiView() {
   }
 }
 
-async function runAiAnalysisUi() {
+async function runAiAnalysisUi(useCloud = false) {
   if(!gcAiEnsureSaved())return;
   const box = $("#aiContentBox");
   box.innerHTML = 
@@ -9105,7 +9107,7 @@ async function runAiAnalysisUi() {
     '</div>';
 
   try {
-    const res = await executeAiAnalysis();
+    const res = await executeAiAnalysis(useCloud);
     LAST_AI_RESULT = res;
     LAST_AI_FINGERPRINT = gcAiFingerprint(S.year);
     displayAiResult(res);

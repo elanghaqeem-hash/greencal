@@ -1,4 +1,5 @@
-import { handleAiApi, verifyAccessIdentity } from "./ai-worker.js";
+import { deviceScope, validPublicState } from "./public-state.js";
+import { handleAiApi, publicAiRequest, verifyAccessIdentity } from "./ai-worker.js";
 import { permissionsForRole, writableKeysForRole, preservesExistingRecords } from "./roles.js";
 // GreenCal — D1-backed authentication, two-role RBAC, shared state.
 // All security decisions are enforced by the Worker; the browser role is advisory only.
@@ -186,9 +187,59 @@ async function router(req,env) {
   }
   return err("Endpoint tidak ditemukan",404);
 }
+
+async function publicStateRouter(req,env) {
+  if(!env.DB)return err("Penyimpanan belum tersedia",503);
+  const device=await deviceScope(req,env.IP_SCOPE_SECRET);
+  if(!device)return err("Penyimpanan tidak tersedia",503);
+  if(req.method!=="GET"&&device.newlyCreated)return err("Inisialisasi perangkat diperlukan. Muat ulang.",428);
+  const scope=device.scope;
+  const url=new URL(req.url);
+  if(req.method==="GET"){
+    const row=await env.DB.prepare("SELECT revision,payload FROM gc_public_state WHERE scope_id=?").bind(scope).first();
+    return C({revision:row?.revision??0,data:row?JSON.parse(row.payload):null},200,device.cookie?{"set-cookie":device.cookie}:{});
+  }
+  if(req.method!=="PUT")return err("Metode tidak didukung",405);
+  if(req.headers.get("origin")!==url.origin)return err("Origin permintaan tidak valid",403);
+  if(req.headers.get("content-type")?.split(";")[0].trim()!=="application/json")return err("Content-Type harus application/json",415);
+  const body=await readBody(req);
+  if(!Number.isInteger(body?.revision)||body.revision<0||!validPublicState(body.data))
+    return err("Struktur data/revisi tidak valid",400);
+  const payload=JSON.stringify(body.data),now=Date.now();
+  // CAS updates and conditional insert prevent overwriting concurrent browser saves.
+  if(body.revision===0){
+    const existing=await env.DB.prepare("SELECT revision FROM gc_public_state WHERE scope_id=?").bind(scope).first();
+    if(existing)return err("Konflik revisi. Muat ulang.",409);
+    try{
+      await env.DB.prepare("INSERT INTO gc_public_state(scope_id,revision,payload,updated_at) VALUES(?,1,?,?)").bind(scope,payload,now).run();
+    }catch{return err("Konflik revisi. Muat ulang.",409);}
+  }else{
+    const result=await env.DB.prepare("UPDATE gc_public_state SET revision=revision+1,payload=?,updated_at=? WHERE scope_id=? AND revision=?")
+      .bind(payload,now,scope,body.revision).run();
+    if(result.meta?.changes!==1)return err("Konflik revisi. Muat ulang.",409);
+  }
+  return C({ok:true,revision:body.revision+1});
+}
+
 export default {
   async fetch(req,env){
     const path=new URL(req.url).pathname;
+    if(path==="/api/public/state"){
+      try{return await publicStateRouter(req,env)}catch(e){console.error("Public state exception",e);return err("Permintaan gagal diproses",500);}
+    }
+    if(path==="/api/ai/status" || path==="/api/ai/analyze"){
+      try {
+        const device=await deviceScope(req,env.IP_SCOPE_SECRET);
+        if(!device)return err("Penyimpanan perangkat belum dikonfigurasi",503);
+        if(device.newlyCreated){
+          if(req.method!=="GET")return err("Inisialisasi perangkat diperlukan",428);
+        }
+        const response=await publicAiRequest(req,env,device.scope);
+        if(!device.cookie)return response;
+        const h=new Headers(response.headers);h.set("set-cookie",device.cookie);
+        return new Response(response.body,{status:response.status,headers:h});
+      }catch(e){console.error("Public AI exception",e);return err("Layanan AI tidak dapat diproses",500);}
+    }
     if(path==="/api/client-scope" && req.method==="GET"){
       // Never trust a browser-supplied IP. Cloudflare supplies the observed IP.
       const ip=req.headers.get("CF-Connecting-IP");
