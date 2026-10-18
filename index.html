@@ -3192,6 +3192,66 @@ dialog.modal-sheet .modal-foot { background:var(--surface); }
 }
 @media(prefers-reduced-motion:reduce){.gc-ai-editor-panel .gc-ai-action{transition:none}}
 
+
+/* GreenCal · Surat Berharga / PCAF · Sektor Usaha Penerbit control */
+#wizardFormPanel .gc-security-sector-field{min-width:0;position:relative;display:flex;flex-direction:column;gap:7px}
+#wizardFormPanel .gc-security-sector-field>.field-label{
+  display:block;color:#1d4235;font-weight:800;font-size:12.5px;
+  letter-spacing:-.01em;line-height:1.5;margin:0
+}
+#wizardFormPanel .gc-security-sector-control{
+  position:relative;display:flex;align-items:center;width:100%;min-width:0;min-height:52px;
+  border-radius:14px;background:#fff;border:1px solid #cfe0d5;
+  box-shadow:0 1px 2px rgba(15,80,54,.045);
+  transition:border-color .16s,box-shadow .16s,background-color .16s;
+}
+#wizardFormPanel .gc-security-sector-control:hover{border-color:#91c2a4;background:#fcfffd}
+#wizardFormPanel .gc-security-sector-control:focus-within{
+  border-color:#169264;box-shadow:0 0 0 3px rgba(24,144,95,.12),0 2px 8px rgba(22,101,65,.06);
+}
+#wizardFormPanel .gc-security-sector-icon{
+  position:absolute;left:12px;top:50%;transform:translateY(-50%);
+  width:30px;height:30px;display:grid;place-items:center;pointer-events:none;
+  color:#177453;border-radius:9px;background:#edf7f1;z-index:1
+}
+#wizardFormPanel .gc-security-sector-icon svg{width:19px;height:19px}
+#wizardFormPanel .gc-security-sector-chevron{
+  position:absolute;right:12px;top:50%;transform:translateY(-50%);
+  width:19px;height:19px;color:#296b4e;pointer-events:none;z-index:1
+}
+#wizardFormPanel .gc-security-sector-chevron svg{width:100%;height:100%}
+#wizardFormPanel .gc-security-sector-control>#wzS_sector{
+  -webkit-appearance:none;appearance:none;
+  display:block;width:100%;min-width:0;max-width:100%;
+  height:52px;min-height:52px;margin:0;padding:10px 40px 10px 52px;
+  font-family:var(--font-main),sans-serif;font-size:13px;font-weight:600;
+  color:#1a4734;background:transparent;border:0;border-radius:14px;
+  box-shadow:none;outline:none;cursor:pointer;text-overflow:ellipsis;
+}
+#wizardFormPanel .gc-security-sector-field:not(.has-value) #wzS_sector{
+  color:#77847c;font-weight:450
+}
+#wizardFormPanel .gc-security-sector-control>#wzS_sector:focus-visible{
+  outline:2px solid #118356;outline-offset:2px
+}
+#wizardFormPanel .gc-security-sector-control:has(> #wzS_sector:disabled){
+  background:#f4f7f5;border-color:#e1e8e3;box-shadow:none;opacity:.74
+}
+#wizardFormPanel .gc-security-sector-control>#wzS_sector:disabled{cursor:not-allowed}
+#wizardFormPanel .gc-security-sector-field #wzS_secOtherWrap{margin-top:6px;min-width:0}
+#wizardFormPanel .gc-security-sector-field #wzS_secOtherWrap[hidden]{display:none!important}
+@media(max-width:620px){
+  #wizardFormPanel .gc-security-sector-field>.field-label{font-size:12px}
+  #wizardFormPanel .gc-security-sector-control{min-height:50px}
+  #wizardFormPanel .gc-security-sector-control>#wzS_sector{
+    height:50px;min-height:50px;padding-left:49px;font-size:14px
+  }
+  #wizardFormPanel .gc-security-sector-icon{left:10px}
+}
+@media(prefers-reduced-motion:reduce){
+  #wizardFormPanel .gc-security-sector-control{transition:none}
+}
+
 </style>
   <script src="/assets/guide-learning.js"></script>
 </head>
@@ -6121,8 +6181,10 @@ const GC_PCAF_SECTOR_GROUPS = [
 const GC_PCAF_SECTOR_INDEX = new Map(
   GC_PCAF_SECTOR_GROUPS.flatMap(g => g.items.map(name => [name,{name,crsa:g.crsa,group:g.label}]))
 );
-function gcPcafSectorOptions() {
-  return '<option value="">Pilih sektor usaha debitur...</option>' +
+function gcPcafSectorOptions(context="debitur") {
+  // Keep the same PCAF sector taxonomy for financing and investments; only the context differs.
+  const placeholder=context==="penerbit"?"Pilih sektor usaha penerbit...":"Pilih sektor usaha debitur...";
+  return '<option value="">'+placeholder+'</option>' +
     GC_PCAF_SECTOR_GROUPS.map(g =>
       '<optgroup label="' + esc(g.label) + '">' +
       g.items.map(name => '<option value="' + esc(name) + '">' + esc(name) + '</option>').join("") +
@@ -6277,8 +6339,12 @@ function renderWzSecurities(box){
  '<div class="input-row-2">',
  '<label class="field-group"><span class="field-label">Nama Penerbit / Negara</span><input type="text" id="wzS_issuer" maxlength="160" placeholder="Republik Indonesia / PT Emiten Tbk"></label>',
  '<label class="field-group"><span class="field-label">Kode Efek / ISIN (opsional)</span><input type="text" id="wzS_isin" maxlength="60" placeholder="FR..., SR..., atau ISIN"></label></div>',
- '<div class="input-row-2"><div class="field-group"><label class="field-label" for="wzS_sector">Sektor Usaha Penerbit</label>',
- '<select id="wzS_sector">',gcPcafSectorOptions(),'</select>',
+ '<div class="input-row-2"><div class="field-group gc-security-sector-field"><label class="field-label" for="wzS_sector">Sektor Usaha Penerbit</label>',
+ '<div class="gc-security-sector-control">',
+ '<span class="gc-security-sector-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="3" width="8" height="18" rx="1.5"/><path d="M3 21V10l5-2M16 9l5 2v10M11 7h2M11 11h2M11 15h2M11 21v-3h2v3"/></svg></span>',
+ '<select id="wzS_sector" aria-describedby="wzS_sectorHint">',gcPcafSectorOptions("penerbit"),'</select>',
+ '<span class="gc-security-sector-chevron" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></span></div>',
+ '<span id="wzS_sectorHint" class="sr-only">Pilih sektor kegiatan utama penerbit. Gunakan kolom pencarian sektor pada perangkat seluler.</span>',
  '<label class="field-group" id="wzS_secOtherWrap" hidden><span class="field-label">Sektor Usaha Lainnya</span>',
  '<input type="text" id="wzS_sectorOther" maxlength="160" placeholder="Tulis sektor penerbit"></label></div>',
  '<label class="field-group"><span class="field-label">Dasar Data Emisi</span><select id="wzS_basis">',
@@ -6325,6 +6391,8 @@ function renderWzSecurities(box){
    e("wzS_emisLabel").textContent=sovereign?"Emisi GRK Teritorial Negara (tCO₂e)":"Emisi GRK Penerbit (tCO₂e)";
    e("wzS_pppWrap").hidden=!sovereign;
    e("wzS_sector").disabled=sovereign||!eligible;
+   const sectorField=e("wzS_sector").closest(".gc-security-sector-field");
+   if(sectorField)sectorField.classList.toggle("has-value",!!e("wzS_sector").value);
    e("wzS_secOtherWrap").hidden=e("wzS_sector").disabled||e("wzS_sector").value!=="__custom__";
    const scopes=sovereign?["production_excl_lulucf","production_incl_lulucf"]:["s1s2","s1s2s3"];
    [...e("wzS_scope").options].forEach(o=>o.hidden=!scopes.includes(o.value));
@@ -9240,7 +9308,7 @@ window.displayAiResult = displayAiResult;
   const list = sheet.querySelector(".gc-choice-options");
   let active = null;
   const allowed = sel => !!sel && !sel.disabled && sel.options.length >= 4 &&
-    (sel.id === "aUnit" || sel.id === "aCat" || sel.id === "wzL_unit" || sel.id === "wzL_grid" || sel.id === "wzB_fuel" || sel.id === "wzX_sec" ||
+    (sel.id === "aUnit" || sel.id === "aCat" || sel.id === "wzL_unit" || sel.id === "wzL_grid" || sel.id === "wzB_fuel" || sel.id === "wzX_sec" || sel.id === "wzS_sector" ||
       !!sel.closest("#aFields")) &&
     window.matchMedia("(max-width: 859px)").matches;
   const draw = () => {
