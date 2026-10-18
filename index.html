@@ -2592,30 +2592,93 @@ dialog.modal-sheet .modal-foot { background:var(--surface); }
   .gc-sidebar,main.container,.gc-sidebar-toggle {transition:none!important;}
 }
 
+
+/* Professional banking login, responsive laptop and smartphone */
+.gc-auth-gate{position:fixed;inset:0;z-index:700;display:flex;align-items:center;justify-content:center;padding:24px;background:#ebf2ed;overflow:auto;overscroll-behavior:contain}
+.gc-auth-gate[hidden],#gcLoginForm[hidden],#gcForcePasswordForm[hidden],#gcBootstrapForm[hidden]{display:none!important}
+.gc-auth-layout{display:grid;grid-template-columns:minmax(0,1.04fr) minmax(0,.96fr);width:min(100%,1000px);min-height:570px;box-shadow:0 25px 75px rgba(12,67,46,.13);border-radius:24px;overflow:hidden;background:#fff}
+.gc-auth-aside{display:flex;flex-direction:column;justify-content:space-between;padding:37px 39px;color:#fff;background:radial-gradient(circle at 90% 15%,rgba(113,226,170,.17),transparent 38%),linear-gradient(145deg,#064331,#0e664b 70%,#094733);position:relative}
+.gc-auth-bank{display:flex;align-items:center;gap:12px;flex-wrap:wrap;font-size:10px;font-weight:800;letter-spacing:.11em;color:#d2f4e3}
+.gc-auth-bank img{width:154px;max-width:100%;max-height:52px;object-fit:contain;padding:6px 9px;border-radius:9px;background:#fff}
+.gc-auth-hero{max-width:470px;padding:45px 0}
+.gc-auth-kicker{display:inline-block;color:#a7f1cd;font-size:11px;letter-spacing:.09em;font-weight:800;margin-bottom:13px}
+.gc-auth-hero h2{font-size:clamp(27px,3vw,37px);letter-spacing:-.055em;line-height:1.22;margin:0 0 17px;color:#fff}
+.gc-auth-hero p{font-size:14px;line-height:1.75;color:#d5f2e5}
+.gc-auth-keypoints{display:grid;grid-template-columns:1fr;gap:10px;margin-top:25px;color:#dcf8ea;font-size:12px;font-weight:650}
+.gc-auth-aside>small{font-size:11px;color:#cae5d7}
+.gc-auth-gate .gc-auth-card{border-radius:0;width:100%;max-height:none;overflow:visible;padding:clamp(28px,4vw,57px);box-shadow:none;display:flex;flex-direction:column;justify-content:center;min-width:0}
+.gc-auth-gate .gc-auth-icon{width:48px;height:48px;border-radius:14px;margin:0 0 18px;box-shadow:none}
+.gc-auth-eyebrow{font-size:10px;color:#166447;font-weight:800;letter-spacing:.1em;margin-bottom:6px}
+.gc-auth-gate .gc-auth-card h2{font-size:clamp(22px,2.6vw,28px);line-height:1.2;margin-bottom:9px}
+.gc-auth-gate .gc-auth-card p{margin:0 0 21px;line-height:1.6}
+.gc-auth-gate .gc-auth-card form{gap:13px}
+.gc-auth-gate .gc-auth-card label{font-size:12px;gap:7px;color:#263b30}
+.gc-auth-gate .gc-auth-card input{border:1px solid #cddbd2;border-radius:11px;min-height:49px;width:100%;background:#fff}
+.gc-auth-gate .gc-auth-card input:focus-visible{border-color:#147456;box-shadow:0 0 0 3px #daf2e6;outline:none}
+.gc-auth-gate .gc-auth-card form button{margin-top:7px;display:flex;align-items:center;justify-content:center;gap:12px;min-height:48px}
+.gc-auth-helper{font-size:11px!important;color:#6c8072!important;line-height:1.55;margin:1px 0!important}
+.gc-auth-changeinfo{font-size:12px;line-height:1.6;border-radius:10px;padding:12px;background:#e9f6ee;border:1px solid #c3e2d0;color:#125c41}
+.gc-auth-gate .gc-auth-foot{display:flex;align-items:center;gap:7px;line-height:1.6}
+.gc-auth-gate .gc-auth-error{margin-top:12px!important}
+.gc-auth-mobilebrand{display:none}
+@media(max-width:760px){
+ .gc-auth-gate{padding:0;background:#fff;align-items:flex-start}
+ .gc-auth-layout{display:block;border-radius:0;min-height:100dvh;box-shadow:none;width:100%}
+ .gc-auth-aside{display:none}
+ .gc-auth-gate .gc-auth-card{min-height:100dvh;max-width:470px;margin:0 auto;padding:calc(28px + env(safe-area-inset-top,0px)) 25px 36px}
+ .gc-auth-mobilebrand{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:46px}
+ .gc-auth-mobilebrand img{width:140px;max-height:50px;object-fit:contain}
+ .gc-auth-mobilebrand span{font-size:14px;font-weight:800;color:#176047}
+ .gc-auth-gate .gc-auth-card h2{font-size:24px}
+ .gc-auth-gate .gc-auth-icon{margin-bottom:20px}
+}
+@media(max-width:360px){.gc-auth-gate .gc-auth-card{padding-left:18px;padding-right:18px}.gc-auth-mobilebrand img{width:119px}}
+
 </style>
 </head>
 <body>
 
   <!-- AUTH: standalone overlay; protected shared state is never initialized anonymously. -->
-  <div id="gcAuthGate" class="gc-auth-gate">
-    <div class="gc-auth-card">
-      <div class="gc-auth-icon" aria-hidden="true">☘</div>
-      <h2>Green Calculator</h2>
-      <p><b>PT Bank Riau Kepri Syariah (Perseroda)</b><br>Akses aplikasi sesuai peran Admin atau Maker.</p>
-      <form id="gcLoginForm" hidden>
-        <label>Email pengguna<input id="gcLoginEmail" type="email" autocomplete="username" required placeholder="nama@perusahaan.co.id"></label>
-        <label>Password<input id="gcLoginPassword" type="password" autocomplete="current-password" required></label>
-        <button type="submit">Masuk ke GreenCal</button>
-      </form>
-      <form id="gcBootstrapForm" hidden>
-        <p>Aktivasi awal Admin — hanya bisa dilakukan sekali menggunakan kode aktivasi dari pengelola Cloudflare.</p>
-        <label>Email Admin<input id="gcSetupEmail" type="email" autocomplete="email" required></label>
-        <label>Password Admin (minimal 12 karakter)<input id="gcSetupPassword" type="password" autocomplete="new-password" minlength="12" required></label>
-        <label>Kode Aktivasi Sekali Pakai<input id="gcSetupCode" type="password" autocomplete="off" required></label>
-        <button type="submit">Aktivasi Akun Admin</button>
-      </form>
-      <p id="gcAuthError" class="gc-auth-error" role="alert" hidden></p>
-      <div class="gc-auth-foot">Akses akun, password, dan izin dikelola melalui autentikasi server. Maker tidak dapat mengubah parameter atau pengguna.</div>
+  <div id="gcAuthGate" class="gc-auth-gate" role="region" aria-label="Login GreenCal">
+    <div class="gc-auth-layout">
+      <aside class="gc-auth-aside" aria-label="Tentang GreenCal">
+        <div class="gc-auth-bank"><img src="/assets/brks-syariah.svg" alt="Logo BRK Syariah"><span>BRK SYARIAH · GREEN FINANCE</span></div>
+        <div class="gc-auth-hero">
+          <span class="gc-auth-kicker">GREEN CALCULATOR · CRMS &amp; PCAF</span>
+          <h2>Dari data emisi menuju keputusan berkelanjutan.</h2>
+          <p>Kelola emisi Scope 1, 2, 3 dan financed emissions melalui sistem yang dilengkapi jejak data, analisis, serta kontrol akses berbasis peran.</p>
+          <div class="gc-auth-keypoints"><span>◈ Kalkulasi emisi</span><span>◈ Analisis risiko iklim</span><span>◈ Data pembiayaan PCAF</span></div>
+        </div>
+        <small>PT Bank Riau Kepri Syariah (Perseroda)</small>
+      </aside>
+      <div class="gc-auth-card">
+        <div class="gc-auth-mobilebrand"><img src="/assets/brks-syariah.svg" alt="BRK Syariah"><span>GreenCal</span></div>
+        <div class="gc-auth-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="25" height="25" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/><path d="M12 15v2"/></svg></div>
+        <span class="gc-auth-eyebrow">AREA PENGGUNA TERDAFTAR</span>
+        <h2 id="gcAuthHeading">Masuk ke GreenCal</h2>
+        <p id="gcAuthDescription">Gunakan alamat email terdaftar serta password yang telah dikirim melalui email.</p>
+        <form id="gcLoginForm" hidden autocomplete="on">
+          <label for="gcLoginEmail">Email pengguna<input id="gcLoginEmail" type="email" autocomplete="username" required placeholder="Masukkan email Anda" spellcheck="false"></label>
+          <label for="gcLoginPassword">Password<input id="gcLoginPassword" type="password" autocomplete="current-password" required placeholder="Masukkan password"></label>
+          <button type="submit">Masuk ke Dashboard <span aria-hidden="true">→</span></button>
+          <p class="gc-auth-helper">Akses khusus Superadmin dan Maker. Password sementara wajib diganti pada login pertama.</p>
+        </form>
+        <form id="gcForcePasswordForm" hidden autocomplete="off">
+          <div class="gc-auth-changeinfo">Aktivasi keamanan akun · Password baru minimal 12 karakter dan harus berisi huruf besar, kecil, angka, dan simbol.</div>
+          <label for="gcForceOld">Password sementara dari email<input id="gcForceOld" type="password" autocomplete="current-password" required></label>
+          <label for="gcForceNew">Password baru<input id="gcForceNew" type="password" autocomplete="new-password" minlength="12" maxlength="128" required></label>
+          <label for="gcForceConfirm">Konfirmasi password baru<input id="gcForceConfirm" type="password" autocomplete="new-password" minlength="12" maxlength="128" required></label>
+          <button type="submit">Simpan Password Baru</button>
+        </form>
+        <form id="gcBootstrapForm" hidden aria-hidden="true">
+          <label>Email Admin<input id="gcSetupEmail" type="email"></label>
+          <label>Password Admin<input id="gcSetupPassword" type="password"></label>
+          <label>Kode Aktivasi<input id="gcSetupCode" type="password"></label>
+          <button type="submit">Aktivasi Akun Admin</button>
+        </form>
+        <p id="gcAuthError" class="gc-auth-error" role="alert" hidden></p>
+        <div class="gc-auth-foot"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="5" y="10" width="14" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg> Akses terlindungi · Sesi terenkripsi · Hak akses per peran</div>
+      </div>
     </div>
   </div>
 
