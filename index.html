@@ -4504,10 +4504,11 @@ const CATS = [
       OPT("hotelBasis", "Metode perhitungan hotel", [["guestnight", "Jumlah tamu × malam (disarankan)"], ["spend", "Total biaya penginapan (IDR)"]], { show: show("m", "hotel") }),
       NUM("guests", "Jumlah tamu yang menginap", { def: 1, unit: "orang", show: i => i.m === "hotel" && i.hotelBasis !== "spend" }),
       NUM("nights", "Jumlah malam per tamu", { def: 1, unit: "malam", show: i => i.m === "hotel" && i.hotelBasis !== "spend" }),
+      NUM("hotelName", "Nama hotel / akomodasi", { text: true, show: show("m", "hotel") }),
+      NUM("hotelCity", "Kota / negara hotel", { text: true, show: show("m", "hotel") }),
       NUM("rooms", "Jumlah kamar (informasi, tidak mengalikan emisi)", { unit: "kamar", show: show("m", "hotel") }),
       NUM("hotelExpense", "Total biaya penginapan (semua kamar, Rp)", { unit: "IDR", show: i => i.m === "hotel" && i.hotelBasis === "spend" }),
-      NUM("hotelClass", "Kelas hotel (bintang; metadata)", { unit: "bintang", show: show("m", "hotel") }),
-      NUM("legacyUnused", "Data legacy", { show: () => false }),
+      OPT("hotelClass", "Kelas hotel (bintang; metadata)", [["","Tidak diketahui"],["1","1 bintang"],["2","2 bintang"],["3","3 bintang"],["4","4 bintang"],["5","5 bintang"]], { show: show("m", "hotel") }),
       SEL("code", "Faktor emisi lama (data histori)", "travel", { show: show("m", "jarak"), disp: r => r.mode + " · " + r.unit, group: r => r.travel }),
       NUM("qty", "Jumlah historis", { units: rowUnits("travel", "code", "IDR"), show: show("m", "jarak") })
     ],
