@@ -2215,6 +2215,22 @@ dialog.modal-sheet .modal-foot { background:var(--surface); }
 }
 [data-theme="dark"] #scopeDonut .carbon-insight{background:var(--surface-elevated);border-color:var(--line)}
 
+  
+    /* GreenCal fuel catalog: searchable selection, source evidence and adaptive consumption unit */
+    .gc-fuel-form{gap:15px;}
+    .gc-fuel-helper{margin:0;color:var(--ink-muted);font-size:12px;line-height:1.6;}
+    .gc-fuel-form #wzB_fuel{min-width:0;width:100%;min-height:46px;white-space:nowrap;text-overflow:ellipsis;}
+    .gc-fuel-count{display:block;margin-top:6px;font-size:11px;color:var(--primary);font-weight:700;}
+    .gc-fuel-source{margin:0;padding:10px 12px;border-left:3px solid var(--primary);border-radius:0 10px 10px 0;background:var(--primary-soft);font-size:11px;line-height:1.5;color:var(--ink-muted);}
+    .gc-fuel-form #wzB_qtyu{max-width:140px;min-width:95px;}
+    .gc-fuel-form #wzB_vol{width:100%;min-width:0;}
+    .gc-fuel-form #wzB_save:disabled{opacity:.45;cursor:not-allowed;box-shadow:none;}
+    @media(max-width:620px){
+      .gc-fuel-form .input-row-2{grid-template-columns:minmax(0,1fr);gap:12px;}
+      .gc-fuel-form #wzB_fuel,.gc-fuel-form #wzB_type{font-size:14px;}
+      .gc-fuel-form .field-group{min-width:0;}
+    }
+
   </style>
 </head>
 <body>
@@ -3408,7 +3424,7 @@ const CATS = [
   {
     id: "s1_stat", s: "1", ref: "S1-Pembakaran Stasioner", t: "Pembakaran stasioner",
     d: "Genset, boiler, pemanas tidak bergerak milik/kendali bank. CO₂ biomassa dilaporkan terpisah.",
-    f: [SEL("fuel", "Bahan bakar", "stationary", { group: r => r.bio ? "Biomassa" : "Fosil" }), NUM("qty", "Jumlah dibakar", { units: stUnits })],
+    f: [SEL("fuel", "Bahan bakar", "stationary", { group: gcFuelGroup }), NUM("qty", "Jumlah dibakar", { units: stUnits })],
     calc(i, y) {
       const r = R("stationary", i.fuel, y), q = num(i.qty), u = i.qty_u || r.unit;
       let n = conv(q, u, r.unit, y), via = "";
@@ -3427,7 +3443,7 @@ const CATS = [
   {
     id: "s1_mob", s: "1", ref: "S1-Pembakaran Bergerak", t: "Pembakaran bergerak",
     d: "BBM kendaraan dan kapal operasional milik/kendali bank.",
-    f: [SEL("fuel", "Bahan bakar", "mobile"), NUM("qty", "BBM per kendaraan", { units: (i, y) => unitsFor("gallon", y) }), NUM("veh", "Jumlah kendaraan", { def: 1, unit: "unit" })],
+    f: [SEL("fuel", "Bahan bakar", "mobile", { group: gcFuelGroup }), NUM("qty", "BBM per kendaraan", { units: (i, y) => unitsFor("gallon", y) }), NUM("veh", "Jumlah kendaraan", { def: 1, unit: "unit" })],
     calc(i, y) {
       const r = R("mobile", i.fuel, y), q = num(i.qty), u = i.qty_u || "gallon", g = conv(q, u, "gallon", y), v = num(i.veh) ?? 1;
       if (g == null) throw new Error("Satuan tidak dapat dikonversi ke galon");
@@ -4252,80 +4268,150 @@ function renderWzListrik(box) {
   };
 }
 
+/* Fuel catalog UX: source-backed rows only; do not synthesize emission factors. */
+const GC_FUEL_GROUPS = [
+  "Diesel, Solar & Biodiesel",
+  "Bensin & Bahan Bakar Kendaraan",
+  "Minyak Bakar, Minyak Tanah & Avtur",
+  "Gas Alam, LPG, CNG & LNG",
+  "Biomassa & Biofuel",
+  "Batubara & Bahan Bakar Padat",
+  "Bahan Bakar Lainnya"
+];
+function gcFuelGroup(r) {
+  const k = String(r.key || "").toUpperCase(), n = String(r.name || "").toUpperCase();
+  if (/DIESEL|SOLAR|DEX|BIODIESEL|DISTILLATE/.test(k + " " + n)) return GC_FUEL_GROUPS[0];
+  if (/BENSIN|GASOLINE|RON-|RON /.test(k + " " + n)) return GC_FUEL_GROUPS[1];
+  if (/FUEL-OIL|MINYAK-BAKAR|MINYAK-TANAH|KEROSENE|AVTUR|PETROLEUM-COKE|RESIDUAL/.test(k)) return GC_FUEL_GROUPS[2];
+  if (/GAS|CNG|LNG|LPG|PROPANE|BUTANE/.test(k)) return GC_FUEL_GROUPS[3];
+  if (r.bio || /ETHANOL|WOOD|VEGETABLE|AGRICULTURAL|ANIMAL-FAT|PEAT/.test(k)) return GC_FUEL_GROUPS[4];
+  if (/COAL|COKE|LIGNITE|BITUMINOUS|ANTHRACITE/.test(k)) return GC_FUEL_GROUPS[5];
+  return GC_FUEL_GROUPS[6];
+}
+function gcFuelOptions(rows) {
+  return GC_FUEL_GROUPS.map(group => {
+    const list = rows.filter(r => gcFuelGroup(r) === group)
+      .sort((a,b) => a.name.localeCompare(b.name,"id"));
+    return list.length ? '<optgroup label="' + esc(group) + '">' +
+      list.map(r => '<option value="' + esc(r.key) + '">' + esc(r.name) + '</option>').join("") +
+      '</optgroup>' : "";
+  }).join("");
+}
+function gcFuelUnits(row, year) {
+  const preferred = row.unit === "short ton" ? ["kg","metric ton","short ton"] :
+    row.unit === "scf" ? ["m3","scf"] :
+    ["liter","gallon","kL","m3"];
+  return preferred.filter(u => conv(1,u,row.unit,year) != null);
+}
+function gcFuelUnitLabel(u) {
+  return u === "m3" ? "m³" : u === "scf" ? "scf (kaki³)" :
+    u === "short ton" ? "short ton" : u === "metric ton" ? "ton metrik" : u;
+}
+
 function renderWzBbm(box) {
-  const mobs = rowsFor("mobile", S.year).sort((a, b) => a.name.localeCompare(b.name));
   const units = st().units || ["Kantor Pusat"];
   box.innerHTML =
-    '<div class="form-stack">' +
-      '<h3 style="margin:0">⛽ Kalkulator Cepat: BBM Kendaraan &amp; Genset</h3>' +
+    '<div class="form-stack gc-fuel-form">' +
+      '<h3 style="margin:0">⛽ Kalkulator Cepat: Konsumsi Bahan Bakar</h3>' +
+      '<p class="gc-fuel-helper">Pilih peruntukan terlebih dahulu. Daftar bahan bakar serta satuan akan disesuaikan dengan faktor emisi yang tersedia untuk tahun ' + esc(String(S.year)) + '.</p>' +
       '<div class="input-row-2">' +
         '<label class="field-group"><span class="field-label">Unit Kerja</span><select id="wzB_unit">' + units.map(u => '<option value="' + esc(u) + '">' + esc(u) + '</option>').join("") + '</select></label>' +
-        '<label class="field-group"><span class="field-label">Peruntukan</span><select id="wzB_type"><option value="mob">Kendaraan Operasional (Scope 1)</option><option value="stat">Genset Kantor (Scope 1)</option></select></label>' +
+        '<label class="field-group"><span class="field-label">Peruntukan</span><select id="wzB_type"><option value="stat">Mesin Bakar Statis (Genset/Boiler)</option><option value="mob">Kendaraan / Mesin Bergerak</option></select></label>' +
       '</div>' +
       '<div class="input-row-2">' +
-        '<label class="field-group"><span class="field-label">Jenis Bahan Bakar</span><select id="wzB_fuel">' + mobs.map(m => '<option value="' + esc(m.key) + '">' + esc(m.name) + '</option>').join("") + '</select></label>' +
-        '<label class="field-group"><span class="field-label">Volume BBM (Liter)</span><input type="number" id="wzB_vol" placeholder="mis. 500" min="0" step="any" inputmode="decimal"></label>' +
+        '<label class="field-group"><span class="field-label">Jenis Bahan Bakar</span><select id="wzB_fuel" required></select><small id="wzB_catalogCount" class="gc-fuel-count"></small></label>' +
+        '<div class="field-group"><label class="field-label" for="wzB_vol">Jumlah Konsumsi</label><div class="qty-unit-wrap"><input type="number" id="wzB_vol" placeholder="Mis. 500" min="0" step="any" inputmode="decimal"><select id="wzB_qtyu" aria-label="Satuan bahan bakar"></select></div></div>' +
       '</div>' +
-      '<div class="result-box" id="wzB_res"><span>Masukkan volume liter BBM.</span></div>' +
-      '<button class="btn primary" id="wzB_save" style="align-self:flex-start">Simpan ke Data Aktivitas</button>' +
+      '<p class="gc-fuel-source" id="wzB_factorNote" role="status">Pilih jenis bahan bakar untuk melihat satuan dan sumber faktor emisi.</p>' +
+      '<div class="result-box" id="wzB_res"><span>Pilih bahan bakar dan isi konsumsinya untuk menghitung emisi.</span></div>' +
+      '<button class="btn primary" id="wzB_save" style="align-self:flex-start" disabled>Simpan ke Data Aktivitas</button>' +
     '</div>';
 
-  const calc = () => {
-    const vol = parseNum($("#wzB_vol").value);
-    const fuel = $("#wzB_fuel").value;
-    const type = $("#wzB_type").value;
-    if (vol != null && vol > 0) {
-      try {
-        const cat = type === "mob" ? "s1_mob" : "s1_stat";
-        const inp = type === "mob" ? { fuel, qty: String(vol), qty_u: "liter", veh: "1" } : { fuel, qty: String(vol), qty_u: "liter" };
-        const res = runCalc(cat, inp, S.year);
-        $("#wzB_res").innerHTML =
-          '<span class="result-val">' + nf(res.t, 3) + ' tCO₂e</span>' +
-          '<span class="result-formula">' + nf(vol, 0) + ' liter ' + fuel + '</span>' +
-          (res.bio > 0 ? '<span class="result-formula">+ ' + nf(res.bio, 3) + ' tCO₂ biogenik (terpisah)</span>' : '');
-        $("#wzB_res").dataset.valid = "1";
-        $("#wzB_res").dataset.vol = String(vol);
-      } catch(e) {
-        $("#wzB_res").innerHTML = '<span>' + esc(e.message) + '</span>';
-      }
-    } else {
-      $("#wzB_res").innerHTML = '<span>Masukkan volume liter BBM.</span>';
-      delete $("#wzB_res").dataset.valid;
+  const fuelSelect = $("#wzB_fuel"), typeSelect = $("#wzB_type"), qtySelect = $("#wzB_qtyu");
+  const volInput = $("#wzB_vol"), resultBox = $("#wzB_res"), saveBtn = $("#wzB_save");
+  const currentTable = () => typeSelect.value === "stat" ? "stationary" : "mobile";
+  const selectedRow = () => fuelSelect.value ? R(currentTable(), fuelSelect.value, S.year) : null;
+
+  function updateCatalog() {
+    const table = currentTable(), rows = rowsFor(table,S.year);
+    fuelSelect.innerHTML = '<option value="">Pilih jenis bahan bakar...</option>' + gcFuelOptions(rows);
+    $("#wzB_catalogCount").textContent = rows.length + ' pilihan tersedia · Ketuk untuk mencari';
+    updateFuel();
+  }
+  function updateFuel() {
+    resultBox.dataset.valid = "";
+    saveBtn.disabled = true;
+    if (!fuelSelect.value) {
+      qtySelect.innerHTML = '<option value="">Pilih bahan bakar dahulu</option>';
+      $("#wzB_factorNote").textContent = 'Pilih jenis bahan bakar untuk melihat satuan dan sumber faktor emisi.';
+      resultBox.innerHTML = '<span>Pilih bahan bakar dan isi konsumsinya untuk menghitung emisi.</span>';
+      return;
+    }
+    try {
+      const r = selectedRow();
+      const choices = gcFuelUnits(r,S.year);
+      if (!choices.length) throw Error('Tidak ada satuan yang sesuai dengan faktor emisi.');
+      const keep = qtySelect.value;
+      qtySelect.innerHTML = choices.map(u => '<option value="' + esc(u) + '">' + esc(gcFuelUnitLabel(u)) + '</option>').join('');
+      qtySelect.value = choices.includes(keep) ? keep : choices[0];
+      $("#wzB_factorNote").textContent = 'Faktor: ' + r.name + ' · ' + (r.src || 'Sumber tidak tersedia') + '. CO₂ biogenik dilaporkan terpisah jika berlaku.';
+      calc();
+    } catch(e) {
+      $("#wzB_factorNote").textContent = e.message;
+      resultBox.innerHTML = '<span>' + esc(e.message) + '</span>';
+    }
+  }
+  function currentInputs() {
+    const v = parseNum(volInput.value), r = selectedRow(), u = qtySelect.value;
+    if (!r) throw Error('Pilih jenis bahan bakar terlebih dahulu.');
+    if (!(v > 0)) throw Error('Masukkan konsumsi bahan bakar lebih besar dari nol.');
+    if (conv(1,u,r.unit,S.year) == null) throw Error('Satuan tidak sesuai dengan bahan bakar.');
+    const inp = {fuel:r.key, qty:String(v),qty_u:u};
+    if (currentTable() === 'mobile') inp.veh='1';
+    return {inp, row:r, quantity:v,unit:u,cat:currentTable()==='mobile'?'s1_mob':'s1_stat'};
+  }
+  function calc() {
+    resultBox.dataset.valid = '';
+    saveBtn.disabled = true;
+    try {
+      const data = currentInputs();
+      const r = runCalc(data.cat,data.inp,S.year);
+      if (!Number.isFinite(r.t)) throw Error('Hasil emisi tidak valid.');
+      resultBox.innerHTML =
+        '<span class="result-val">' + nf(r.t,3) + ' tCO₂e</span>' +
+        '<span class="result-formula">' + nf(data.quantity,2) + ' ' + esc(gcFuelUnitLabel(data.unit)) + ' · ' + esc(data.row.name) + '</span>' +
+        (r.bio > 0 ? '<span class="result-formula">' + nf(r.bio,3) + ' tCO₂ biogenik (dilaporkan terpisah)</span>' : '');
+      resultBox.dataset.valid = '1';
+      saveBtn.disabled = false;
+    } catch(e) {
+      resultBox.innerHTML = '<span class="result-formula">' + esc(e.message) + '</span>';
+    }
+  }
+  typeSelect.onchange = updateCatalog;
+  fuelSelect.onchange = updateFuel;
+  qtySelect.onchange = calc;
+  volInput.oninput = calc;
+  saveBtn.onclick = () => {
+    if (resultBox.dataset.valid !== '1') return;
+    try {
+      const data = currentInputs();
+      const res = runCalc(data.cat,data.inp,S.year);
+      S.entries.unshift({
+        id:newId("e"),year:S.year,unitKerja:$("#wzB_unit").value,
+        cat:data.cat,inputs:data.inp,
+        summary:data.row.name + ' · ' + nf(data.quantity,2) + ' ' + gcFuelUnitLabel(data.unit),
+        desc:(data.cat==='s1_mob'?'Kendaraan/Mesin Bergerak':'Mesin Bakar Statis') + ' (Kalkulator Cepat)',
+        evidence:"",res,at:nowIso(),contoh:false
+      });
+      saveStateToStorage();
+      renderAll();
+      toast('Data bahan bakar berhasil disimpan: ' + nf(res.t,3) + ' tCO₂e.');
+      setTab('aktivitas');
+    } catch(e) {
+      toast('Gagal menyimpan: ' + e.message);
     }
   };
-
-  $("#wzB_vol").oninput = calc;
-  $("#wzB_fuel").onchange = calc;
-  $("#wzB_type").onchange = calc;
-
-  $("#wzB_save").onclick = () => {
-    if (!$("#wzB_res").dataset.valid) { toast("Masukkan volume BBM terlebih dahulu."); return; }
-    const vol = $("#wzB_res").dataset.vol;
-    const fuel = $("#wzB_fuel").value;
-    const type = $("#wzB_type").value;
-    const unit = $("#wzB_unit").value;
-    const cat = type === "mob" ? "s1_mob" : "s1_stat";
-    const inp = type === "mob" ? { fuel, qty: vol, qty_u: "liter", veh: "1" } : { fuel, qty: vol, qty_u: "liter" };
-    const res = runCalc(cat, inp, S.year);
-
-    S.entries.unshift({
-      id: newId("e"),
-      year: S.year,
-      unitKerja: unit,
-      cat,
-      inputs: inp,
-      summary: fuel + " · " + nf(Number(vol), 0) + " liter",
-      desc: (type === "mob" ? "BBM Kendaraan Dinas" : "BBM Genset Kantor") + " (Kalkulator Cepat)",
-      evidence: "Voucher / Nota Pembelian BBM",
-      res,
-      at: nowIso(),
-      contoh: false
-    });
-    saveStateToStorage();
-    renderAll();
-    toast("Data BBM " + nf(res.t, 3) + " tCO₂e berhasil disimpan!");
-    setTab("aktivitas");
-  };
+  updateCatalog();
 }
 
 function renderWzAc(box) {
@@ -6601,7 +6687,7 @@ window.displayAiResult = displayAiResult;
   const list = sheet.querySelector(".gc-choice-options");
   let active = null;
   const allowed = sel => !!sel && !sel.disabled && sel.options.length >= 4 &&
-    (sel.id === "aUnit" || sel.id === "aCat" || sel.id === "wzL_unit" || sel.id === "wzL_grid" ||
+    (sel.id === "aUnit" || sel.id === "aCat" || sel.id === "wzL_unit" || sel.id === "wzL_grid" || sel.id === "wzB_fuel" ||
       !!sel.closest("#aFields")) &&
     window.matchMedia("(max-width: 859px)").matches;
   const draw = () => {
