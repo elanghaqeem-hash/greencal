@@ -7,7 +7,7 @@
   let scopedStore=null;
   let scopeReady=false;
   // Older unscoped data must never load automatically after network isolation is enabled.
-  try{localStorage.removeItem(LEGACY_STORE);localStorage.removeItem(LEGACY_APP_STORE);}catch(_){} 
+  // Keep legacy keys for explicit backup/migration; never read into a network-scoped session. 
   const guest=Object.freeze({role:"public",email:null,permissions:{viewDashboard:true,manageAiKeys:false,viewUsers:false,manageParameters:false}});
   let debounce=null;
   const get=id=>document.getElementById(id);
