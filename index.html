@@ -2900,6 +2900,37 @@ dialog.modal-sheet .modal-foot { background:var(--surface); }
  .gc-trans-metrics>div{padding:9px 8px}
 }
 
+
+/* GC_BRAND_LEFT_ALIGN_20261018: desktop logo/title immediately follow sidebar toggle */
+@media (min-width: 860px) {
+  header.app-header .header-inner {
+    justify-content: flex-start;
+    column-gap: clamp(10px, 1.1vw, 16px);
+  }
+  header.app-header .gc-sidebar-toggle { flex: 0 0 42px; margin: 0; }
+  header.app-header .brand-block {
+    flex: 0 1 auto;
+    margin: 0 auto 0 0;
+    gap: clamp(10px, 1.2vw, 16px);
+    min-width: 0;
+    max-width: calc(100% - 225px);
+    justify-content: flex-start;
+  }
+  header.app-header .brand-info {
+    flex: 0 1 auto;
+    min-width: 0;
+    text-align: left;
+  }
+  header.app-header .brand-title, header.app-header .brand-sub { text-align: left; }
+  header.app-header .header-actions { margin-left: 0; flex: 0 0 auto; }
+}
+@media (min-width: 860px) and (max-width: 1080px) {
+  header.app-header .brks-logo-wrap {width: 158px; flex-basis: 158px; height: 44px;}
+  header.app-header .brand-title {font-size: clamp(15px, 1.8vw, 18px);}
+  header.app-header .brand-sub {font-size: 11px;}
+  header.app-header .brand-block {max-width: calc(100% - 198px);}
+}
+
 </style>
 </head>
 <body>
