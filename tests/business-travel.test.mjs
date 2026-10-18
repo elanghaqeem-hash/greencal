@@ -141,7 +141,7 @@ test("wizard provides all categories, real calculation and factor catalog; mobil
  for(const token of ["wzD_mode","wzD_land","wzD_sea","wzD_hotelBasis","wzD_fuelLiters",
  "wzD_region","wzD_hotelCity","wzD_guests","wzD_nights","wzD_expense","wzD_factorCatalog"])
   assert.match(html,new RegExp(token));
- assert.match(html,/\\.gc-business-travel-wizard \\[hidden\\]/);
+ assert.ok(html.includes(".gc-business-travel-wizard [hidden]"));
  assert.match(html,/S\.entries\.unshift\(entry\)/);
  assert.match(html,/scope 3/i);
 });
