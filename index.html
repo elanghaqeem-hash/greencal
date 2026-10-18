@@ -1962,7 +1962,8 @@ dialog.modal-sheet .modal-foot { background:var(--surface); }
       .brand-sub { font-size: 10px; }
     }
 
-  
+
+
     /* GreenCal carbon composition v2 — compact mobile editorial dashboard */
     .emission-panel {
       background:
@@ -2048,6 +2049,116 @@ dialog.modal-sheet .modal-foot { background:var(--surface); }
       #scopeDonut .carbon-message strong {font-size:11px}
     }
     [data-theme="dark"] #scopeDonut .carbon-message {background:linear-gradient(112deg,#124c39,#146547)}
+
+
+    /* GC-CARBON-EXPERIENCE-v2 — green banking carbon awareness redesign */
+    :root { --carbon-deep:#064934; --carbon-green:#0b7050; --carbon-mint:#dff5e8; }
+    body { background:radial-gradient(ellipse at 88% 0%,rgba(161,221,184,.17),transparent 32%),var(--bg); }
+    .brand-title {font-weight:800;letter-spacing:-.035em;}
+    .brand-logo {border-radius:14px;background:linear-gradient(145deg,#064934,#15906b);box-shadow:0 6px 15px rgba(9,97,64,.2);}
+    .year-select-wrap {background:var(--primary-soft);border-color:var(--primary-border);}
+    #view-aktivitas .view-title-group h2,#view-wizard .view-title-group h2 {letter-spacing:-.035em;font-weight:800;}
+    #view-aktivitas .view-title-group p,#view-wizard .view-title-group p {line-height:1.55;}
+    .carbon-hero {position:relative;overflow:hidden;color:white;background:linear-gradient(112deg,#074834 0%,#0e6b4e 58%,#168365 100%);border:1px solid rgba(4,93,63,.18);border-radius:24px;padding:25px 26px 22px;margin:2px 0 24px;box-shadow:0 16px 35px rgba(9,89,59,.14);isolation:isolate;}
+    .carbon-hero:before {content:"";position:absolute;width:260px;height:260px;right:-85px;top:-120px;border-radius:50%;border:38px solid rgba(192,244,206,.11);z-index:-1;}
+    .carbon-hero:after {content:"";position:absolute;width:180px;height:180px;right:12%;bottom:-155px;border-radius:50%;background:rgba(162,241,198,.1);z-index:-1;}
+    .carbon-hero-top {display:flex;align-items:center;gap:8px;font-size:12px;font-weight:750;letter-spacing:.06em;text-transform:uppercase;color:#d4f5e4;}
+    .carbon-hero-top svg {width:19px;height:19px;flex-shrink:0;}
+    .carbon-hero-main {display:flex;justify-content:space-between;align-items:center;gap:16px;margin:13px 0 8px;}
+    .carbon-total {font-size:clamp(30px,4.5vw,48px);line-height:1.12;letter-spacing:-.055em;font-weight:800;font-variant-numeric:tabular-nums;overflow-wrap:anywhere;}
+    .carbon-total span {font-size:.37em;font-weight:700;letter-spacing:0;white-space:nowrap;color:#d7f4e5;}
+    .carbon-hero-illustration {display:grid;place-items:center;flex-shrink:0;width:89px;height:89px;border-radius:28px;background:rgba(255,255,255,.11);border:1px solid rgba(255,255,255,.15);}
+    .carbon-hero-illustration svg {width:53px;height:53px;color:#cbefdb;}
+    .carbon-hero-note {color:#d1ebdf;font-size:12.5px;line-height:1.6;margin:0;max-width:58ch;}
+    .carbon-hero-foot {display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:14px;}
+    .carbon-mini-pill {display:inline-flex;gap:6px;align-items:center;border:1px solid rgba(255,255,255,.24);border-radius:50px;padding:5px 10px;font-size:11px;font-weight:700;color:#f1fff7;background:rgba(255,255,255,.08);}
+    .carbon-hero-warning {color:#fff2d7;border-color:rgba(255,215,159,.4);}
+    .carbon-scope-filters {display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;padding:0 0 5px;margin-top:16px;}
+    .carbon-scope-filters::-webkit-scrollbar {display:none;}
+    .carbon-scope-filters button {border:1px solid rgba(255,255,255,.32);color:#e5f7ed;background:rgba(255,255,255,.07);border-radius:99px;padding:8px 14px;white-space:nowrap;min-height:39px;cursor:pointer;font-size:12px;font-weight:800;transition:background .15s,transform .15s;}
+    .carbon-scope-filters button[aria-pressed="true"] {background:#fff;color:#06553b;box-shadow:0 4px 12px rgba(0,0,0,.1);border-color:#fff;}
+    .carbon-scope-filters button:focus-visible {outline:3px solid #a5f2c7;outline-offset:3px;}
+    #view-aktivitas .grid-form-list {gap:20px;}
+    #view-aktivitas .grid-form-list > * {min-width:0;}
+    #view-aktivitas #actForm {border:1px solid var(--line);border-radius:22px;box-shadow:var(--shadow-md);padding:22px;}
+    #view-aktivitas #actFormTitle {font-size:19px;font-weight:800;letter-spacing:-.03em;}
+    #view-aktivitas .calc-step-badge {font-size:12px;letter-spacing:.035em;padding:10px 12px;border-radius:12px;background:var(--primary-soft);color:var(--primary);width:100%;border-left:3px solid var(--primary);margin:6px 0 1px;}
+    #view-aktivitas #aCatInfo {background:var(--primary-soft);border:1px solid var(--primary-border);padding:14px;border-radius:14px;color:var(--ink-muted);line-height:1.6;}
+    #view-aktivitas #aCatInfo b {color:var(--primary);}
+    #view-aktivitas select,#view-aktivitas input,#wizardFormPanel select,#wizardFormPanel input {min-height:48px;font-size:15px;border-radius:13px;max-width:100%;min-width:0;}
+    #view-aktivitas .field-label,#wizardFormPanel .field-label {font-weight:750;color:var(--ink-muted);font-size:12.5px;}
+    #view-aktivitas .field-group {min-width:0;}
+    #view-aktivitas #aSave {min-height:48px;border-radius:14px;box-shadow:0 5px 14px rgba(9,99,70,.18);}
+    #view-aktivitas .filter-bar {gap:8px;margin-bottom:14px;}
+    #view-aktivitas #fScope {display:none;}
+    .carbon-activity-card {border-radius:19px;padding:18px 19px;gap:13px;box-shadow:0 3px 12px rgba(19,75,49,.045);transition:transform .18s,box-shadow .18s,border-color .18s;border-color:var(--line-subtle);}
+    .carbon-activity-card:hover {transform:translateY(-2px);border-color:var(--primary-border);box-shadow:0 9px 22px rgba(14,90,55,.09);}
+    .carbon-activity-card .carbon-activity-top {display:flex;align-items:start;justify-content:space-between;gap:12px;min-width:0;}
+    .carbon-activity-card .data-card-title {font-size:14.5px;font-weight:800;letter-spacing:-.023em;}
+    .carbon-activity-card .data-card-meta {gap:5px;margin-top:7px;line-height:1.7;}
+    .carbon-activity-card .chip {font-size:10px;font-weight:800;border-radius:99px;padding:3px 8px;}
+    .carbon-activity-body {display:flex;align-items:center;gap:12px;min-width:0;}
+    .carbon-activity-icon {width:42px;height:42px;min-width:42px;display:grid;place-items:center;font-size:21px;border-radius:13px;background:var(--s1-soft);color:var(--s1-ink);}
+    .scope-2 .carbon-activity-icon {background:var(--s2-soft);color:var(--s2-ink);}
+    .scope-3 .carbon-activity-icon {background:var(--s3-soft);color:var(--s3-ink);}
+    .carbon-activity-desc {min-width:0;flex:1;font-size:13px;line-height:1.46;}
+    .carbon-activity-desc strong {display:block;color:var(--ink);font-weight:750;}
+    .carbon-activity-desc small {display:block;color:var(--ink-muted);font-size:11.5px;margin-top:4px;overflow-wrap:anywhere;}
+    .carbon-activity-measure {padding:12px 15px;border-radius:14px;background:linear-gradient(110deg,var(--primary-soft),var(--surface-2));display:flex;align-items:baseline;justify-content:space-between;gap:10px;flex-wrap:wrap;}
+    .carbon-activity-measure > span {font-size:11px;color:var(--ink-muted);font-weight:700;}
+    .carbon-activity-measure strong {font-size:clamp(20px,2.3vw,26px);letter-spacing:-.045em;line-height:1.2;font-weight:800;color:var(--primary);font-variant-numeric:tabular-nums;overflow-wrap:anywhere;}
+    .carbon-activity-measure strong small {font-size:11px;letter-spacing:0;font-weight:750;}
+    .carbon-activity-evidence {display:flex;gap:6px;align-items:flex-start;color:var(--ink-muted);font-size:11.5px;line-height:1.5;overflow-wrap:anywhere;}
+    .carbon-activity-evidence svg {width:15px;height:15px;flex-shrink:0;margin-top:1px;}
+    .carbon-activity-card .data-card-actions {margin-top:0;gap:7px;padding-top:10px;}
+    .carbon-activity-card .data-card-actions .btn {min-height:36px;padding:6px 12px;border-radius:10px;font-size:12px;}
+    #wizardFormPanel {border-radius:22px;padding:23px;border-color:var(--line);box-shadow:var(--shadow-md);}
+    #wizardFormPanel h3 {letter-spacing:-.025em;font-size:19px;}
+    #wizardFormPanel .result-box {background:linear-gradient(135deg,var(--primary-soft),var(--surface-2));border-radius:17px;border:1px solid var(--primary-border);}
+    #wizardFormPanel .result-box .result-val {font-family:var(--font-main);letter-spacing:-.045em;font-size:clamp(23px,4vw,32px);font-weight:800;overflow-wrap:anywhere;}
+    #wizardFormPanel .result-box .result-formula {font-family:var(--font-main);font-size:12px;word-break:normal;overflow-wrap:anywhere;}
+    .carbon-factor-note {background:var(--primary-soft);border-radius:13px;padding:11px 13px;color:var(--ink-muted);font-size:11.5px;line-height:1.55;border:1px solid var(--primary-border);}
+    .carbon-calc-label {font-weight:800;font-size:12px;letter-spacing:.02em;color:var(--primary);margin:4px 0 -5px;}
+    #wizardFormPanel [id$="_save"] {min-height:46px;border-radius:13px;}
+    .gc-choice-sheet {position:fixed;inset:auto 0 0;width:min(100%,620px);margin:0 auto;max-height:min(85dvh,780px);padding:0;border:0;border-radius:25px 25px 0 0;color:var(--ink);background:var(--surface);box-shadow:0 -16px 60px rgba(0,0,0,.22);overflow:hidden;}
+    .gc-choice-sheet::backdrop {background:rgba(5,24,17,.6);backdrop-filter:blur(3px);}
+    .gc-sheet-head {padding:19px 18px 13px;border-bottom:1px solid var(--line-subtle);display:flex;justify-content:space-between;gap:12px;align-items:center;}
+    .gc-sheet-head strong {font-size:16px;letter-spacing:-.025em;line-height:1.3;}
+    .gc-sheet-close {background:var(--surface-2);color:var(--ink);border:0;border-radius:50%;min-width:34px;height:34px;font-size:20px;cursor:pointer;}
+    .gc-sheet-search {display:block;width:calc(100% - 36px);margin:12px 18px;padding:12px 14px;min-height:45px;border-radius:13px;border:1px solid var(--line);background:var(--surface-2);color:var(--ink);font-size:16px;}
+    .gc-choice-options {overflow-y:auto;overscroll-behavior:contain;max-height:calc(min(85dvh,780px) - 132px);padding:0 10px calc(12px + var(--safe-bottom));}
+    .gc-choice-group {color:var(--primary);font-size:11px;font-weight:800;letter-spacing:.05em;padding:15px 11px 5px;text-transform:uppercase;}
+    .gc-choice-option {text-align:left;width:100%;display:flex;align-items:center;justify-content:space-between;gap:13px;color:var(--ink);font-size:14px;font-weight:600;background:transparent;border:0;border-bottom:1px solid var(--line-subtle);min-height:51px;padding:11px 12px;border-radius:9px;cursor:pointer;overflow-wrap:anywhere;}
+    .gc-choice-option[aria-selected="true"] {background:var(--primary-soft);color:var(--primary);font-weight:800;}
+    .gc-choice-radio {display:inline-block;width:20px;height:20px;flex-shrink:0;border-radius:50%;border:2px solid var(--ink-subtle);}
+    .gc-choice-option[aria-selected="true"] .gc-choice-radio {border:6px solid var(--primary);}
+    .gc-choice-empty {padding:20px;color:var(--ink-muted);font-size:13px;}
+    [data-theme="dark"] .carbon-hero {background:linear-gradient(115deg,#063927,#0e563d);}
+    @media (max-width:959px) {#view-aktivitas .grid-form-list {display:flex;flex-direction:column;}#view-aktivitas .grid-form-list > form {order:2;width:100%;}#view-aktivitas .grid-form-list > div {order:1;width:100%;}}
+    @media (max-width:620px) {
+      .carbon-hero {border-radius:19px;padding:21px 18px 19px;margin-bottom:17px;}
+      .carbon-hero-illustration {width:58px;height:58px;border-radius:18px;}
+      .carbon-hero-illustration svg {width:35px;height:35px;}
+      .carbon-total {font-size:clamp(27px,8vw,37px);}
+      .carbon-hero-note {font-size:11.5px;}
+      .carbon-scope-filters {gap:7px;margin-top:14px;}
+      .carbon-scope-filters button {font-size:11.5px;padding:8px 12px;}
+      #view-aktivitas #actForm,#wizardFormPanel {padding:17px;border-radius:19px;}
+      #view-aktivitas .input-row-2,#wizardFormPanel .input-row-2 {grid-template-columns:minmax(0,1fr);}
+      #view-aktivitas select,#view-aktivitas input,#wizardFormPanel select,#wizardFormPanel input {font-size:16px;}
+      #view-aktivitas .search-input-wrap {min-width:0;flex-basis:100%;}
+      .carbon-activity-card {padding:16px;}
+      .carbon-activity-measure strong {font-size:22px;}
+      .carbon-activity-desc {font-size:12.5px;}
+      .carbon-activity-body {align-items:flex-start;}
+      .brand-block {gap:9px;}
+      .brand-title {font-size:14.5px;line-height:1.2;}
+      .brand-sub {font-size:10.5px;}
+      .brand-logo {width:37px;height:37px;flex-shrink:0;}
+      .year-select-wrap {padding:3px 6px;}
+      .year-select-wrap span {display:none;}
+    }
+    @media(prefers-reduced-motion:reduce){.carbon-activity-card,.carbon-scope-filters button{transition:none;}}
 
   </style>
 </head>
@@ -2332,8 +2443,8 @@ dialog.modal-sheet .modal-foot { background:var(--surface); }
       <div class="view-header">
         <div class="view-title-row">
           <div class="view-title-group">
-            <h2>Data Aktivitas Emisi</h2>
-            <p>Pencatatan data primer aktivitas Scope 1, Scope 2, dan Scope 3 Kategori 1–14.</p>
+            <h2>Aktivitas &amp; Jejak Karbon</h2>
+            <p>Pantau kontribusi emisi setiap unit kerja, kelola bukti, dan telusuri sumber jejak karbon operasional.</p>
           </div>
           <div class="view-actions">
             <button class="btn primary sm" id="btnOpenActModal">+ Tambah Data</button>
@@ -2342,10 +2453,11 @@ dialog.modal-sheet .modal-foot { background:var(--surface); }
         </div>
       </div>
 
+      <div id="carbonActivityHero" aria-live="polite"></div>
       <div class="grid-form-list">
         <form class="panel form-stack" id="actForm" autocomplete="off">
           <div style="display:flex;align-items:center;justify-content:space-between">
-            <h3 id="actFormTitle" style="margin:0">Catat Aktivitas</h3>
+            <h3 id="actFormTitle" style="margin:0">Tambah Data Aktivitas</h3>
           </div>
 
           <div class="calc-step-badge">1 · Periode &amp; Lokasi</div>
@@ -3936,13 +4048,7 @@ function renderDonutChart(el, items) {
       '<span class="carbon-source-side"><strong>' + nf(p,1) + '%</strong><span class="carbon-track"><i style="width:' + p.toFixed(3) + '%"></i></span></span>' +
       '<span class="carbon-chevron" aria-hidden="true">›</span></button>';
   }).join('');
-  const leading = items[topIndex];
-  const leadingPct = nf(pct(leading.val),1);
-  const message = topIndex === 3
-    ? leadingPct + '% emisi berasal dari portofolio pembiayaan.'
-    : leadingPct + '% emisi berasal dari ' + leading.label + '.';
   el.innerHTML =
-    '<div class="carbon-message"><span class="carbon-message-icon" aria-hidden="true">♻</span><span class="carbon-message-content"><small>PROFIL EMISI KARBON · ' + esc(String(S.year)) + '</small><strong>' + esc(message) + '</strong></span></div>' +
     '<div class="carbon-main">' +
       '<div class="carbon-ring-shell"><div class="carbon-ring" role="img" aria-label="Total emisi ' + nf(tot,1) + ' tCO₂e, tahun ' + esc(String(S.year)) + '">' +
         '<svg class="carbon-ring-svg" viewBox="0 0 240 240" aria-hidden="true">' +
@@ -3952,9 +4058,9 @@ function renderDonutChart(el, items) {
       '</div></div>' +
       '<div class="carbon-insight" aria-live="polite">' +
         '<div class="carbon-insight-top"><span class="carbon-insight-tag">' + (isTop ? 'Insight utama' : 'Rincian scope') + '</span><strong class="carbon-insight-pct">' + nf(pct(chosen.val),1) + '%</strong></div>' +
-        '<h4>' + esc(chosen.label) + '</h4>' +
-        '<p><strong>' + nf(Math.max(0,Number(chosen.val)||0),2) + ' tCO₂e.</strong> ' +
-        (isTop && active === 3 ? 'Fokus analisis: emisi terbiayai dan kualitas data portofolio.' : isTop ? 'Sumber utama emisi yang perlu ditelusuri.' : 'Bandingkan terhadap scope lainnya.') + '</p>' +
+        '<h4>' + (isTop ? 'Emisi terbesar berasal dari ' : 'Kontribusi emisi dari ') + esc(chosen.label) + '</h4>' +
+        '<p>Berjumlah <strong>' + nf(Math.max(0,Number(chosen.val)||0),2) + ' tCO₂e</strong> atau ' + nf(pct(chosen.val),1) + '% dari total emisi tahun ' + esc(String(S.year)) + '. ' +
+        (isTop ? 'Fokuskan penelusuran sumber emisi dan kualitas data pada kategori ini.' : 'Bandingkan kontribusinya dengan scope lain untuk memahami profil emisi.') + '</p>' +
       '</div>' +
     '</div>' +
     '<div class="carbon-breakdown-title"><span>Rincian sumber emisi</span><small>Ketuk untuk melihat insight</small></div>' +
@@ -4022,6 +4128,8 @@ function renderWzListrik(box) {
         '<label class="field-group"><span class="field-label">Konsumsi (kWh)</span><input type="number" id="wzL_kwh" placeholder="mis. 12500" min="0" step="any" inputmode="decimal"></label>' +
         '<label class="field-group"><span class="field-label">Atau Estimasi Tagihan (Rp)</span><input type="number" id="wzL_idr" placeholder="mis. 18000000" min="0" step="any" inputmode="decimal"></label>' +
       '</div>' +
+      '<div class="carbon-factor-note">ℹ Faktor emisi mengikuti sistem kelistrikan PLN yang dipilih. Masukkan konsumsi aktual (kWh) agar perhitungan lebih tepat; tagihan rupiah hanya estimasi.</div>' +
+      '<div class="carbon-calc-label">HASIL PERHITUNGAN JEJAK KARBON</div>' +
       '<div class="result-box" id="wzL_res"><span>Masukkan kWh atau nominal tagihan rekening listrik PLN.</span></div>' +
       '<button class="btn primary" id="wzL_save" style="align-self:flex-start">Simpan ke Data Aktivitas</button>' +
     '</div>';
@@ -4522,7 +4630,54 @@ function renderAct() {
   renderActList();
 }
 
+
+/* GC-CARBON-EXPERIENCE-v2: overview is derived exclusively from registered activity data */
+function renderCarbonActivityHero() {
+  const host = $("#carbonActivityHero");
+  if (!host) return;
+  const current = S.entries.filter(e => e.year === S.year);
+  const totals = { "1":0,"2":0,"3":0 };
+  const counts = { "1":0,"2":0,"3":0 };
+  let total = 0, calculated = 0;
+  current.forEach(e => {
+    const scope = String((CAT(e.cat) || {}).s || "");
+    if (scope in counts) counts[scope]++;
+    if (!e.res) return;
+    const val = entryT(e, S.method);
+    if (!Number.isFinite(val)) return;
+    calculated++;
+    total += val;
+    if (scope in totals) totals[scope] += val;
+  });
+  const sampleCount = current.filter(e => e.contoh).length;
+  const filter = $("#fScope").value;
+  const leaf = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M20 3c-8 0-16 4-16 13a5 5 0 0 0 5 5C18 21 22 12 20 3Z"/><path d="M3 21c3-6 7-10 14-13"/></svg>';
+  const options = [["","Semua",current.length],["1","Scope 1",counts["1"]],["2","Scope 2",counts["2"]],["3","Scope 3",counts["3"]]];
+  host.innerHTML =
+    '<section class="carbon-hero" aria-label="Ringkasan jejak karbon operasional">' +
+      '<div class="carbon-hero-top">' + leaf + '<span>Jejak Karbon Operasional · ' + esc(S.year) + '</span></div>' +
+      '<div class="carbon-hero-main">' +
+        '<div class="carbon-total">' + nf(total,3) + ' <span>tCO₂e</span></div>' +
+        '<div class="carbon-hero-illustration" aria-hidden="true">' + leaf + '</div>' +
+      '</div>' +
+      '<p class="carbon-hero-note">' + (current.length ? 'Total emisi dari aktivitas Scope 1, 2, dan 3 yang tercatat pada tahun terpilih. Angka bukan klaim penurunan emisi.' : 'Belum ada data aktivitas untuk periode ini. Tambahkan data agar jejak karbon dapat dihitung.') + '</p>' +
+      '<div class="carbon-hero-foot">' +
+        '<span class="carbon-mini-pill">' + current.length + ' aktivitas tercatat</span>' +
+        '<span class="carbon-mini-pill">' + calculated + ' hasil perhitungan</span>' +
+        (sampleCount ? '<span class="carbon-mini-pill carbon-hero-warning">Termasuk ' + sampleCount + ' data contoh · belum terverifikasi</span>' : '') +
+      '</div>' +
+      '<div class="carbon-scope-filters" id="carbonScopeFilters" aria-label="Filter berdasarkan scope">' +
+        options.map(o => '<button type="button" data-carbon-scope="' + o[0] + '" aria-pressed="' + String(filter === o[0]) + '">' + o[1] + ' · ' + o[2] + '</button>').join("") +
+      '</div>' +
+    '</section>';
+  $("#carbonScopeFilters button").forEach(b => b.onclick = () => {
+    $("#fScope").value = b.dataset.carbonScope;
+    renderActList();
+  });
+}
+
 function renderActList() {
+  renderCarbonActivityHero();
   const y = S.year;
   const sc = $("#fScope").value;
   const q = ($("#fSearch").value || "").trim().toLowerCase();
@@ -4554,32 +4709,40 @@ function renderActList() {
     return;
   }
 
-  // Render Mobile Cards
+  // Render redesigned mobile and desktop activity cards using actual saved emissions.
   $("#actCardsList").innerHTML = rows.map(e => {
     const c = CAT(e.cat) || { t: e.cat, s: "?" };
+    const scope = String(c.s);
     const t = entryT(e, S.method);
+    const icon = scope === "2" ? "⚡" : (scope === "3" ? "✈" : (String(e.cat).includes("mobile") ? "🚗" : "🌿"));
     const chips = [];
-    chips.push('<span class="chip s' + c.s + '">Scope ' + c.s + '</span>');
+    chips.push('<span class="chip s' + esc(scope) + '">Scope ' + esc(scope) + '</span>');
     if (entryStale(e)) chips.push('<span class="chip bad">Faktor berubah</span>');
     if (!String(e.evidence || "").trim()) chips.push('<span class="chip warn">Tanpa bukti</span>');
     if (e.contoh) chips.push('<span class="chip">Contoh</span>');
-
     return (
-      '<div class="data-card">' +
-        '<div class="data-card-head">' +
-          '<div>' +
-            '<h4 class="data-card-title">' + esc(e.unitKerja) + '</h4>' +
+      '<article class="data-card carbon-activity-card scope-' + esc(scope) + '">' +
+        '<div class="carbon-activity-top">' +
+          '<div><h4 class="data-card-title">' + esc(e.unitKerja || "Unit kerja tidak diketahui") + '</h4>' +
             '<div class="data-card-meta">' + chips.join(" ") + '<span>· ' + esc(c.t) + '</span></div>' +
           '</div>' +
-          '<div class="data-card-val">' + (e.res ? nf(t, 3) + ' t' : '–') + '</div>' +
         '</div>' +
-        (e.desc ? '<div class="data-card-desc"><b>' + esc(e.desc) + '</b><br><span style="color:var(--ink-muted)">' + esc(e.summary || "") + '</span></div>' : '') +
-        '<div style="font-size:12px;color:var(--ink-muted)">Bukti: ' + esc(e.evidence || "–") + '</div>' +
+        '<div class="carbon-activity-body">' +
+          '<div class="carbon-activity-icon" aria-hidden="true">' + icon + '</div>' +
+          '<div class="carbon-activity-desc"><strong>' + esc(e.desc || c.t) + '</strong>' +
+          (e.summary ? '<small>' + esc(e.summary) + '</small>' : '') + '</div>' +
+        '</div>' +
+        '<div class="carbon-activity-measure"><span>Emisi dihitung</span><strong>' +
+          (e.res ? nf(t,3) + ' <small>tCO₂e</small>' : 'Belum dihitung') + '</strong></div>' +
+        '<div class="carbon-activity-evidence">' +
+          '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M8 3h8l4 4v14H4V3h4Z"/><path d="M16 3v5h4M8 12h8M8 16h8"/></svg>' +
+          '<span><b>Bukti:</b> ' + esc(e.evidence || "Belum dilampirkan") + '</span>' +
+        '</div>' +
         '<div class="data-card-actions">' +
-          '<button class="btn sm" data-ea="' + e.id + '">Edit</button>' +
-          '<button class="btn sm danger" data-ed="' + e.id + '">Hapus</button>' +
+          '<button type="button" class="btn sm" data-ea="' + esc(e.id) + '" aria-label="Edit aktivitas ' + esc(e.unitKerja || "") + '">Edit</button>' +
+          '<button type="button" class="btn sm danger" data-ed="' + esc(e.id) + '" aria-label="Hapus aktivitas ' + esc(e.unitKerja || "") + '">Hapus</button>' +
         '</div>' +
-      '</div>'
+      '</article>'
     );
   }).join("");
 
@@ -6362,6 +6525,85 @@ window.runAiAnalysisUi = runAiAnalysisUi;
 window.openAiConfigDialog = openAiConfigDialog;
 window.openAiConfigModal = openAiConfigDialog;
 window.displayAiResult = displayAiResult;
+
+
+
+/* GC-CARBON-EXPERIENCE-v2: searchable mobile bottom-sheet for lengthy dropdowns.
+   The original select remains the source of truth and emits the existing change event. */
+(function enableGreenCalChoiceSheet() {
+  if (window.__greenCalSheetReady) return;
+  window.__greenCalSheetReady = true;
+  const sheet = document.createElement("dialog");
+  sheet.className = "gc-choice-sheet";
+  sheet.setAttribute("aria-label","Pilih opsi");
+  sheet.innerHTML = '<div class="gc-sheet-head"><strong id="gcSheetTitle">Pilih opsi</strong><button type="button" class="gc-sheet-close" aria-label="Tutup pilihan">×</button></div>' +
+    '<input class="gc-sheet-search" type="search" placeholder="Cari pilihan..." aria-label="Cari pilihan">' +
+    '<div class="gc-choice-options" role="listbox"></div>';
+  document.body.appendChild(sheet);
+  const search = sheet.querySelector(".gc-sheet-search");
+  const list = sheet.querySelector(".gc-choice-options");
+  let active = null;
+  const allowed = sel => !!sel && !sel.disabled && sel.options.length >= 4 &&
+    (sel.id === "aUnit" || sel.id === "aCat" || sel.id === "wzL_unit" || sel.id === "wzL_grid" ||
+      !!sel.closest("#aFields")) &&
+    window.matchMedia("(max-width: 859px)").matches;
+  const draw = () => {
+    if (!active) return;
+    const query = search.value.trim().toLocaleLowerCase("id");
+    let lastGroup = null, found = 0;
+    const out = [];
+    Array.from(active.options).forEach((o, index) => {
+      if (o.disabled) return;
+      const group = o.parentElement && o.parentElement.tagName === "OPTGROUP" ? o.parentElement.label : "";
+      if (query && !(o.textContent + " " + group).toLocaleLowerCase("id").includes(query)) return;
+      if (group && group !== lastGroup) out.push('<div class="gc-choice-group">' + esc(group) + '</div>');
+      lastGroup = group;
+      found++;
+      out.push('<button type="button" class="gc-choice-option" role="option" data-gc-option="' + index + '" aria-selected="' + (o.value === active.value) + '"><span>' +
+        esc(o.textContent.trim()) + '</span><span class="gc-choice-radio" aria-hidden="true"></span></button>');
+    });
+    list.innerHTML = found ? out.join("") : '<p class="gc-choice-empty">Tidak ada pilihan yang cocok.</p>';
+  };
+  function openChoice(sel) {
+    active = sel;
+    search.value = "";
+    const group = sel.closest("label");
+    const label = group && group.querySelector(".field-label");
+    sheet.querySelector("#gcSheetTitle").textContent = label ? label.textContent : "Pilih data";
+    draw();
+    if (!sheet.open) sheet.showModal();
+    search.focus();
+  }
+  sheet.querySelector(".gc-sheet-close").onclick = () => sheet.close();
+  sheet.onclick = e => { if (e.target === sheet) sheet.close(); };
+  sheet.addEventListener("close", () => { if(active) active.focus({preventScroll:true}); active = null; });
+  search.addEventListener("input",draw);
+  list.addEventListener("click", e => {
+    const b = e.target.closest("[data-gc-option]");
+    if (!b || !active) return;
+    const o = active.options[Number(b.dataset.gcOption)];
+    if (!o) return;
+    active.value = o.value;
+    active.dispatchEvent(new Event("change",{bubbles:true}));
+    sheet.close();
+  });
+  document.addEventListener("pointerdown",e => {
+    const target=e.target;
+    if (!target || !target.closest || sheet.open) return;
+    const sel=target.closest("select");
+    if (!allowed(sel) || e.pointerType === "mouse") return;
+    e.preventDefault();
+    openChoice(sel);
+  },true);
+  document.addEventListener("click",e => {
+    if (!e.target || !e.target.closest) return;
+    const sel=e.target.closest("select");
+    if (!allowed(sel)) return;
+    if (e.detail === 0) return; // retain native keyboard accessibility
+    e.preventDefault();
+    if (!sheet.open) openChoice(sel);
+  },true);
+})();
 
   </script>
 </body>
