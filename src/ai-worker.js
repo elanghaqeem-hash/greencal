@@ -152,3 +152,20 @@ export default {async fetch(request,env){
  if(url.pathname==="/api/ai/analyze"&&request.method==="POST")return analyze(request,env);
  return error(404,"NOT_FOUND","API tidak tersedia.");
 }};
+
+/* GreenCal D1 IAM bridge: share the server-verified Admin/Maker identity with AI Gateway.
+   Existing provider chains and secret KV handling remain unchanged. */
+export async function handleAiApi(request,env,actor){
+ const url=new URL(request.url);
+ if(!env.AI_CONFIG)return error(503,"KV_NOT_BOUND","Penyimpanan konfigurasi AI belum aktif.");
+ if(!["GET","POST"].includes(request.method))return error(405,"METHOD","Method tidak diizinkan.");
+ const role=actor.role==="admin"?"Admin":"Maker";
+ if(url.pathname==="/api/ai/status"&&request.method==="GET")
+   return asJson({ok:true,role,config:publicConfig(await loadConfig(env),env)});
+ if(url.pathname==="/api/ai/settings"&&request.method==="POST"){
+   if(role!=="Admin")return error(403,"ADMIN_ONLY","Hanya Admin dapat mengubah prioritas AI.");
+   return saveSettings(request,env,{email:actor.email,role});
+ }
+ if(url.pathname==="/api/ai/analyze"&&request.method==="POST")return analyze(request,env);
+ return error(404,"NOT_FOUND","Endpoint AI tidak dikenal.");
+}
