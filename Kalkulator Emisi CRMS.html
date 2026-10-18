@@ -2678,6 +2678,25 @@ dialog.modal-sheet .modal-foot { background:var(--surface); }
  #view-aktivitas .carbon-scope-filters {grid-template-columns:repeat(2,minmax(0,1fr))}
 }
 
+
+
+/* GreenCal exposure form — compact responsive finance UI */
+#finForm{background:var(--surface,#fff);border:1px solid var(--line,#dce8e2);border-radius:22px;padding:24px;box-shadow:0 14px 36px rgba(17,75,54,.065);min-width:0}
+#finForm .gc-fin-heading{display:flex;align-items:center;gap:12px;margin-bottom:4px}
+#finForm .gc-fin-symbol{display:grid;place-items:center;flex:0 0 42px;height:42px;border-radius:13px;background:#e5f5ec;color:#176847;font-size:23px}
+#finForm #finFormTitle{font-size:clamp(17px,2vw,21px);letter-spacing:-.025em;line-height:1.25;color:var(--ink)}
+#finForm .gc-fin-intro{font-size:12px;color:var(--ink-muted);line-height:1.55;margin:4px 0 12px}
+#finForm .input-row-2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+#finForm .field-group{min-width:0;gap:7px}
+#finForm .field-label{display:block;font-size:12px;line-height:1.45;font-weight:700;white-space:normal;overflow-wrap:anywhere;color:var(--ink-muted)}
+#finForm input:not([type=checkbox]),#finForm select,#finForm textarea{min-width:0;width:100%;max-width:100%;box-sizing:border-box;min-height:46px;border:1px solid var(--line,#cbded3);border-radius:12px;background:var(--surface,#fff);padding:10px 12px;font-size:14px;text-overflow:ellipsis;transition:border-color .2s,box-shadow .2s}
+#finForm input:focus-visible,#finForm select:focus-visible,#finForm textarea:focus-visible{outline:2px solid #3b9c73;outline-offset:1px;box-shadow:0 0 0 3px rgba(35,139,91,.1)}
+#finForm .gc-fin-required{color:#dc5555;margin-left:3px}
+#finForm .result-box{border-radius:14px}
+@media(max-width:959px){#finForm{padding:20px}}
+@media(max-width:420px){#finForm{padding:16px;border-radius:17px}#finForm .input-row-2{gap:10px}#finForm .field-label{font-size:11px}#finForm input:not([type=checkbox]),#finForm select{font-size:13px;padding:9px 10px;min-height:44px}}
+@media(max-width:340px){#finForm .input-row-2{grid-template-columns:minmax(0,1fr)}}
+
 </style>
 </head>
 <body>
@@ -3177,33 +3196,31 @@ dialog.modal-sheet .modal-foot { background:var(--surface); }
 
       <div class="grid-form-list">
         <form class="panel form-stack" id="finForm" autocomplete="off">
-          <div style="display:flex;align-items:center;justify-content:space-between">
-            <h3 id="finFormTitle" style="margin:0">Tambah Eksposur Debitur</h3>
-          </div>
+          <div class="gc-fin-heading"><span class="gc-fin-symbol" aria-hidden="true">♧</span><div><h3 id="finFormTitle" style="margin:0">Tambah Eksposur Debitur</h3><p class="gc-fin-intro">Lengkapi data untuk perhitungan emisi pembiayaan dan analisis PCAF.</p></div></div>
 
           <div class="input-row-2">
             <label class="field-group">
-              <span class="field-label">Periode</span>
+              <span class="field-label">Periode<span class="gc-fin-required" aria-hidden="true">*</span></span>
               <select id="xYear"></select>
             </label>
             <label class="field-group">
-              <span class="field-label">Akad / Jenis</span>
+              <span class="field-label">Akad / Jenis<span class="gc-fin-required" aria-hidden="true">*</span></span>
               <select id="xAkad"></select>
             </label>
           </div>
 
           <label class="field-group">
-            <span class="field-label">Nama Debitur / Investee</span>
-            <input type="text" id="xDebtor" placeholder="mis. PT Bahari Makmur Sentosa">
+            <span class="field-label">Nama Debitur / Investee<span class="gc-fin-required" aria-hidden="true">*</span></span>
+            <input type="text" id="xDebtor" autocomplete="organization" placeholder="mis. PT Bahari Makmur Sentosa">
           </label>
 
           <div class="input-row-2">
             <label class="field-group">
-              <span class="field-label">Sektor Usaha</span>
+              <span class="field-label">Sektor Usaha<span class="gc-fin-required" aria-hidden="true">*</span></span>
               <input type="text" id="xSector" list="sectorList" placeholder="mis. Pertanian &amp; Sawit">
             </label>
             <label class="field-group">
-              <span class="field-label">Kelas Aset PCAF</span>
+              <span class="field-label">Kelas Aset PCAF<span class="gc-fin-required" aria-hidden="true">*</span></span>
               <select id="xClass"></select>
             </label>
           </div>
@@ -3211,7 +3228,7 @@ dialog.modal-sheet .modal-foot { background:var(--surface); }
 
           <div class="input-row-2">
             <label class="field-group">
-              <span class="field-label">Outstanding (Rp Miliar)</span>
+              <span class="field-label">Outstanding (Rp Miliar)<span class="gc-fin-required" aria-hidden="true">*</span></span>
               <input type="number" id="xOs" min="0" step="any" inputmode="decimal">
             </label>
             <label class="field-group" id="xDenomWrap">
