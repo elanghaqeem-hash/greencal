@@ -34,7 +34,18 @@
         offsets:Array.isArray(obj.offsets)?obj.offsets:[]};
     }catch(e){return null;}
   }
-  function save(snapshot){
+  async function save(snapshot){
+    try{
+      const r=await fetch("/api/client-scope",{cache:"no-store"});
+      const d=r.ok?await r.json():null;
+      if(!d || scopedStore!=="greencal_ip_scope_v1_"+d.scope){
+        scopeReady=false;
+        scopedStore=null;
+        location.reload();
+        return;
+      }
+    }catch(e){scopeReady=false;scopedStore=null;location.reload();return;}
+
     try{
       const p=snapshot();
       const clean={entries:p.entries,exposures:p.exposures,offsets:p.offsets,updatedAt:new Date().toISOString()};
@@ -46,6 +57,14 @@
       if(status){status.hidden=false;status.textContent="Penyimpanan perangkat gagal. Unduh cadangan JSON sebelum menutup halaman.";}
     }
   }
+  window.addEventListener("focus",async()=>{
+    if(!scopeReady)return;
+    try{
+      const r=await fetch("/api/client-scope",{cache:"no-store"});
+      const d=r.ok?await r.json():null;
+      if(!d||scopedStore!=="greencal_ip_scope_v1_"+d.scope){scopeReady=false;scopedStore=null;location.reload();}
+    }catch(_){scopeReady=false;scopedStore=null;location.reload();}
+  });
   window.GC_AUTH={
     get user(){return guest;},
     get isAdmin(){return false;},
