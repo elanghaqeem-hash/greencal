@@ -15,19 +15,14 @@
  const msg=text=>{by("gcAuthError").textContent=text;by("gcAuthError").hidden=!text;};
  const status=msg=>{const box=by("gcSyncStatus");if(box){box.textContent=msg;box.hidden=!msg;}};
  const showGate=async()=>{
-   const overlay=by("gcAuthGate");overlay.hidden=false;
-   by("gcLoginForm").hidden=false;
+   const overlay=by("gcAuthGate");
+   if(!overlay)return;
+   overlay.hidden=false;
+   by("gcLoginForm").hidden=true;
    by("gcBootstrapForm").hidden=true;
-   msg("");
-   try{
-     const s=await request("/api/auth/status");
-     if(!s.hasAdmin){
-       by("gcLoginForm").hidden=true;
-       by("gcBootstrapForm").hidden=!s.setupAvailable;
-       if(!s.setupAvailable)msg("Admin belum diaktivasi. Pengelola harus mengatur secret GC_BOOTSTRAP_TOKEN di Cloudflare terlebih dahulu.");
-     }
-   }catch(e){msg(e.message);}
+   msg("Sesi Cloudflare Access belum aktif. Masuk dengan email yang diizinkan, lalu muat ulang GreenCal.");
  };
+
  const applyRole=()=>{
    const admin=state.user?.role==="admin";
    document.querySelectorAll('[data-admin-only]').forEach(el=>{el.hidden=!admin;});
@@ -36,6 +31,10 @@
    const profile=by("gcProfileRole");if(profile)profile.textContent=admin?"Admin":"Maker";
    const email=by("gcCurrentUser");if(email)email.textContent=state.user?.email||"";
    document.querySelectorAll('[data-ed],[data-xd],[data-od]').forEach(el=>{if(!admin)el.remove();});
+   // Identities and assigned roles are managed through signed Cloudflare Access policies.
+   const usersMenu=by("gcUsersMenu");if(usersMenu)usersMenu.hidden=true;
+   document.querySelectorAll('[data-tab="users"]').forEach(el=>{el.hidden=true;});
+   const passwordForm=by("gcPasswordForm");if(passwordForm)passwordForm.hidden=true;
    const cfg=by("btnConfigureAi");if(cfg)cfg.hidden=!admin;
    const clear=by("btnClearSamples");if(clear)clear.hidden=!admin;
  };
@@ -68,9 +67,8 @@
    };
    by("gcLogout").onclick=async()=>{
      await request("/api/auth/logout","POST",{}).catch(()=>{});
-     state.user=null;state.revision=0;
-     by("gcLoginPassword").value="";
-     await showGate();
+     state.user=null;
+     window.location.assign("/cdn-cgi/access/logout");
    };
    by("gcUsersMenu").onclick=()=>{if(state.user?.role==="admin"&&typeof window.setTab==="function")window.setTab("users");};
    by("gcUsersMenu").onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();by("gcUsersMenu").click();}};
