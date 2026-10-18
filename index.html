@@ -2931,6 +2931,40 @@ dialog.modal-sheet .modal-foot { background:var(--surface); }
   header.app-header .brand-block {max-width: calc(100% - 198px);}
 }
 
+
+/* GreenCal Scope 3 Category 6 — Business travel and hotel calculator */
+.gc-business-travel-wizard {min-width:0;gap:15px}
+.gc-business-travel-wizard [hidden] {display:none!important}
+.gc-business-travel-wizard .gc-travel-wz-heading {display:flex;align-items:flex-start;gap:13px;padding:19px 20px;background:linear-gradient(112deg,#edfbf3,#e2f7eb);border:1px solid #c7ead7;border-radius:16px}
+.gc-business-travel-wizard .gc-travel-wz-heading h3{margin:3px 0 7px;font-size:clamp(18px,2vw,23px);line-height:1.25;color:#08563b;letter-spacing:-.025em}
+.gc-business-travel-wizard .gc-travel-wz-heading p{font-size:12px;line-height:1.65;color:#486657;margin:0}
+.gc-business-travel-wizard .gc-travel-kicker{display:block;font-size:10px;letter-spacing:.1em;color:#128358;font-weight:850}
+.gc-business-travel-wizard .gc-travel-section{border:1px solid #e2ece5;border-radius:14px;background:#fbfefc;padding:16px;min-width:0}
+.gc-business-travel-wizard .gc-travel-section>.input-row-2{gap:13px}
+.gc-business-travel-wizard .gc-travel-section>.field-group+ .field-group{margin-top:12px}
+.gc-business-travel-wizard .gc-travel-section .field-group{min-width:0}
+.gc-business-travel-wizard .gc-travel-section select,.gc-business-travel-wizard .gc-travel-section input{max-width:100%;min-width:0;width:100%;min-height:45px}
+.gc-business-travel-wizard .gc-travel-inline-note{margin:10px 0 0;font-size:11px;line-height:1.65;color:#5b7665}
+.gc-business-travel-wizard .gc-travel-factor-current{padding:12px 14px;border:1px solid #cbe5d2;border-radius:12px;background:#edf8f1;font-size:12px;line-height:1.5;color:#205f45;overflow-wrap:anywhere}
+.gc-business-travel-wizard #wzD_res{display:flex;flex-direction:column;gap:7px;min-width:0;overflow-wrap:anywhere}
+.gc-business-travel-wizard #wzD_save{min-height:46px;min-width:0;align-self:flex-start;border-radius:11px}
+.gc-business-travel-wizard #wzD_save:disabled{opacity:.5;cursor:not-allowed}
+.gc-business-travel-wizard .gc-travel-factor-catalog{border:1px solid #dbe9e0;border-radius:13px;background:#fff;padding:12px 15px}
+.gc-business-travel-wizard .gc-travel-factor-catalog summary{color:#116848;font-weight:800;cursor:pointer;font-size:12px;line-height:1.5;list-style-position:inside}
+.gc-business-travel-wizard .gc-travel-factor-catalog>p{font-size:11px;line-height:1.7;color:#53685c;margin:13px 0 0}
+.gc-business-travel-wizard .gc-travel-factors-table{overflow-x:auto;max-width:100%;margin-top:13px}
+.gc-business-travel-wizard .gc-travel-factors-table table{width:100%;border-collapse:collapse;min-width:410px;font-size:11px}
+.gc-business-travel-wizard .gc-travel-factors-table th,.gc-business-travel-wizard .gc-travel-factors-table td{text-align:left;vertical-align:top;padding:8px 7px;border-bottom:1px solid #e5eee8}
+.gc-business-travel-wizard .gc-travel-factors-table th{background:#eef8f1;color:#1a6649;white-space:nowrap;font-size:10px}
+.gc-business-travel-wizard .gc-travel-factor-number{text-align:right!important;font-variant-numeric:tabular-nums;font-weight:800;color:#0d5f42}
+@media(max-width:620px){
+ .gc-business-travel-wizard .gc-travel-wz-heading{padding:15px 14px}
+ .gc-business-travel-wizard .gc-travel-section{padding:13px}
+ .gc-business-travel-wizard .gc-travel-section>.input-row-2{grid-template-columns:1fr;gap:11px}
+ .gc-business-travel-wizard #wzD_save{align-self:stretch;width:100%}
+ .gc-business-travel-wizard .gc-travel-factor-catalog{padding:11px 12px}
+}
+
 </style>
 </head>
 <body>
