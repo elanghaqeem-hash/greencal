@@ -1,0 +1,19 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "greencal",
+  "main": "src/ai-worker.js",
+  "compatibility_date": "2026-10-18",
+  "assets": {
+    "directory": "./dist",
+    "binding": "ASSETS",
+    "run_worker_first": [
+      "/api/*"
+    ]
+  },
+  "kv_namespaces": [
+    {
+      "binding": "AI_CONFIG",
+      "id": "9656c959e89441fc9d99ab5334f079f7"
+    }
+  ]
+}
