@@ -37,19 +37,47 @@ async function identity(request,env){
   return {role,email};
  }catch{return {error:error(401,"INVALID_IDENTITY","Sesi login tidak valid atau kedaluwarsa.")};}
 }
+// AES-GCM envelope encryption for Admin-submitted API keys.
+function aesKeyBytes(env){
+ if(!env.GREENCAL_AI_ENCRYPTION_KEY)throw Error("Server key encryption is not configured");
+ const raw=decode64(env.GREENCAL_AI_ENCRYPTION_KEY);
+ if(raw.length!==32)throw Error("Invalid encryption secret");
+ return raw;
+}
+async function encryptProviderKey(secret,env){
+ const key=await crypto.subtle.importKey("raw",aesKeyBytes(env),"AES-GCM",false,["encrypt"]);
+ const iv=crypto.getRandomValues(new Uint8Array(12));
+ const encrypted=await crypto.subtle.encrypt({name:"AES-GCM",iv},key,new TextEncoder().encode(secret));
+ return {iv:Array.from(iv),ciphertext:Array.from(new Uint8Array(encrypted)),version:1};
+}
+async function decryptProviderKey(envelope,env){
+ const key=await crypto.subtle.importKey("raw",aesKeyBytes(env),"AES-GCM",false,["decrypt"]);
+ const plain=await crypto.subtle.decrypt({name:"AES-GCM",iv:new Uint8Array(envelope.iv)},key,new Uint8Array(envelope.ciphertext));
+ return new TextDecoder().decode(plain);
+}
+
 const defaultOrder=[{provider:"gemini",model:"gemini-2.5-flash",enabled:true},{provider:"openai",model:"gpt-4.1-mini",enabled:true},{provider:"openrouter",model:"openai/gpt-4.1-mini",enabled:false},{provider:"groq",model:"llama-3.3-70b-versatile",enabled:false}];
 const keyVar={gemini:"AI_KEY_GEMINI",openai:"AI_KEY_OPENAI",openrouter:"AI_KEY_OPENROUTER",groq:"AI_KEY_GROQ"};
 async function loadConfig(env){return (await env.AI_CONFIG.get("ai_chain_v1",{type:"json"}))||{order:defaultOrder,updatedAt:null};}
-function publicConfig(cfg,env){return {order:cfg.order.map(x=>({provider:x.provider,model:x.model,enabled:x.enabled!==false,hasKey:!!env[keyVar[x.provider]]})),updatedAt:cfg.updatedAt||null};}
+function publicConfig(cfg,env){return {order:cfg.order.map(x=>({provider:x.provider,model:x.model,enabled:x.enabled!==false,hasKey:!!(x.sealedKey||env[keyVar[x.provider]])})),updatedAt:cfg.updatedAt||null};}
 async function saveSettings(request,env,actor){
  let input;
  try{input=await request.json();}catch{return error(400,"INVALID_JSON","Konfigurasi bukan JSON valid.");}
  if(!input||!Array.isArray(input.order)||!input.order.length||input.order.length>4)return error(400,"INVALID_ORDER","Pilih 1–4 penyedia.");
+ const prev=await loadConfig(env);
  const used=new Set(),order=[];
  for(const x of input.order){
   if(!x||!PROVIDERS[x.provider]||used.has(x.provider)||typeof x.model!=="string"||
   !/^[a-zA-Z0-9_.:/-]{1,100}$/.test(x.model))return error(400,"INVALID_MODEL","Model/provider tidak valid atau duplikat.");
-  used.add(x.provider);order.push({provider:x.provider,model:x.model,enabled:x.enabled!==false});
+  used.add(x.provider);
+  const prior=(prev.order||[]).find(p=>p.provider===x.provider);
+  let sealedKey=x.removeKey===true?null:(prior?.sealedKey||null);
+  if(x.newKey!==undefined&&x.newKey!==""){
+    if(typeof x.newKey!=="string"||x.newKey.length<12||x.newKey.length>350)return error(400,"INVALID_KEY","Panjang API key tidak valid.");
+    if(!env.GREENCAL_AI_ENCRYPTION_KEY)return error(503,"ENCRYPTION_UNAVAILABLE","Secret enkripsi Cloudflare belum terpasang.");
+    sealedKey=await encryptProviderKey(x.newKey,env);
+  }
+  order.push({provider:x.provider,model:x.model,enabled:x.enabled!==false,sealedKey});
  }
  const config={order,updatedAt:new Date().toISOString(),updatedBy:actor.email};
  await env.AI_CONFIG.put("ai_chain_v1",JSON.stringify(config));
@@ -64,7 +92,7 @@ function validate(input){
  return result;
 }
 async function invoke(x,prompt,env){
- const key=env[keyVar[x.provider]];
+ const key=x.sealedKey?await decryptProviderKey(x.sealedKey,env):env[keyVar[x.provider]];
  if(!key)throw Error("Provider key absent");
  const headers={"Content-Type":"application/json"};
  let url,body;
@@ -91,7 +119,7 @@ async function analyze(request,env){
  if(Number(request.headers.get("content-length")||0)>8192)return error(413,"INPUT_TOO_LARGE","Data terlalu besar.");
  let data;
  try{data=validate(await request.json());}catch(e){return error(400,"INVALID_INPUT",e.message);}
- const cfg=await loadConfig(env),chain=cfg.order.filter(x=>x.enabled&&env[keyVar[x.provider]]);
+ const cfg=await loadConfig(env),chain=cfg.order.filter(x=>x.enabled&&(x.sealedKey||env[keyVar[x.provider]]));
  if(!chain.length)return error(503,"AI_NOT_CONFIGURED","Admin belum mengaktifkan AI API Key. Tidak ada model Cloud yang dapat dijalankan.");
  const prompt="Susun DRAF laporan analisis iklim perbankan Indonesia (bukan assurance) dari data agregat GreenCal berikut: "+
  JSON.stringify(data)+
