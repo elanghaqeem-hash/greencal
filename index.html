@@ -2322,9 +2322,61 @@ dialog.modal-sheet .modal-foot { background:var(--surface); }
 .gc-ai-movers{display:grid;gap:5px}
 .gc-ai-movers button{border:1px solid var(--line);background:var(--surface-2);border-radius:7px;height:31px;font-size:16px;cursor:pointer}
 
+/* GreenCal two-role sign-in, account management & save-state cues */
+.gc-auth-gate {position:fixed;inset:0;z-index:600;background:linear-gradient(135deg,#073a2c,#12674b 58%,#e6f5eb);display:flex;justify-content:center;align-items:center;overflow:auto;padding:24px 15px;}
+.gc-auth-gate[hidden],#gcLoginForm[hidden],#gcBootstrapForm[hidden],[data-admin-only][hidden] {display:none!important;}
+.gc-auth-card {background:#fff;color:#182e25;border-radius:24px;box-shadow:0 25px 90px #02261a55;width:min(440px,100%);padding:29px 25px;max-height:96dvh;overflow:auto;}
+.gc-auth-icon {display:grid;place-items:center;width:52px;height:52px;color:white;background:#075b42;border-radius:15px;font-size:28px;margin-bottom:16px;}
+.gc-auth-card h2 {font-size:24px;letter-spacing:-.045em;margin:0 0 5px;}
+.gc-auth-card p {font-size:13px;line-height:1.6;color:#59695e;margin:0 0 17px;}
+.gc-auth-card form {display:flex;flex-direction:column;gap:12px;}
+.gc-auth-card label {display:flex;flex-direction:column;gap:5px;font-size:12px;font-weight:700;}
+.gc-auth-card input {background:#fff;color:#172a20;min-height:48px;padding:10px 12px;border:1px solid #ccd9d0;border-radius:11px;font-size:16px;width:100%;}
+.gc-auth-card form button {margin-top:4px;min-height:48px;background:#086245;color:#fff;border:0;border-radius:12px;font-weight:800;font-size:15px;cursor:pointer;}
+.gc-auth-card form button:disabled {opacity:.55;}
+.gc-auth-error {color:#9d2828!important;background:#fff1f1;padding:12px;border-radius:10px;margin-top:13px!important;}
+.gc-auth-foot {border-top:1px solid #e4ece6;padding-top:13px;margin-top:18px;font-size:11px;color:#6a796e;}
+.gc-account-bar {display:flex;gap:7px;align-items:center;min-width:0;}
+.gc-role-tag {padding:5px 9px;border-radius:99px;font-size:11px;font-weight:800;background:var(--primary-soft);color:var(--primary);}
+.gc-account-bar button {border:1px solid var(--line);background:var(--surface);color:var(--ink-muted);border-radius:10px;padding:7px 8px;cursor:pointer;font-weight:700;font-size:11px;}
+#gcSyncStatus {position:fixed;bottom:calc(72px + var(--safe-bottom));right:12px;max-width:min(94vw,420px);z-index:200;border:1px solid #efa8a8;border-radius:11px;background:#fff1f1;color:#9a2929;padding:10px 14px;font-size:12px;box-shadow:var(--shadow-md);}
+.gc-user-actions {display:flex;gap:6px;flex-wrap:wrap;}
+.gc-users-layout {display:grid;grid-template-columns:minmax(0,330px) minmax(0,1fr);gap:16px;align-items:start;}
+.gc-users-layout .panel {border-radius:19px;}
+.gc-users-layout input,.gc-users-layout select {min-height:47px;width:100%;border-radius:11px;}
+.gc-users-layout .table-responsive {min-width:0;}
+.gc-user-feedback {font-size:12px;color:var(--primary);min-height:1.3em;}
+.gc-local-note {border:1px solid var(--primary-border);background:var(--primary-soft);border-radius:14px;padding:15px;font-size:12px;line-height:1.6;color:var(--ink-muted);margin-top:14px;}
+.gc-local-note button {margin-top:12px;}
+@media(max-width:859px){.gc-account-bar {gap:4px}.gc-account-bar button {font-size:10px;padding:6px 7px}.gc-role-tag {padding:4px 6px;font-size:10px}.gc-users-layout {grid-template-columns:minmax(0,1fr)}}
+@media(max-width:500px){.header-actions {gap:4px}.gc-account-bar {flex-wrap:wrap;justify-content:end}.gc-auth-card {padding:25px 20px}.gc-users-layout table {font-size:12px}.gc-user-actions .btn {min-height:32px;padding:5px 7px;font-size:11px}}
+
 </style>
 </head>
 <body>
+
+  <!-- AUTH: standalone overlay; protected shared state is never initialized anonymously. -->
+  <div id="gcAuthGate" class="gc-auth-gate">
+    <div class="gc-auth-card">
+      <div class="gc-auth-icon" aria-hidden="true">☘</div>
+      <h2>Green Calculator</h2>
+      <p><b>PT Bank Riau Kepri Syariah (Perseroda)</b><br>Akses aplikasi sesuai peran Admin atau Maker.</p>
+      <form id="gcLoginForm" hidden>
+        <label>Email pengguna<input id="gcLoginEmail" type="email" autocomplete="username" required placeholder="nama@perusahaan.co.id"></label>
+        <label>Password<input id="gcLoginPassword" type="password" autocomplete="current-password" required></label>
+        <button type="submit">Masuk ke GreenCal</button>
+      </form>
+      <form id="gcBootstrapForm" hidden>
+        <p>Aktivasi awal Admin — hanya bisa dilakukan sekali menggunakan kode aktivasi dari pengelola Cloudflare.</p>
+        <label>Email Admin<input id="gcSetupEmail" type="email" autocomplete="email" required></label>
+        <label>Password Admin (minimal 12 karakter)<input id="gcSetupPassword" type="password" autocomplete="new-password" minlength="12" required></label>
+        <label>Kode Aktivasi Sekali Pakai<input id="gcSetupCode" type="password" autocomplete="off" required></label>
+        <button type="submit">Aktivasi Akun Admin</button>
+      </form>
+      <p id="gcAuthError" class="gc-auth-error" role="alert" hidden></p>
+      <div class="gc-auth-foot">Akses akun, password, dan izin dikelola melalui autentikasi server. Maker tidak dapat mengubah parameter atau pengguna.</div>
+    </div>
+  </div>
 
   <!-- APP HEADER -->
   <header class="app-header">
@@ -2344,6 +2396,7 @@ dialog.modal-sheet .modal-foot { background:var(--surface); }
         </a>
 
         <div class="header-actions">
+          <div class="gc-account-bar"><span id="gcCurrentRole" class="gc-role-tag" aria-label="Role pengguna">—</span><button id="gcLogout" type="button" title="Keluar dari akun">Keluar</button></div>
           <div class="year-select-wrap">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
             <span>Tahun</span>
@@ -2437,6 +2490,7 @@ dialog.modal-sheet .modal-foot { background:var(--surface); }
   <!-- MAIN CONTAINER -->
   <main class="container">
     <div id="banners"></div>
+    <div id="gcSyncStatus" role="status" hidden></div>
 
     <!-- VIEW 1: RINGKASAN -->
     <section class="view" id="view-ringkasan">
@@ -2989,6 +3043,35 @@ dialog.modal-sheet .modal-foot { background:var(--surface); }
       <div class="panel" id="guide"></div>
     </section>
 
+    <!-- ADMIN ONLY: USER MANAGEMENT -->
+    <section class="view" id="view-users" hidden data-admin-only>
+      <div class="view-header"><div class="view-title-group">
+        <h2>Manajemen Pengguna</h2>
+        <p>Kelola dua role GreenCal: Admin dan Maker. Semua perubahan akses diperiksa oleh server.</p>
+      </div></div>
+      <div class="gc-users-layout">
+        <div class="panel">
+          <h3>Tambah Pengguna</h3>
+          <form id="gcUserCreate" class="form-stack" autocomplete="off">
+            <label class="field-group"><span class="field-label">Email Pengguna</span><input id="gcNewEmail" type="email" required autocomplete="off"></label>
+            <label class="field-group"><span class="field-label">Role Pengguna</span>
+              <select id="gcNewRole"><option value="maker">Maker — Input &amp; Edit Emisi</option><option value="admin">Admin — Kelola Sistem</option></select>
+            </label>
+            <label class="field-group"><span class="field-label">Password Awal (minimal 12 karakter)</span><input id="gcNewPassword" type="password" minlength="12" required autocomplete="new-password"></label>
+            <button type="submit" class="btn primary">Buat Pengguna</button>
+          </form>
+          <p class="gc-user-feedback" id="gcUserFeedback" role="status"></p>
+          <div class="gc-local-note"><b>Data browser lama</b><br>Impor hanya dilakukan atas persetujuan Admin, bukan otomatis. Periksa sumber terlebih dahulu.<br>
+            <button id="gcImportLocal" class="btn sm" type="button">Impor data browser ke database</button>
+          </div>
+        </div>
+        <div class="panel" style="min-width:0">
+          <div class="view-title-row"><h3 style="margin:0">Daftar Akun</h3><button id="gcRefreshUsers" type="button" class="btn sm">Muat Ulang</button></div>
+          <div class="table-responsive" style="margin-top:12px"><table><thead><tr><th>Email</th><th>Role</th><th>Status</th><th>Tindakan</th></tr></thead><tbody id="gcUsersTable"></tbody></table></div>
+        </div>
+      </div>
+    </section>
+
     <!-- VIEW 9: MENU / LAINNYA (MOBILE HUBS) -->
     <section class="view" id="view-menu" hidden>
       <div class="view-header">
@@ -2999,6 +3082,9 @@ dialog.modal-sheet .modal-foot { background:var(--surface); }
       </div>
 
       <div class="data-cards-list" style="margin-bottom:20px">
+        <div data-admin-only id="gcUsersMenu" class="data-card" role="button" tabindex="0" style="cursor:pointer">
+          <div class="data-card-head"><div><h3 class="data-card-title">👥 Manajemen Pengguna</h3><span style="font-size:12px;color:var(--ink-muted)">Admin: buat, ubah role, dan nonaktifkan akun Maker</span></div><strong>→</strong></div>
+        </div>
         <div class="data-card" onclick="setTab('ai')" style="cursor:pointer">
           <div class="data-card-head">
             <div style="display:flex;align-items:center;gap:12px">
@@ -3038,7 +3124,7 @@ dialog.modal-sheet .modal-foot { background:var(--surface); }
           </div>
         </div>
 
-        <div class="data-card" onclick="setTab('parameter')" style="cursor:pointer">
+        <div class="data-card" data-admin-only onclick="setTab('parameter')" style="cursor:pointer">
           <div class="data-card-head">
             <div style="display:flex;align-items:center;gap:12px">
               <div class="wizard-icon-box" style="width:40px;height:40px;font-size:20px">⚙️</div>
@@ -3065,16 +3151,26 @@ dialog.modal-sheet .modal-foot { background:var(--surface); }
         </div>
       </div>
 
+      <div class="panel" style="margin-bottom:16px">
+        <h3 style="margin:0 0 4px">Keamanan Akun</h3>
+        <p style="font-size:12px;color:var(--ink-muted)">Role aktif: <b id="gcProfileRole">Admin / Maker</b>. Ganti password secara berkala.</p>
+        <form class="form-stack" id="gcPasswordForm" autocomplete="off">
+          <label class="field-group"><span class="field-label">Password saat ini</span><input type="password" id="gcOldPassword" autocomplete="current-password" required></label>
+          <label class="field-group"><span class="field-label">Password baru (12 karakter atau lebih)</span><input type="password" id="gcNewSelfPassword" autocomplete="new-password" minlength="12" required></label>
+          <button class="btn primary" type="submit">Ubah Password Akun</button>
+        </form>
+        <p id="gcPasswordFeedback" role="status" style="font-size:12px;color:var(--ink-muted)"></p>
+      </div>
       <div class="panel">
         <h3 style="margin:0 0 4px">Penyimpanan &amp; Cadangan Data</h3>
-        <p style="margin:0 0 14px;font-size:12.5px;color:var(--ink-muted)">Data Anda otomatis tersimpan di browser perangkat HP ini. Cadangkan ke file untuk dipindahkan ke laptop/komputer lain.</p>
+        <p style="margin:0 0 14px;font-size:12.5px;color:var(--ink-muted)">Data setelah login disimpan pada database bersama Cloudflare D1. Cadangkan data secara berkala untuk audit.</p>
         <div style="display:flex;gap:10px;flex-wrap:wrap">
           <button class="btn sm" id="btnBackupJson">Unduh Cadangan (JSON)</button>
-          <label class="btn sm" style="cursor:pointer">
-            <span>Pulihkan Cadangan</span>
+          <label class="btn sm" style="cursor:pointer" data-admin-only>
+            <span>Pulihkan Cadangan (Admin)</span>
             <input type="file" id="fileRestoreJson" accept=".json" style="display:none">
           </label>
-          <button class="btn sm danger" id="btnResetData">Reset ke Data Default</button>
+          <button class="btn sm danger" data-admin-only id="btnResetData">Reset ke Data Default</button>
         </div>
       </div>
     </section>
@@ -3102,6 +3198,7 @@ dialog.modal-sheet .modal-foot { background:var(--surface); }
   </script>
 
   <!-- COMBINED COMPREHENSIVE SCRIPT -->
+  <script src="./auth-client.js" defer></script>
   <script>
 
 "use strict";
