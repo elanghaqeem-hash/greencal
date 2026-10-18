@@ -2972,6 +2972,17 @@ dialog.modal-sheet .modal-foot { background:var(--surface); }
 .gc-ai-narrative-section h4{margin:0 0 8px;color:var(--primary);font-weight:850;font-size:12px;line-height:1.4;letter-spacing:.025em;}
 .gc-ai-narrative-section p{margin:0;font-size:clamp(12.5px,1.1vw,14px);line-height:1.8;color:var(--ink);}
 @media(max-width:620px){.gc-ai-narrative{padding:14px;gap:13px;max-height:570px}.gc-ai-narrative-section p{font-size:12.5px;line-height:1.72}}
+
+/* GC_SEC_PCAF_V1 — responsive input */
+.gc-sec-head{display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px;}
+.gc-sec-head p{color:var(--ink-muted);font-size:12.5px;line-height:1.5;margin:5px 0 0;}
+.gc-sec-method{background:var(--surface-2);border-left:3px solid var(--fin);border-radius:12px;padding:12px;font-size:12px;line-height:1.6;color:var(--ink-muted);margin:0;}
+.gc-sec-ppp{display:flex;gap:10px;align-items:flex-start;border:1px solid var(--line);background:var(--warn-soft);color:var(--warn);border-radius:12px;padding:12px;font-size:12px;line-height:1.55;}
+.gc-sec-ppp input{width:19px;height:19px;min-height:19px!important;flex-shrink:0;accent-color:var(--primary);margin:1px 0 0;}
+.gc-sec-actions{display:flex;flex-wrap:wrap;gap:10px;}
+.gc-sec-actions .btn{min-height:44px;}
+#wzS_secOtherWrap[hidden],#wzS_pppWrap[hidden]{display:none!important;}
+@media(max-width:620px){.gc-sec-actions{flex-direction:column;}.gc-sec-actions .btn{width:100%;}}
 </style>
 </head>
 <body>
@@ -3274,6 +3285,11 @@ dialog.modal-sheet .modal-foot { background:var(--surface); }
           <h3 class="wizard-card-title">Emisi Debitur (PCAF)</h3>
           <p class="wizard-card-desc">Kalkulasi attribution factor &amp; emisi terbiayai pembiayaan debitur.</p>
         </div>
+        <div class="wizard-card" data-wz="surat-berharga" role="button" tabindex="0" aria-label="Buka Kalkulator Surat Berharga">
+          <div class="wizard-icon-box">📈</div>
+          <h3 class="wizard-card-title">Surat Berharga (PCAF)</h3>
+          <p class="wizard-card-desc">SBN, SBSN, sukuk, saham, obligasi, green bond dan instrumen pasar modal.</p>
+        </div>
       </div>
 
       <div class="panel" id="wizardFormPanel"></div>
@@ -3413,6 +3429,7 @@ dialog.modal-sheet .modal-foot { background:var(--surface); }
           </div>
           <div class="view-actions">
             <button class="btn primary sm" id="btnOpenFinModal">+ Tambah Eksposur</button>
+            <button class="btn sm" id="btnOpenSecWizard">+ Surat Berharga</button>
             <button class="btn sm" id="btnExportFin">Ekspor CSV</button>
           </div>
         </div>
@@ -4164,6 +4181,7 @@ const S = {
   audit: [],
   editActId: null,
   editFinId: null,
+  securityEditId: null,
   isAdmin: false,
   psub: "tabel",
   ptab: "stationary"
@@ -4777,6 +4795,7 @@ function entryStale(e) {
 const clsById = id => S.classes.find(c => c.id === id);
 
 function expCalc(x) {
+  if (x.assetKind === "security") return gcSecExpCalc(x);
   const b = x.basis, y = x.year;
   let af = null, emis = x.emis, fin = null;
   if (b === "eeio") {
@@ -5292,12 +5311,14 @@ function renderUnitBars(el, rows, emptyMsg) {
 
 /* ---------- WIZARD (KALKULATOR CEPAT MOBILE) ---------- */
 function renderWizard() {
-  $$(".wizard-card").forEach(c => {
+  $(".wizard-card").forEach(c => {
     c.classList.toggle("active", c.dataset.wz === S.wz);
     c.onclick = () => {
+      if (S.wz === "surat-berharga" && c.dataset.wz !== "surat-berharga") S.securityEditId = null;
       S.wz = c.dataset.wz;
       renderWizard();
     };
+    c.onkeydown = event => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); c.click(); } };
   });
 
   const p = $("#wizardFormPanel");
@@ -5306,6 +5327,7 @@ function renderWizard() {
   else if (S.wz === "ac") renderWzAc(p);
   else if (S.wz === "dinas") renderWzDinas(p);
   else if (S.wz === "debitur") renderWzDebitur(p);
+  else if (S.wz === "surat-berharga") renderWzSecurities(p);
 }
 
 function renderWzListrik(box) {
@@ -5990,6 +6012,184 @@ function renderWzDebitur(box) {
   };
 }
 
+
+
+/* GC_SEC_PCAF_V1 — No external factors are invented for securities.
+   Scope 3 Category 15 financed-emissions values require verifiable inputs. */
+const GC_SECURITY_TYPES=[
+ {id:"sbn",name:"SBN / SUN (ORI, FR, SPN)",group:"sovereign",cls:"sovereign"},
+ {id:"sbsn",name:"SBSN / Sukuk Negara (SR, ST, PBS)",group:"sovereign",cls:"sovereign"},
+ {id:"green_sukuk_negara",name:"Green Sukuk Negara",group:"sovereign",cls:"sovereign"},
+ {id:"obligasi_korporasi",name:"Obligasi Korporasi Tercatat",group:"listed",cls:"listed"},
+ {id:"sukuk_korporasi",name:"Sukuk Korporasi Tercatat",group:"listed",cls:"listed"},
+ {id:"saham_tercatat",name:"Saham Tercatat / Emiten",group:"listed",cls:"listed"},
+ {id:"mtn_tercatat",name:"Medium Term Notes Emiten",group:"listed",cls:"listed"},
+ {id:"green_bond_korporasi",name:"Green Bond Korporasi",group:"listed",cls:"listed"},
+ {id:"green_sukuk_korporasi",name:"Green Sukuk Korporasi",group:"listed",cls:"listed"},
+ {id:"saham_tidak_tercatat",name:"Saham Tidak Tercatat",group:"private",cls:"business"},
+ {id:"obligasi_non_emiten",name:"Obligasi / MTN Perusahaan Privat",group:"private",cls:"business"},
+ {id:"reksa_dana",name:"Reksa Dana (Perlu Data Underlying)",group:"lookthrough",cls:"pending"},
+ {id:"etf",name:"ETF / Unit Penyertaan (Perlu Look-through)",group:"lookthrough",cls:"pending"},
+ {id:"obligasi_daerah",name:"Obligasi / Sukuk Daerah (Perlu Metode Khusus)",group:"review",cls:"pending"},
+ {id:"lainnya",name:"Surat Berharga Lainnya (Klasifikasi Manual)",group:"review",cls:"pending"}
+];
+function gcSecMeta(id){return GC_SECURITY_TYPES.find(t=>t.id===id);}
+function gcSecName(id){return gcSecMeta(id)?.name||"Surat Berharga belum diklasifikasi";}
+function gcSecEligible(t){return !!t&&["sovereign","listed","private"].includes(t.group);}
+function gcSecExpCalc(x){
+ const t=gcSecMeta(x.securityType);
+ const os=x.os==null?null:Number(x.os),denom=x.denom==null?null:Number(x.denom);
+ const emis=x.emis==null?null:Number(x.emis);
+ const ok=gcSecEligible(t)&&Number.isFinite(os)&&os>0&&
+  Number.isFinite(denom)&&denom>0&&os<=denom&&Number.isFinite(emis)&&emis>=0;
+ const af=ok&&(t.group!=="sovereign"||x.pppConfirmed===true)?os/denom:null;
+ const basis=(BASIS.find(b=>b.k===x.basis)||{});
+ const fin=af!=null&&basis.dq&&String(x.evidence||"").trim()?af*emis:null;
+ return {af,emis:Number.isFinite(emis)?emis:null,fin,dq:fin!=null?basis.dq:null};
+}
+function gcSecDenomLabel(t){
+ return t?.group==="sovereign"?"PDB Disesuaikan PPP (Ekuivalen Rp Miliar)":
+  t?.group==="private"?"Total Ekuitas + Utang Penerbit (Rp Miliar)":
+  "EVIC Penerbit (Rp Miliar)";
+}
+function renderWzSecurities(box){
+ box.innerHTML=[
+ '<div class="form-stack gc-sec-wizard">',
+ '<div class="gc-sec-head"><div><span class="calc-step-badge">SCOPE 3 · KATEGORI 15 / PCAF</span>',
+ '<h3 style="margin:5px 0 0">📈 Kalkulator Cepat: Surat Berharga</h3>',
+ '<p>Kelompokkan instrumen berdasarkan jenis penerbit dan metode atribusi yang tepat.</p></div><span class="chip fin">Investasi</span></div>',
+ '<label class="field-group"><span class="field-label">Jenis Surat Berharga</span><select id="wzS_type">',
+ GC_SECURITY_TYPES.map(t=>'<option value="'+esc(t.id)+'">'+esc(t.name)+'</option>').join(""),'</select></label>',
+ '<div class="input-row-2">',
+ '<label class="field-group"><span class="field-label">Nama Penerbit / Negara</span><input type="text" id="wzS_issuer" maxlength="160" placeholder="Republik Indonesia / PT Emiten Tbk"></label>',
+ '<label class="field-group"><span class="field-label">Kode Efek / ISIN (opsional)</span><input type="text" id="wzS_isin" maxlength="60" placeholder="FR..., SR..., atau ISIN"></label></div>',
+ '<div class="input-row-2"><div class="field-group"><label class="field-label" for="wzS_sector">Sektor Usaha Penerbit</label>',
+ '<select id="wzS_sector">',gcPcafSectorOptions(),'</select>',
+ '<label class="field-group" id="wzS_secOtherWrap" hidden><span class="field-label">Sektor Usaha Lainnya</span>',
+ '<input type="text" id="wzS_sectorOther" maxlength="160" placeholder="Tulis sektor penerbit"></label></div>',
+ '<label class="field-group"><span class="field-label">Dasar Data Emisi</span><select id="wzS_basis">',
+ BASIS.filter(b=>["verif","lapor","fisik","estimasi","belum"].includes(b.k))
+ .map(b=>'<option value="'+b.k+'">'+esc(b.t)+'</option>').join(""),'</select></label></div>',
+ '<div class="input-row-2">',
+ '<label class="field-group"><span class="field-label">Eksposur / Investasi (Rp Miliar)</span>',
+ '<input type="number" id="wzS_os" inputmode="decimal" min="0" step="any" placeholder="mis. 50"></label>',
+ '<label class="field-group"><span class="field-label" id="wzS_denomLabel">PDB PPP ekuivalen (Rp Miliar)</span>',
+ '<input type="number" id="wzS_denom" inputmode="decimal" min="0" step="any" placeholder="Nilai pada laporan sumber"></label></div>',
+ '<label class="field-group"><span class="field-label" id="wzS_emisLabel">Emisi GRK (tCO₂e)</span>',
+ '<input type="number" id="wzS_emis" inputmode="decimal" min="0" step="any" placeholder="Data emisi penerbit / negara"></label>',
+ '<label class="field-group"><span class="field-label">Cakupan Emisi</span><select id="wzS_scope">',
+ '<option value="s1s2">Scope 1 + 2 Penerbit</option>',
+ '<option value="s1s2s3">Scope 1 + 2 + 3 Penerbit</option>',
+ '<option value="production_excl_lulucf">Emisi Teritorial Negara tanpa LULUCF</option>',
+ '<option value="production_incl_lulucf">Emisi Teritorial Negara dengan LULUCF</option>',
+ '</select></label>',
+ '<label class="field-group"><span class="field-label">Referensi Data / Bukti (wajib agar hasil terhitung)</span>',
+ '<input type="text" id="wzS_evidence" maxlength="300" placeholder="Laporan, tahun, tabel/halaman, atau rujukan resmi"></label>',
+ '<label class="gc-sec-ppp" id="wzS_pppWrap" hidden><input type="checkbox" id="wzS_ppp">',
+ '<span>Saya mengonfirmasi eksposur dan PDB PPP sudah dalam satuan mata uang setara dan tahun yang sesuai; bukan menggunakan PDB nominal.</span></label>',
+ '<p class="gc-sec-method" id="wzS_method" aria-live="polite"></p>',
+ '<div class="result-box" id="wzS_result" aria-live="polite">Lengkapi data investasi dan emisi.</div>',
+ '<div class="gc-sec-actions"><button class="btn primary" type="button" id="wzS_save">Simpan Surat Berharga</button>',
+ '<button class="btn" type="button" id="wzS_cancel" hidden>Batal Edit</button></div>',
+ '<div class="carbon-factor-note">Hasil merupakan perhitungan awal yang harus divalidasi terhadap standar PCAF, data emisi dan laporan sumber. ',
+ 'Instrumen reksa dana/ETF dan yang belum sesuai klasifikasi dicatat sebagai gap. ',
+ 'Sukuk hijau atau green bond tidak otomatis mempunyai emisi nol.</div></div>'
+ ].join("");
+ const e=id=>$("#"+id);
+ const sectorValue=()=>e("wzS_sector").value==="__custom__"?e("wzS_sectorOther").value.trim():e("wzS_sector").value;
+ const input=()=>{
+   const t=gcSecMeta(e("wzS_type").value);
+   return {assetKind:"security",securityType:t?.id,os:parseNum(e("wzS_os").value),
+     denom:parseNum(e("wzS_denom").value),emis:parseNum(e("wzS_emis").value),
+     basis:e("wzS_basis").value,evidence:e("wzS_evidence").value.trim(),
+     pppConfirmed:e("wzS_ppp").checked};
+ };
+ const update=()=>{
+   const t=gcSecMeta(e("wzS_type").value),g=t?.group;
+   const eligible=gcSecEligible(t),sovereign=g==="sovereign";
+   e("wzS_denomLabel").textContent=gcSecDenomLabel(t);
+   e("wzS_emisLabel").textContent=sovereign?"Emisi GRK Teritorial Negara (tCO₂e)":"Emisi GRK Penerbit (tCO₂e)";
+   e("wzS_pppWrap").hidden=!sovereign;
+   e("wzS_sector").disabled=sovereign||!eligible;
+   e("wzS_secOtherWrap").hidden=e("wzS_sector").disabled||e("wzS_sector").value!=="__custom__";
+   const scopes=sovereign?["production_excl_lulucf","production_incl_lulucf"]:["s1s2","s1s2s3"];
+   [...e("wzS_scope").options].forEach(o=>o.hidden=!scopes.includes(o.value));
+   if(!scopes.includes(e("wzS_scope").value))e("wzS_scope").value=scopes[0];
+   e("wzS_method").textContent=sovereign
+    ?"SBN / SBSN: nilai investasi ÷ PDB PPP ekuivalen × emisi teritorial. Pastikan kurs PPP dan basis data selaras."
+    :g==="listed"?"Emiten tercatat: nilai investasi ÷ EVIC × emisi penerbit."
+    :g==="private"?"Non-emiten: nilai investasi ÷ (ekuitas + utang) × emisi penerbit."
+    :"Perlu klasifikasi dan metode/data underlying lebih lanjut. Perhitungan otomatis belum tersedia.";
+   const x=input(),r=gcSecExpCalc(x);
+   if(r.fin!=null) e("wzS_result").innerHTML=
+    '<span class="result-val">'+nf(r.fin,2)+' tCO₂e</span>'+
+    '<span class="result-formula">AF = '+nf(x.os,2)+' ÷ '+nf(x.denom,2)+' = '+nf(r.af,6)+'</span>'+
+    '<span class="result-formula">Emisi = '+nf(r.af,6)+' × '+nf(x.emis,2)+' tCO₂e. Status: draft, wajib validasi.</span>';
+   else e("wzS_result").textContent=!eligible
+    ?"Belum ada metode otomatis: disimpan sebagai data gap sampai klasifikasi/underlying tersedia."
+    :sovereign&&!x.pppConfirmed?"Konfirmasi konsistensi basis mata uang PDB PPP dan tahun data untuk perhitungan."
+    :"Masukkan eksposur, penyebut, emisi, referensi bukti, dan basis emisi. Eksposur tidak boleh melebihi penyebut; data kurang lengkap menjadi gap.";
+ };
+ e("wzS_type").onchange=()=>{
+   const t=gcSecMeta(e("wzS_type").value);
+   if(t.group==="sovereign"){e("wzS_issuer").value="Republik Indonesia";e("wzS_sector").value="";e("wzS_ppp").checked=false;}
+   else if(e("wzS_issuer").value==="Republik Indonesia")e("wzS_issuer").value="";
+   update();
+ };
+ e("wzS_sector").onchange=update;
+ ["wzS_os","wzS_denom","wzS_emis","wzS_evidence","wzS_sectorOther","wzS_issuer","wzS_isin"].forEach(id=>e(id).oninput=update);
+ ["wzS_basis","wzS_scope","wzS_ppp"].forEach(id=>e(id).onchange=update);
+ e("wzS_cancel").onclick=()=>{S.securityEditId=null;renderWzSecurities(box);};
+ e("wzS_save").onclick=()=>{
+   const t=gcSecMeta(e("wzS_type").value),issuer=e("wzS_issuer").value.trim(),x=input();
+   if(!issuer){toast("Isi nama penerbit / negara terlebih dahulu.");e("wzS_issuer").focus();return;}
+   if(x.os==null||x.os<=0){toast("Nilai investasi harus lebih besar dari nol.");e("wzS_os").focus();return;}
+   const sector=t.group==="sovereign"?"Pemerintah / Sovereign":sectorValue();
+   if(gcSecEligible(t)&&t.group!=="sovereign"&&!sector){toast("Pilih sektor penerbit.");e("wzS_sector").focus();return;}
+   const record={
+      ...x,id:S.securityEditId||newId("x"),year:S.year,debtor:issuer,
+      akad:gcSecName(t.id),sector,cls:t.cls,
+      isin:e("wzS_isin").value.trim(),emissionScope:e("wzS_scope").value,
+      basis:gcSecEligible(t)?x.basis:"belum",
+      pct:null,investKey:null,crsa:GC_PCAF_SECTOR_INDEX.get(sector)?.crsa||"Lainnya",
+      tier:"",tplan:"",profit:null,validationStatus:"Draft — perlu validasi",
+      at:nowIso(),contoh:false
+   };
+   if(S.securityEditId){
+     const idx=S.exposures.findIndex(z=>z.id===S.securityEditId&&z.assetKind==="security");
+     if(idx<0){toast("Data surat berharga tidak ditemukan.");return;}
+     S.exposures[idx]=record;
+   }else S.exposures.unshift(record);
+   S.securityEditId=null;saveStateToStorage();renderAll();
+   toast(gcSecExpCalc(record).fin!=null?"Surat berharga tersimpan (perlu validasi).":"Surat berharga tersimpan sebagai data gap.");
+   setTab("pembiayaan");
+ };
+ if(e("wzS_type").value==="sbn")e("wzS_issuer").value="Republik Indonesia";
+ e("wzS_basis").value="belum"; // Do not claim externally verified emissions by default.
+ update();
+}
+function gcFillSecurityWizard(x){
+ const e=id=>$("#"+id);
+ if(!e("wzS_type"))return;
+ e("wzS_type").value=gcSecMeta(x.securityType)?x.securityType:"lainnya";
+ e("wzS_type").dispatchEvent(new Event("change"));
+ e("wzS_issuer").value=x.debtor||"";
+ e("wzS_isin").value=x.isin||"";
+ if(x.sector&&[...e("wzS_sector").options].some(o=>o.value===x.sector))e("wzS_sector").value=x.sector;
+ else if(x.sector&&x.sector!=="Pemerintah / Sovereign"){
+   e("wzS_sector").value="__custom__";e("wzS_sectorOther").value=x.sector;
+ }
+ e("wzS_os").value=x.os??"";
+ e("wzS_denom").value=x.denom??"";
+ e("wzS_emis").value=x.emis??"";
+ e("wzS_evidence").value=x.evidence||"";
+ e("wzS_basis").value=x.basis||"belum";
+ e("wzS_scope").value=x.emissionScope||(gcSecMeta(x.securityType)?.group==="sovereign"?"production_excl_lulucf":"s1s2");
+ e("wzS_ppp").checked=x.pppConfirmed===true;
+ e("wzS_save").textContent="Simpan Perubahan Surat Berharga";
+ e("wzS_cancel").hidden=false;
+ e("wzS_sector").dispatchEvent(new Event("change"));
+}
 
 /* ---------- DATA AKTIVITAS VIEW ---------- */
 let CUR_ACT = {};
@@ -6683,7 +6883,7 @@ function renderFinList() {
   const q = ($("#fSearchFin").value || "").trim().toLowerCase();
   const xs = S.exposures.filter(x =>
     x.year === y &&
-    (!q || (x.debtor + " " + (x.sector || "") + " " + (x.akad || "")).toLowerCase().includes(q))
+    (!q || (x.debtor + " " + (x.sector || "") + " " + (x.akad || "") + " " + (x.isin || "")).toLowerCase().includes(q))
   ).map(x => Object.assign({}, x, expCalc(x))).sort((a, b) => (b.os || 0) - (a.os || 0));
 
   const osAll = xs.reduce((a, x) => a + (x.os || 0), 0);
@@ -6696,7 +6896,7 @@ function renderFinList() {
     '<div class="kpi-card">' +
       '<span class="kpi-label">Financed Emissions</span>' +
       '<span class="kpi-value num">' + nf(fin, 1) + '</span>' +
-      '<span class="kpi-sub">tCO₂e (' + cov.length + ' dari ' + xs.length + ' debitur)</span>' +
+      '<span class="kpi-sub">tCO₂e (' + cov.length + ' dari ' + xs.length + ' eksposur)</span>' +
     '</div>' +
     '<div class="kpi-card">' +
       '<span class="kpi-label">Coverage Portofolio</span>' +
@@ -6728,7 +6928,8 @@ function renderFinList() {
   $("#finCardsList").innerHTML = xs.map(x => {
     const c = clsById(x.cls);
     const chips = [];
-    chips.push('<span class="chip primary">' + esc(x.akad) + '</span>');
+    chips.push('<span class="chip primary">' + esc(x.assetKind === "security" ? gcSecName(x.securityType) : x.akad) + '</span>');
+    if (x.assetKind === "security") chips.push('<span class="chip warn">Draft · Perlu Validasi</span>');
     if (x.tier) chips.push('<span class="chip">Tier ' + esc(x.tier) + '</span>');
     if (x.dq) chips.push('<span class="chip">DQ ' + esc(x.dq) + '</span>');
     if (x.contoh) chips.push('<span class="chip">Contoh</span>');
@@ -6761,7 +6962,7 @@ function renderFinList() {
       const c = clsById(x.cls);
       return (
         '<tr>' +
-          '<td><b>' + esc(x.debtor) + '</b><div style="font-size:12px;color:var(--ink-muted)">' + esc(x.akad) + (x.tier ? ' · Tier ' + esc(x.tier) : '') + '</div></td>' +
+          '<td><b>' + esc(x.debtor) + '</b><div style="font-size:12px;color:var(--ink-muted)">' + esc(x.assetKind === "security" ? gcSecName(x.securityType) : x.akad) + (x.tier ? ' · Tier ' + esc(x.tier) : '') + '</div></td>' +
           '<td>' + esc((BASIS.find(b => b.k === x.basis) || {}).t || x.basis) + '<div style="font-size:12px;color:var(--ink-muted)">' + esc(x.sector || "–") + '</div></td>' +
           '<td class="r num">' + nf(x.os) + '</td>' +
           '<td class="r num">' + (x.af != null ? nf(x.af, 3) : "–") + '</td>' +
@@ -6789,6 +6990,12 @@ function renderFinList() {
 function loadFin(id) {
   const x = S.exposures.find(e => e.id === id);
   if (!x) return;
+  if (x.assetKind === "security") {
+    S.securityEditId = id; S.wz = "surat-berharga"; setTab("wizard");
+    gcFillSecurityWizard(x);
+    $("#wizardFormPanel")?.scrollIntoView({behavior:"smooth",block:"start"});
+    return;
+  }
   S.editFinId = id;
   fillYear($("#xYear"), x.year);
   renderFinForm();
@@ -7520,7 +7727,7 @@ function exportAct() {
 
 function exportFin() {
   const y = S.year;
-  const rows = [["Periode", "Debitur", "Akad", "Sektor", "Kelas Aset PCAF", "Outstanding (Rp M)", "Penyebut", "Attribution Factor", "Emisi Debitur (t)", "Financed (tCO2e)", "Data Quality", "Bukti"]];
+  const rows = [["Periode", "Debitur / Penerbit", "Akad", "Sektor", "Kelas Aset PCAF", "Outstanding (Rp M)", "Penyebut", "Attribution Factor", "Emisi Debitur (t)", "Financed (tCO2e)", "Data Quality", "Bukti", "Jenis Surat Berharga", "Kode Efek / ISIN", "Cakupan Emisi", "Status Validasi"]];
   S.exposures.filter(x => x.year === y).forEach(x => {
     const r = expCalc(x);
     rows.push([
@@ -7535,7 +7742,9 @@ function exportFin() {
       r.emis ?? "",
       r.fin != null ? r.fin.toFixed(3) : "",
       r.dq || "",
-      x.evidence
+      x.evidence,
+      x.assetKind === "security" ? gcSecName(x.securityType) : "",
+      x.isin || "", x.emissionScope || "", x.validationStatus || ""
     ]);
   });
   downloadBlob("pembiayaan-pcaf-" + y + ".csv", toCsv(rows));
@@ -7690,6 +7899,7 @@ function bindEvents() {
     resetAct();
     $("#actForm").scrollIntoView({ behavior: "smooth", block: "start" });
   };
+  $("#btnOpenSecWizard").onclick = () => { S.securityEditId=null; S.wz="surat-berharga"; setTab("wizard"); };
   $("#btnOpenFinModal").onclick = () => {
     resetFin();
     $("#finForm").scrollIntoView({ behavior: "smooth", block: "start" });
