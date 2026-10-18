@@ -111,7 +111,7 @@ async function router(req,env) {
   }
   if(path==="/api/auth/status"&&method==="GET"){
     const account=await identity(req,db,actor);
-    return C({loginMethod:"email-otp-plus-password",email:actor.email,
+    return C({loginMethod:"cloudflare-access-plus-password",deviceMfaEnrollment:"cloudflare-access-biometrics",email:actor.email,
       activationRequired:!!account&&account.password_updated_at==null,
       accountEnabled:!!account,role:account?.role||null});
   }
