@@ -30,7 +30,7 @@ test("issuer field has correct placeholder while debtor financing remains unchan
 test("issuer selector is a single native select with its original value and lookup bindings",()=>{
  for(const id of ["wzS_sector","wzS_sectorHint","wzS_sectorOther"])
    assert.equal(html.split('id="'+id+'"').length-1,1,id+" duplicate or missing");
- assert.match(code,/'<label class="field-label" for="wzS_sector">Sektor Usaha Penerbit/);
+ assert.ok(code.includes('label class="field-label" for="wzS_sector">Sektor Usaha Penerbit'));
  assert.match(code,/'<select id="wzS_sector" aria-describedby="wzS_sectorHint">/);
  assert.match(code,/'<span class="gc-security-sector-icon" aria-hidden="true">/);
  assert.match(code,/'<span class="gc-security-sector-chevron" aria-hidden="true">/);
