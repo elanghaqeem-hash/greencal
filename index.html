@@ -6299,6 +6299,8 @@ function bindEvents() {
 
 function boot() {
   initTheme();
+  // Remove legacy browser-stored AI keys on every application launch.
+  if (typeof getAiConfig === 'function') getAiConfig();
   loadStateFromStorage();
   bindEvents();
   renderAll();
