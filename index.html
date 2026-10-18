@@ -5246,19 +5246,19 @@ const DEFAULT_AI_CONFIG = {
 
 function getAiConfig() {
   try {
-    const raw = localStorage.getItem("green_ai_config");
-    return raw ? Object.assign({}, DEFAULT_AI_CONFIG, JSON.parse(raw)) : DEFAULT_AI_CONFIG;
-  } catch(e) {
-    return DEFAULT_AI_CONFIG;
-  }
+    const raw = JSON.parse(localStorage.getItem("green_ai_config") || "{}");
+    // Purge legacy browser API keys. Only non-secret Tier preferences remain local.
+    if (Object.prototype.hasOwnProperty.call(raw,"apiKey")) {
+      delete raw.apiKey;
+      localStorage.setItem("green_ai_config", JSON.stringify(raw));
+    }
+    return Object.assign({}, DEFAULT_AI_CONFIG, raw, {apiKey:""});
+  } catch(e) { return Object.assign({}, DEFAULT_AI_CONFIG, {apiKey:""}); }
 }
-
 function saveAiConfig(cfg) {
-  try {
-    localStorage.setItem("green_ai_config", JSON.stringify(cfg));
-  } catch(e) {}
+  const {apiKey, ...publicCfg} = cfg;
+  try { localStorage.setItem("green_ai_config", JSON.stringify(publicCfg)); } catch(e) {}
 }
-
 /* Tier 1: Local OJK Regulatory & Heuristic Rule Engine */
 function runAiTier1(summaryData, year) {
   const s = summaryData;
@@ -5445,14 +5445,6 @@ function runAiTier2(summaryData, year) {
 
 /* Tier 3: Cloud Generative AI (Gemini / OpenAI API) */
 async function runAiTier3(summaryData, year, config) {
-  // If API key is missing, fallback smoothly to Tier 2 with note
-  if (!config.apiKey || !config.apiKey.trim()) {
-    const t2 = runAiTier2(summaryData, year);
-    t2.tierUsed = "Tier 3 (Fallback ke Tier 2: API Key belum diisi oleh Admin)";
-    t2.apiNote = "Kunci API Cloud belum diisi di Pengaturan AI. Analisis dijalankan menggunakan mesin lokal Tier 2 ESG Advisory.";
-    return t2;
-  }
-
   const s = summaryData;
   const prompt = 
     "Anda adalah ESG & Climate Risk Advisor Senior untuk perbankan di Indonesia. Berikan analisis eksekutif komprehensif berdasarkan data emisi karbon tahun " + year + " berikut:\\n" +
@@ -5472,43 +5464,18 @@ async function runAiTier3(summaryData, year, config) {
     "4. Teks Draf Pernyataan Direksi untuk Laporan Keberlanjutan Tahunan.";
 
   try {
-    let responseText = "";
-    if (config.provider === "gemini") {
-      const url = "https://generativelanguage.googleapis.com/v1beta/models/" + (config.model || "gemini-1.5-flash") + ":generateContent?key=" + config.apiKey.trim();
-      const res = await fetch(url, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          contents: [{ parts: [{ text: prompt }] }],
-          generationConfig: { temperature: 0.2, maxOutputTokens: 2000 }
-        })
-      });
-      if (!res.ok) throw new Error("API Gemini Error: HTTP " + res.status);
-      const json = await res.json();
-      responseText = json.candidates[0].content.parts[0].text;
-    } else {
-      // OpenAI format
-      const url = "https://api.openai.com/v1/chat/completions";
-      const res = await fetch(url, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": "Bearer " + config.apiKey.trim()
-        },
-        body: JSON.stringify({
-          model: config.model || "gpt-4o-mini",
-          messages: [{ role: "user", content: prompt }],
-          temperature: 0.2
-        })
-      });
-      if (!res.ok) throw new Error("API OpenAI Error: HTTP " + res.status);
-      const json = await res.json();
-      responseText = json.choices[0].message.content;
-    }
-
+    const res = await fetch("/api/ai/analyze", {
+      method:"POST", headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({prompt})
+    });
+    if (!res.ok) throw new Error("AI backend: HTTP " + res.status);
+    const payload = await res.json();
+    const responseText = payload.text;
+    const modelName = payload.model || "AI configured by Admin";
+    const providerName = payload.provider || "Cloud";
     const t2 = runAiTier2(summaryData, year);
     return Object.assign({}, t2, {
-      tierUsed: "Tier 3: Cloud LLM Generative AI (" + (config.provider === "gemini" ? "Google Gemini" : "OpenAI") + " - " + config.model + ")",
+      tierUsed: "Tier 3: Cloud LLM Generative AI (" + (providerName) + " - " + modelName + ")",
       narrative: responseText
     });
   } catch(err) {
@@ -5737,107 +5704,13 @@ function displayAiResult(res) {
 
 /* ---------- ADMIN MODAL: TIERED AI CONFIGURATION ---------- */
 function openAiConfigDialog() {
-  const cfg = getAiConfig();
-
-  let html = 
-    '<div class="form-stack">' +
-      '<p style="font-size:13px;color:var(--ink-muted);margin:0">Atur tingkatan kecerdasan buatan (AI Tier) yang digunakan untuk menganalisis emisi dan risiko iklim portofolio.</p>' +
-      
-      '<div class="field-group">' +
-        '<span class="field-label">Pilihan AI Berjenjang</span>' +
-        '<div style="display:flex;flex-direction:column;gap:10px;margin-top:6px">' +
-          '<label class="data-card" style="cursor:pointer;flex-direction:row;align-items:flex-start;gap:12px;padding:12px">' +
-            '<input type="radio" name="aiTierRadio" value="tier1"' + (cfg.tier === "tier1" ? " checked" : "") + ' style="margin-top:3px">' +
-            '<div>' +
-              '<b>Tier 1: AI Heuristik &amp; Aturan Regulasi OJK</b>' +
-              '<div style="font-size:12px;color:var(--ink-muted);margin-top:2px">100% lokal &amp; instan. Audit checklist kepatuhan Buku 1-7 OJK CRMS 2026, jejak bukti, dan scoring kematangan tanpa butuh internet.</div>' +
-            '</div>' +
-          '</label>' +
-
-          '<label class="data-card" style="cursor:pointer;flex-direction:row;align-items:flex-start;gap:12px;padding:12px">' +
-            '<input type="radio" name="aiTierRadio" value="tier2"' + (cfg.tier === "tier2" ? " checked" : "") + ' style="margin-top:3px">' +
-            '<div>' +
-              '<b>Tier 2: AI Rekomendasi ESG &amp; Dekarbonisasi Strategis (Disarankan)</b>' +
-              '<div style="font-size:12px;color:var(--ink-muted);margin-top:2px">Pemodelan strategi reduksi emisi nyata: PLTS Atap kantor cabang, elektrifikasi armada kendaraan dinas, efisiensi energi AC, dan Transition Finance portofolio.</div>' +
-            '</div>' +
-          '</label>' +
-
-          '<label class="data-card" style="cursor:pointer;flex-direction:row;align-items:flex-start;gap:12px;padding:12px">' +
-            '<input type="radio" name="aiTierRadio" value="tier3"' + (cfg.tier === "tier3" ? " checked" : "") + ' style="margin-top:3px">' +
-            '<div>' +
-              '<b>Tier 3: Cloud LLM Generative AI (Gemini / OpenAI API)</b>' +
-              '<div style="font-size:12px;color:var(--ink-muted);margin-top:2px">Menggunakan model bahasa besar cloud untuk menghasilkan draf narasi Sustainability Report profesional siap saji. Memerlukan API Key.</div>' +
-            '</div>' +
-          '</label>' +
-        '</div>' +
-      '</div>' +
-
-      '<div id="tier3OptionsBox" style="display:' + (cfg.tier === "tier3" ? "block" : "none") + ';border-top:1px solid var(--line);padding-top:14px">' +
-        '<div class="input-row-2">' +
-          '<label class="field-group">' +
-            '<span class="field-label">Provider Cloud AI</span>' +
-            '<select id="cfgAiProvider">' +
-              '<option value="gemini"' + (cfg.provider === "gemini" ? " selected" : "") + '>Google Gemini</option>' +
-              '<option value="openai"' + (cfg.provider === "openai" ? " selected" : "") + '>OpenAI</option>' +
-            '</select>' +
-          '</label>' +
-          '<label class="field-group">' +
-            '<span class="field-label">Model Name</span>' +
-            '<input type="text" id="cfgAiModel" value="' + esc(cfg.model || "gemini-1.5-flash") + '">' +
-          '</label>' +
-        '</div>' +
-        '<label class="field-group" style="margin-top:10px">' +
-          '<span class="field-label">API Key (Tersimpan Lokal di Browser)</span>' +
-          '<input type="password" id="cfgAiKey" placeholder="mis. AIzaSy..." value="' + esc(cfg.apiKey || "") + '">' +
-        '</label>' +
-      '</div>' +
-
-      '<div class="input-row-2" style="border-top:1px solid var(--line);padding-top:14px">' +
-        '<label class="field-group">' +
-          '<span class="field-label">Tahun Target Dekarbonisasi</span>' +
-          '<input type="number" id="cfgAiYear" value="' + (cfg.targetReductionYear || 2030) + '">' +
-        '</label>' +
-        '<label class="field-group">' +
-          '<span class="field-label">Target Reduksi Emisi (%)</span>' +
-          '<input type="number" id="cfgAiPct" value="' + (cfg.targetReductionPct || 35) + '">' +
-        '</label>' +
-      '</div>' +
-    '</div>';
-
-  openDlg("⚙️ Pengaturan AI Berjenjang (Admin)", html, [
-    {
-      t: "Simpan Konfigurasi",
-      primary: true,
-      fn: async () => {
-        const selectedTier = $('input[name="aiTierRadio"]:checked').value;
-        const newCfg = {
-          tier: selectedTier,
-          provider: $("#cfgAiProvider").value,
-          model: $("#cfgAiModel").value.trim() || "gemini-1.5-flash",
-          apiKey: $("#cfgAiKey").value.trim(),
-          targetReductionYear: num($("#cfgAiYear").value) || 2030,
-          targetReductionPct: num($("#cfgAiPct").value) || 35
-        };
-
-        saveAiConfig(newCfg);
-        await logAudit("Ubah Konfigurasi AI", "Mesin AI Berjenjang", "Tier aktif: " + newCfg.tier);
-        toast("Konfigurasi AI Tier berhasil disimpan!");
-        LAST_AI_RESULT = null; // force recalculation with new tier
-        renderAiView();
-        return true;
-      }
-    }
-  ]);
-
-  // Bind radio toggle for Tier 3 options box
-  $$('input[name="aiTierRadio"]').forEach(r => {
-    r.onchange = () => {
-      const box = $("#tier3OptionsBox");
-      if (box) box.style.display = r.value === "tier3" ? "block" : "none";
-    };
-  });
+  // Server-side roles control access; all Cloud AI credentials stay in Worker/D1.
+  fetch("/api/me").then(r=>r.ok?r.json():Promise.reject(Error("Login diperlukan")))
+  .then(d=>{
+    if(d.user?.role==="admin") location.href="/admin.html";
+    else toast("Pengaturan AI hanya tersedia untuk Admin.");
+  }).catch(()=>location.href="/login.html");
 }
-
 window.renderAiView = renderAiView;
 window.renderAI = renderAiView;
 window.runAiAnalysisUi = runAiAnalysisUi;
@@ -5846,5 +5719,22 @@ window.openAiConfigModal = openAiConfigDialog;
 window.displayAiResult = displayAiResult;
 
   </script>
+<script>
+(async () => {
+  try {
+    const response = await fetch('/api/me',{credentials:'same-origin'});
+    if(!response.ok){location.replace('/login.html');return;}
+    const {user}=await response.json();
+    const nav=document.createElement('nav');
+    nav.setAttribute('aria-label','Akun GreenCal');
+    nav.style.cssText='position:fixed;right:12px;bottom:84px;z-index:9999;background:var(--surface,#fff);color:var(--ink,#123);padding:8px 12px;border:1px solid var(--line,#ddd);border-radius:14px;box-shadow:0 4px 18px #0002;max-width:calc(100vw - 24px);font:12px system-ui';
+    const label=document.createElement('span');label.textContent=(user?.role==='admin'?'Admin':'Pengguna')+' · '+(user?.email||'');nav.append(label);
+    if(user?.role==='admin'){const a=document.createElement('a');a.href='/admin.html';a.textContent=' · Pengaturan AI';a.style.marginLeft='8px';nav.append(a);}
+    const btn=document.createElement('button');btn.textContent='Keluar';btn.style.cssText='margin-left:8px;padding:5px 9px;cursor:pointer;border-radius:8px';
+    btn.onclick=async()=>{await fetch('/api/logout',{method:'POST'});location.replace('/login.html');};nav.append(btn);
+    document.body.append(nav);
+  } catch(error){location.replace('/login.html');}
+})();
+</script>
 </body>
 </html>
