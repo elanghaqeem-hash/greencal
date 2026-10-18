@@ -31,7 +31,14 @@ test("responsive GreenCal visual design has no unsafe external image requests",(
 test("biometric enrollment uses official Cloudflare Access route",()=>{
  assert.match(html,/id="gcEnrollBiometrics"/);
  assert.match(html,/https:\/\/green-heart-e2b0\.cloudflareaccess\.com\/AddMfaDevice/);
- assert.match(html,/Daftarkan Biometrik Perangkat/);
+ assert.match(html,/Daftarkan Biometrik \/ PIN Perangkat/);
+ assert.match(html,/id="gcDeviceAuthenticatorStatus"/);
+ assert.match(html,/Keamanan bawaan perangkat/);
+ assert.match(html,/Tidak diperlukan aplikasi OTP\/TOTP atau SMS sebagai MFA GreenCal/);
+ assert.match(client,/detectPlatformAuthenticator/);
+ assert.match(client,/isUserVerifyingPlatformAuthenticatorAvailable/);
+ assert.match(client,/Kompatibilitas tidak dapat diperiksa/);
+ assert.match(worker,/cloudflare-access-plus-password/);
  assert.match(html,/Biometrik perangkat tidak secara otomatis mereset password aplikasi/);
  assert.match(html,/id="gcProfileBiometrics"/);
  assert.doesNotMatch(html,/Verifikasi ulang OTP Email/);
