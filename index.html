@@ -8502,6 +8502,76 @@ function gcAiBindEditor(res){
   }
 }
 
+
+/* GreenCal rich narrative copy and Word-compatible export */
+function gcAiReportTitle(res){
+  const period=String(S.year);
+  const org=st().orgName||"Green Calculator";
+  const score=res.score==null?"Belum dapat dihitung":res.score+"/100, grade internal "+res.grade;
+  return '<h1>Laporan Analisis Emisi Karbon dan Risiko Iklim</h1>'+
+    '<p><b>Lembaga:</b> '+esc(org)+'</p>'+
+    '<p><b>Tahun laporan:</b> '+esc(period)+'</p>'+
+    '<p><b>Indikator kesiapan data:</b> '+esc(score)+'</p>'+
+    '<p><b>Metode:</b> '+esc(res.tierUsed)+'</p>';
+}
+function gcAiReportPlain(res){
+  const score=res.score==null?"Belum dapat dihitung":res.score+"/100, grade internal "+res.grade;
+  return [
+    "LAPORAN ANALISIS EMISI KARBON DAN RISIKO IKLIM",
+    "Lembaga: "+(st().orgName||"Green Calculator"),
+    "Periode: "+S.year,
+    "Indikator kelengkapan data internal: "+score,
+    "Mesin analisis: "+res.tierUsed,
+    "",
+    gcAiNarrativeText(res),
+    "",
+    "CATATAN VALIDASI",
+    "Dokumen draft. Angka dan metode harus diverifikasi sebelum digunakan dalam laporan resmi."
+  ].join("\n");
+}
+async function gcAiCopyReport(res){
+  if(GC_AI_EDITOR&&!gcAiSaveEditor(true))return;
+  const text=gcAiReportPlain(res);
+  const rich=gcAiReportTitle(res)+gcAiNarrativeHtml(res)+
+    '<p><i>Draft memerlukan review dan validasi manusia sebelum pelaporan resmi.</i></p>';
+  try{
+    if(navigator.clipboard?.write&&window.ClipboardItem){
+      const item=new ClipboardItem({
+        "text/html":new Blob([rich],{type:"text/html"}),
+        "text/plain":new Blob([text],{type:"text/plain"})
+      });
+      await navigator.clipboard.write([item]);
+    }else{
+      await navigator.clipboard.writeText(text);
+    }
+    toast("Narasi dan format disalin. Anda dapat menempelkannya ke Word.");
+  }catch(e){
+    try{await navigator.clipboard.writeText(text);toast("Narasi teks berhasil disalin.");}
+    catch(e2){toast("Gagal menyalin. Periksa izin clipboard browser.");}
+  }
+}
+function gcAiDownloadWord(res){
+  if(GC_AI_EDITOR&&!gcAiSaveEditor(true))return;
+  const style='body{font-family:Arial,Calibri,sans-serif;color:#182a24;line-height:1.65;margin:32px}' +
+   'h1{font-size:20pt;color:#146247}h2{font-size:17pt}h3{font-size:14pt}' +
+   'h4{font-size:11pt;color:#126247;margin:18px 0 8px}p{font-size:11pt;margin:0 0 11px}' +
+   'section{margin-bottom:14px;border-bottom:1px solid #e1e9e5;padding-bottom:12px}' +
+   'table{border-collapse:collapse}li{margin-bottom:6px}' +
+   'blockquote{border-left:3px solid #146247;padding-left:12px}';
+  const doc='<!DOCTYPE html><html lang="id"><head><meta charset="utf-8">'+
+    '<title>Analisis GreenCal '+esc(S.year)+'</title><style>'+style+'</style></head><body>'+
+    gcAiReportTitle(res)+gcAiNarrativeHtml(res)+
+    '<p style="font-size:9pt;color:#66736e;margin-top:22px">Draft analisis. Validasi angka, metode dan bukti diperlukan sebelum pelaporan resmi.</p>'+
+    '</body></html>';
+  downloadBlob("narasi-greencal-"+S.year+"-editable.doc","\ufeff"+doc,"application/msword;charset=utf-8");
+  toast("Dokumen Word-kompatibel berhasil diunduh.");
+}
+function gcAiDownloadText(res){
+  if(GC_AI_EDITOR&&!gcAiSaveEditor(true))return;
+  downloadBlob("narasi-greencal-"+S.year+".txt",gcAiReportPlain(res),"text/plain;charset=utf-8");
+  toast("Narasi teks bersih berhasil diunduh.");
+}
+
 /* Tier 1: Local OJK Regulatory & Heuristic Rule Engine */
 function runAiTier1(summaryData, year) {
   const s = summaryData;
@@ -8815,7 +8885,8 @@ function displayAiResult(res) {
         '</div>' +
         '<div class="ai-result-actions">' +
           '<button class="btn sm" id="btnCopyAi" style="background:rgba(255,255,255,0.15);color:#FFFFFF;border:0">Salin Analisa</button>' +
-          '<button class="btn sm" id="btnDownloadAi" style="background:rgba(255,255,255,0.15);color:#FFFFFF;border:0">Unduh Laporan</button>' +
+          '<button class="btn sm" id="btnDownloadAi" style="background:rgba(255,255,255,0.15);color:#FFFFFF;border:0">Unduh Word</button>' +
+          '<button class="btn sm" id="btnDownloadAiText" style="background:rgba(255,255,255,0.15);color:#FFFFFF;border:0">Unduh Teks</button>' +
         '</div>' +
       '</div>' +
     '</div>';
@@ -8949,41 +9020,12 @@ function displayAiResult(res) {
 
   // Bind Actions
   const btnCopy = $("#btnCopyAi");
-  if (btnCopy) {
-    btnCopy.onclick = () => {
-      const copyText = 
-        "LAPORAN ANALISA EMISI KARBON & RISIKO IKLIM\\n" +
-        "Lembaga: " + (st().orgName || "Bank") + " · Periode: " + S.year + "\\n" +
-        "Skor Kematangan: Grade " + res.grade + " (" + res.score + "/100)\\n" +
-        "Mesin Analisa: " + res.tierUsed + "\\n\\n" +
-        res.narrative;
+  if(btnCopy)btnCopy.onclick=()=>gcAiCopyReport(res);
+  const btnDownload = $("#btnDownloadAi");
+  if(btnDownload)btnDownload.onclick=()=>gcAiDownloadWord(res);
+  const btnText = $("#btnDownloadAiText");
+  if(btnText)btnText.onclick=()=>gcAiDownloadText(res);
 
-      navigator.clipboard.writeText(copyText).then(() => {
-        toast("Analisa AI berhasil disalin ke clipboard!");
-      }).catch(() => {
-        toast("Gagal menyalin teks.");
-      });
-    };
-  }
-
-  const btnDl = $("#btnDownloadAi");
-  if (btnDl) {
-    btnDl.onclick = () => {
-      const dlText = 
-        "# Laporan Analisa Emisi Karbon & Risiko Iklim (CRMS 2026)\\n\\n" +
-        "**Lembaga:** " + (st().orgName || "Bank") + "  \\n" +
-        "**Periode:** " + S.year + "  \\n" +
-        "**Skor Kematangan:** Grade " + res.grade + " (" + res.score + "/100) - " + res.gradeLabel + "  \\n" +
-        "**Mesin Analisa:** " + res.tierUsed + "  \\n\\n" +
-        "## Narasi Pengungkapan Eksekutif\\n\\n" +
-        res.narrative + "\\n\\n" +
-        "## Rekomendasi Tindak Lanjut\\n\\n" +
-        res.recommendations.map(r => "- " + r).join("\\n");
-
-      downloadBlob("analisa-ai-emisi-" + S.year + ".md", dlText, "text/markdown;charset=utf-8;");
-      toast("Laporan analisa AI berhasil diunduh!");
-    };
-  }
 }
 
 /* Admin provider priority. Keys are Cloudflare Worker secrets — never browser fields. */
