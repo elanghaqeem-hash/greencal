@@ -8340,7 +8340,18 @@ function gcAiNarrativeHtml(res){
 function gcAiNarrativeText(res) {
   const wrap=document.createElement("div");
   wrap.innerHTML=gcAiNarrativeHtml(res);
-  return gcNarrativePlain(wrap.innerText||wrap.textContent||"");
+  const out=[];
+  const blocks=new Set(["DIV","P","SECTION","H2","H3","H4","H5","LI","UL","OL","BLOCKQUOTE"]);
+  const walk=node=>{
+    if(node.nodeType===3){out.push(node.nodeValue||"");return;}
+    if(node.nodeType!==1)return;
+    if(node.tagName==="BR"){out.push("\n");return;}
+    if(blocks.has(node.tagName)&&out.length)out.push("\n");
+    Array.from(node.childNodes).forEach(walk);
+    if(blocks.has(node.tagName))out.push("\n");
+  };
+  Array.from(wrap.childNodes).forEach(walk);
+  return gcNarrativePlain(out.join("").replace(/\n{3,}/g,"\n\n").trim());
 }
 function gcAiSetEditMode(enabled){
   const editor=$("#gcAiNarrativeEditor"),toolbar=$("#gcAiToolbar"),view=$("#gcAiNarrativeView");
