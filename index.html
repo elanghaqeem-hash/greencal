@@ -3388,6 +3388,7 @@ dialog.modal-sheet .modal-foot { background:var(--surface); }
           </div>
           <div class="view-actions">
             <button class="btn primary sm" id="btnOpenFinModal">+ Tambah Eksposur</button>
+            <button class="btn sm" id="btnOpenSecWizard">+ Surat Berharga</button>
             <button class="btn sm" id="btnExportFin">Ekspor CSV</button>
           </div>
         </div>
@@ -6699,7 +6700,7 @@ function renderFinList() {
       const c = clsById(x.cls);
       return (
         '<tr>' +
-          '<td><b>' + esc(x.debtor) + '</b><div style="font-size:12px;color:var(--ink-muted)">' + esc(x.akad) + (x.tier ? ' · Tier ' + esc(x.tier) : '') + '</div></td>' +
+          '<td><b>' + esc(x.debtor) + '</b><div style="font-size:12px;color:var(--ink-muted)">' + esc(x.assetKind === "security" ? gcSecName(x.securityType) : x.akad) + (x.tier ? ' · Tier ' + esc(x.tier) : '') + '</div></td>' +
           '<td>' + esc((BASIS.find(b => b.k === x.basis) || {}).t || x.basis) + '<div style="font-size:12px;color:var(--ink-muted)">' + esc(x.sector || "–") + '</div></td>' +
           '<td class="r num">' + nf(x.os) + '</td>' +
           '<td class="r num">' + (x.af != null ? nf(x.af, 3) : "–") + '</td>' +
@@ -7636,6 +7637,7 @@ function bindEvents() {
     resetAct();
     $("#actForm").scrollIntoView({ behavior: "smooth", block: "start" });
   };
+  $("#btnOpenSecWizard").onclick = () => { S.securityEditId=null; S.wz="surat-berharga"; setTab("wizard"); };
   $("#btnOpenFinModal").onclick = () => {
     resetFin();
     $("#finForm").scrollIntoView({ behavior: "smooth", block: "start" });
