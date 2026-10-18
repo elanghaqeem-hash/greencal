@@ -2931,6 +2931,16 @@ dialog.modal-sheet .modal-foot { background:var(--surface); }
   header.app-header .brand-block {max-width: calc(100% - 198px);}
 }
 
+
+/* GC_SEC_PCAF_V1 — responsive input */
+.gc-sec-head{display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px;}
+.gc-sec-head p{color:var(--ink-muted);font-size:12.5px;line-height:1.5;margin:5px 0 0;}
+.gc-sec-method{background:var(--surface-2);border-left:3px solid var(--fin);border-radius:12px;padding:12px;font-size:12px;line-height:1.6;color:var(--ink-muted);margin:0;}
+.gc-sec-ppp{display:flex;gap:10px;align-items:flex-start;border:1px solid var(--line);background:var(--warn-soft);color:var(--warn);border-radius:12px;padding:12px;font-size:12px;line-height:1.55;}
+.gc-sec-ppp input{width:19px;height:19px;min-height:19px!important;flex-shrink:0;accent-color:var(--primary);margin:1px 0 0;}
+.gc-sec-actions{display:flex;flex-wrap:wrap;gap:10px;}
+.gc-sec-actions .btn{min-height:44px;}
+@media(max-width:620px){.gc-sec-actions{flex-direction:column;}.gc-sec-actions .btn{width:100%;}}
 </style>
 </head>
 <body>
@@ -3232,6 +3242,11 @@ dialog.modal-sheet .modal-foot { background:var(--surface); }
           <div class="wizard-icon-box">💼</div>
           <h3 class="wizard-card-title">Emisi Debitur (PCAF)</h3>
           <p class="wizard-card-desc">Kalkulasi attribution factor &amp; emisi terbiayai pembiayaan debitur.</p>
+        </div>
+        <div class="wizard-card" data-wz="surat-berharga">
+          <div class="wizard-icon-box">📈</div>
+          <h3 class="wizard-card-title">Surat Berharga (PCAF)</h3>
+          <p class="wizard-card-desc">SBN, SBSN, sukuk, saham, obligasi, green bond dan instrumen pasar modal.</p>
         </div>
       </div>
 
@@ -4123,6 +4138,7 @@ const S = {
   audit: [],
   editActId: null,
   editFinId: null,
+  securityEditId: null,
   isAdmin: false,
   psub: "tabel",
   ptab: "stationary"
@@ -4639,6 +4655,7 @@ function entryStale(e) {
 const clsById = id => S.classes.find(c => c.id === id);
 
 function expCalc(x) {
+  if (x.assetKind === "security") return gcSecExpCalc(x);
   const b = x.basis, y = x.year;
   let af = null, emis = x.emis, fin = null;
   if (b === "eeio") {
@@ -5157,6 +5174,7 @@ function renderWizard() {
   $$(".wizard-card").forEach(c => {
     c.classList.toggle("active", c.dataset.wz === S.wz);
     c.onclick = () => {
+      if (S.wz === "surat-berharga" && c.dataset.wz !== "surat-berharga") S.securityEditId = null;
       S.wz = c.dataset.wz;
       renderWizard();
     };
@@ -5168,6 +5186,7 @@ function renderWizard() {
   else if (S.wz === "ac") renderWzAc(p);
   else if (S.wz === "dinas") renderWzDinas(p);
   else if (S.wz === "debitur") renderWzDebitur(p);
+  else if (S.wz === "surat-berharga") renderWzSecurities(p);
 }
 
 function renderWzListrik(box) {
@@ -6421,7 +6440,7 @@ function renderFinList() {
   const q = ($("#fSearchFin").value || "").trim().toLowerCase();
   const xs = S.exposures.filter(x =>
     x.year === y &&
-    (!q || (x.debtor + " " + (x.sector || "") + " " + (x.akad || "")).toLowerCase().includes(q))
+    (!q || (x.debtor + " " + (x.sector || "") + " " + (x.akad || "") + " " + (x.isin || "")).toLowerCase().includes(q))
   ).map(x => Object.assign({}, x, expCalc(x))).sort((a, b) => (b.os || 0) - (a.os || 0));
 
   const osAll = xs.reduce((a, x) => a + (x.os || 0), 0);
@@ -6434,7 +6453,7 @@ function renderFinList() {
     '<div class="kpi-card">' +
       '<span class="kpi-label">Financed Emissions</span>' +
       '<span class="kpi-value num">' + nf(fin, 1) + '</span>' +
-      '<span class="kpi-sub">tCO₂e (' + cov.length + ' dari ' + xs.length + ' debitur)</span>' +
+      '<span class="kpi-sub">tCO₂e (' + cov.length + ' dari ' + xs.length + ' eksposur)</span>' +
     '</div>' +
     '<div class="kpi-card">' +
       '<span class="kpi-label">Coverage Portofolio</span>' +
@@ -6466,7 +6485,8 @@ function renderFinList() {
   $("#finCardsList").innerHTML = xs.map(x => {
     const c = clsById(x.cls);
     const chips = [];
-    chips.push('<span class="chip primary">' + esc(x.akad) + '</span>');
+    chips.push('<span class="chip primary">' + esc(x.assetKind === "security" ? gcSecName(x.securityType) : x.akad) + '</span>');
+    if (x.assetKind === "security") chips.push('<span class="chip warn">Draft · Perlu Validasi</span>');
     if (x.tier) chips.push('<span class="chip">Tier ' + esc(x.tier) + '</span>');
     if (x.dq) chips.push('<span class="chip">DQ ' + esc(x.dq) + '</span>');
     if (x.contoh) chips.push('<span class="chip">Contoh</span>');
@@ -6527,6 +6547,12 @@ function renderFinList() {
 function loadFin(id) {
   const x = S.exposures.find(e => e.id === id);
   if (!x) return;
+  if (x.assetKind === "security") {
+    S.securityEditId = id; S.wz = "surat-berharga"; setTab("wizard");
+    gcFillSecurityWizard(x);
+    $("#wizardFormPanel")?.scrollIntoView({behavior:"smooth",block:"start"});
+    return;
+  }
   S.editFinId = id;
   fillYear($("#xYear"), x.year);
   renderFinForm();
@@ -7258,7 +7284,7 @@ function exportAct() {
 
 function exportFin() {
   const y = S.year;
-  const rows = [["Periode", "Debitur", "Akad", "Sektor", "Kelas Aset PCAF", "Outstanding (Rp M)", "Penyebut", "Attribution Factor", "Emisi Debitur (t)", "Financed (tCO2e)", "Data Quality", "Bukti"]];
+  const rows = [["Periode", "Debitur / Penerbit", "Akad", "Sektor", "Kelas Aset PCAF", "Outstanding (Rp M)", "Penyebut", "Attribution Factor", "Emisi Debitur (t)", "Financed (tCO2e)", "Data Quality", "Bukti", "Jenis Surat Berharga", "Kode Efek / ISIN", "Cakupan Emisi", "Status Validasi"]];
   S.exposures.filter(x => x.year === y).forEach(x => {
     const r = expCalc(x);
     rows.push([
@@ -7273,7 +7299,9 @@ function exportFin() {
       r.emis ?? "",
       r.fin != null ? r.fin.toFixed(3) : "",
       r.dq || "",
-      x.evidence
+      x.evidence,
+      x.assetKind === "security" ? gcSecName(x.securityType) : "",
+      x.isin || "", x.emissionScope || "", x.validationStatus || ""
     ]);
   });
   downloadBlob("pembiayaan-pcaf-" + y + ".csv", toCsv(rows));
