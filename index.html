@@ -5719,5 +5719,22 @@ window.openAiConfigModal = openAiConfigDialog;
 window.displayAiResult = displayAiResult;
 
   </script>
+<script>
+(async () => {
+  try {
+    const response = await fetch('/api/me',{credentials:'same-origin'});
+    if(!response.ok){location.replace('/login.html');return;}
+    const {user}=await response.json();
+    const nav=document.createElement('nav');
+    nav.setAttribute('aria-label','Akun GreenCal');
+    nav.style.cssText='position:fixed;right:12px;bottom:84px;z-index:9999;background:var(--surface,#fff);color:var(--ink,#123);padding:8px 12px;border:1px solid var(--line,#ddd);border-radius:14px;box-shadow:0 4px 18px #0002;max-width:calc(100vw - 24px);font:12px system-ui';
+    const label=document.createElement('span');label.textContent=(user?.role==='admin'?'Admin':'Pengguna')+' · '+(user?.email||'');nav.append(label);
+    if(user?.role==='admin'){const a=document.createElement('a');a.href='/admin.html';a.textContent=' · Pengaturan AI';a.style.marginLeft='8px';nav.append(a);}
+    const btn=document.createElement('button');btn.textContent='Keluar';btn.style.cssText='margin-left:8px;padding:5px 9px;cursor:pointer;border-radius:8px';
+    btn.onclick=async()=>{await fetch('/api/logout',{method:'POST'});location.replace('/login.html');};nav.append(btn);
+    document.body.append(nav);
+  } catch(error){location.replace('/login.html');}
+})();
+</script>
 </body>
 </html>
