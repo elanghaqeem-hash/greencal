@@ -33,6 +33,7 @@
    document.querySelectorAll('[data-admin-only]').forEach(el=>{el.hidden=!admin;});
    document.querySelectorAll('nav.desktop-nav [data-tab="parameter"]').forEach(el=>{el.hidden=!admin;});
    const chip=by("gcCurrentRole");if(chip)chip.textContent=admin?"Admin":"Maker";
+   const profile=by("gcProfileRole");if(profile)profile.textContent=admin?"Admin":"Maker";
    const email=by("gcCurrentUser");if(email)email.textContent=state.user?.email||"";
    document.querySelectorAll('[data-ed],[data-xd],[data-od]').forEach(el=>{if(!admin)el.remove();});
    const cfg=by("btnConfigureAi");if(cfg)cfg.hidden=!admin;
@@ -72,7 +73,17 @@
      await showGate();
    };
    by("gcUsersMenu").onclick=()=>{if(state.user?.role==="admin"&&typeof window.setTab==="function")window.setTab("users");};
+   by("gcUsersMenu").onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();by("gcUsersMenu").click();}};
    by("gcRefreshUsers").onclick=()=>{window.GC_AUTH.renderUsers();};
+   by("gcPasswordForm").onsubmit=async e=>{
+     e.preventDefault();const button=e.currentTarget.querySelector('button[type="submit"]');button.disabled=true;
+     try{
+       await request("/api/auth/password","POST",{oldPassword:by("gcOldPassword").value,newPassword:by("gcNewSelfPassword").value});
+       by("gcPasswordForm").reset();
+       by("gcPasswordFeedback").textContent="Password diubah. Silakan login ulang.";
+       state.user=null;state.revision=0;await showGate();
+     }catch(err){by("gcPasswordFeedback").textContent=err.message;}finally{button.disabled=false;}
+   };
    by("gcUserCreate").onsubmit=async e=>{
      e.preventDefault();const form=e.currentTarget,btn=form.querySelector('button[type="submit"]');
      btn.disabled=true;
