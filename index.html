@@ -4195,6 +4195,7 @@ const S = {
   entries: [],
   exposures: [],
   offsets: [],
+  narrativeDrafts: {},
   audit: [],
   editActId: null,
   editFinId: null,
@@ -4285,7 +4286,7 @@ function saveStateToStorage() {
   // API server owns shared data; Maker never sends Admin-only config to the server.
   if (!window.GC_AUTH || !GC_AUTH.user) return;
   GC_AUTH.queue(() => {
-    const common = {entries:S.entries,exposures:S.exposures,offsets:S.offsets};
+    const common = {entries:S.entries,exposures:S.exposures,offsets:S.offsets,narrativeDrafts:S.narrativeDrafts};
     return GC_AUTH.isAdmin ? Object.assign(common,{settings:S.settings,tables:S.tables,classes:S.classes}) : common;
   });
 }
@@ -7776,6 +7777,7 @@ function backupJson() {
     entries: S.entries,
     exposures: S.exposures,
     offsets: S.offsets,
+    narrativeDrafts: S.narrativeDrafts,
     audit: S.audit
   };
   downloadBlob("green-calculator-backup-" + nowIso().slice(0, 10) + ".json", JSON.stringify(data, null, 2), "application/json");
@@ -7792,6 +7794,7 @@ function restoreJson(ev) {
       if (data.entries) S.entries = data.entries;
       if (data.exposures) S.exposures = data.exposures;
       if (data.offsets) S.offsets = data.offsets;
+      if (data.narrativeDrafts && typeof data.narrativeDrafts === "object" && !Array.isArray(data.narrativeDrafts)) S.narrativeDrafts = data.narrativeDrafts;
       if (data.settings) S.settings = data.settings;
       saveStateToStorage();
       renderAll();
@@ -7975,7 +7978,7 @@ function bindEvents() {
 
   // Menu Backup & Restore
   $("#btnBackupJson").onclick = backupJson;
-  $("#btnClearPublicData").onclick = () => confirmDlg("Hapus data perangkat?", "Semua aktivitas, pembiayaan, dan offset yang disimpan di browser ini akan dihapus. Unduh cadangan JSON terlebih dahulu bila diperlukan.", "Hapus Data Lokal", () => { S.entries=[]; S.exposures=[]; S.offsets=[]; S.audit=[]; saveStateToStorage(); LAST_AI_RESULT=null; renderAll(); toast("Data lokal perangkat berhasil dikosongkan."); });
+  $("#btnClearPublicData").onclick = () => confirmDlg("Hapus data perangkat?", "Semua aktivitas, pembiayaan, dan offset yang disimpan di browser ini akan dihapus. Unduh cadangan JSON terlebih dahulu bila diperlukan.", "Hapus Data Lokal", () => { S.entries=[]; S.exposures=[]; S.offsets=[]; S.narrativeDrafts={}; S.audit=[]; saveStateToStorage(); LAST_AI_RESULT=null; renderAll(); toast("Data lokal perangkat berhasil dikosongkan."); });
   $("#fileRestoreJson").onchange = restoreJson;
   // Per-user browser working copy, isolated by the IP verified by Cloudflare.
   const scopeResetBtn=document.createElement("button");
@@ -7993,7 +7996,7 @@ function bindEvents() {
     ()=>{
       try{
         GC_AUTH.resetCurrentScope();
-        S.entries=[];S.exposures=[];S.offsets=[];S.audit=[];
+        S.entries=[];S.exposures=[];S.offsets=[];S.narrativeDrafts={};S.audit=[];
         S.editActId=null;S.editFinId=null;
         LAST_AI_RESULT=null;
         renderAll();setTab("ringkasan");
@@ -8003,7 +8006,7 @@ function bindEvents() {
   );
   $("#btnResetData").onclick = () => {
     if (!GC_AUTH.isAdmin) { toast("Hanya Admin yang dapat mereset data."); return; }
-    confirmDlg("Reset Aktivitas?", "Semua aktivitas, eksposur dan offset bersama akan dikosongkan.", "Reset Data", () => { S.entries=[]; S.exposures=[]; S.offsets=[]; saveStateToStorage(); renderAll(); toast("Menyimpan perubahan."); });
+    confirmDlg("Reset Aktivitas?", "Semua aktivitas, eksposur dan offset bersama akan dikosongkan.", "Reset Data", () => { S.entries=[]; S.exposures=[]; S.offsets=[]; S.narrativeDrafts={}; saveStateToStorage(); renderAll(); toast("Menyimpan perubahan."); });
   };}
 
 async function boot() {
@@ -8016,6 +8019,7 @@ async function boot() {
     S.entries = Array.isArray(data?.entries) ? data.entries : [];
     S.exposures = Array.isArray(data?.exposures) ? data.exposures : [];
     S.offsets = Array.isArray(data?.offsets) ? data.offsets : [];
+    S.narrativeDrafts = data?.narrativeDrafts && typeof data.narrativeDrafts === "object" && !Array.isArray(data.narrativeDrafts) ? data.narrativeDrafts : {};
     S.audit = [];
     S.settings = data?.settings || clone(DEFAULT_SETTINGS);
     S.tables = data?.tables || clone(BASE.tables);
