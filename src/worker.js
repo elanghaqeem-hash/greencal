@@ -1,5 +1,5 @@
 import { deviceScope, validPublicState } from "./public-state.js";
-import { handleAiApi, verifyAccessIdentity } from "./ai-worker.js";
+import { handleAiApi, publicAiRequest, verifyAccessIdentity } from "./ai-worker.js";
 import { permissionsForRole, writableKeysForRole, preservesExistingRecords } from "./roles.js";
 // GreenCal — D1-backed authentication, two-role RBAC, shared state.
 // All security decisions are enforced by the Worker; the browser role is advisory only.
@@ -226,6 +226,19 @@ export default {
     const path=new URL(req.url).pathname;
     if(path==="/api/public/state"){
       try{return await publicStateRouter(req,env)}catch(e){console.error("Public state exception",e);return err("Permintaan gagal diproses",500);}
+    }
+    if(path==="/api/ai/status" || path==="/api/ai/analyze"){
+      try {
+        const device=await deviceScope(req,env.IP_SCOPE_SECRET);
+        if(!device)return err("Penyimpanan perangkat belum dikonfigurasi",503);
+        if(device.newlyCreated){
+          if(req.method!=="GET")return err("Inisialisasi perangkat diperlukan",428);
+        }
+        const response=await publicAiRequest(req,env,device.scope);
+        if(!device.cookie)return response;
+        const h=new Headers(response.headers);h.set("set-cookie",device.cookie);
+        return new Response(response.body,{status:response.status,headers:h});
+      }catch(e){console.error("Public AI exception",e);return err("Layanan AI tidak dapat diproses",500);}
     }
     if(path==="/api/client-scope" && req.method==="GET"){
       // Never trust a browser-supplied IP. Cloudflare supplies the observed IP.
