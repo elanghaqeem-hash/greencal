@@ -2862,6 +2862,44 @@ dialog.modal-sheet .modal-foot { background:var(--surface); }
 .gc-account-bar .gc-role-tag {background:var(--primary-soft);color:var(--primary);border:1px solid var(--primary-border);font-size:11px;white-space:nowrap;}
 #gcAccountSecurityPanel[hidden],#view-users[hidden],[data-admin-only][hidden]{display:none!important;}
 @media(max-width:620px){.gc-account-bar{max-width:94px}.gc-account-bar .gc-role-tag{font-size:9px;padding:5px 6px}}
+
+/* GreenCal Transition Workspace V1 — mobile-first forms, no clipped controls */
+.gc-transition-workspace,.gc-trans-assessment{min-width:0;}
+.gc-transition-workspace .panel,.gc-trans-assessment{border:1px solid var(--line);box-shadow:0 9px 28px rgba(6,83,54,.045)}
+.gc-trans-setup,.gc-trans-guide{height:100%}
+.gc-transition-workspace .form-stack,.gc-trans-assessment .form-stack{gap:13px;min-width:0}
+.gc-transition-workspace .field-group,.gc-trans-assessment .field-group{min-width:0}
+.gc-transition-workspace input,.gc-trans-assessment input,.gc-trans-assessment select,.gc-trans-assessment textarea{width:100%;min-width:0}
+.gc-trans-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.gc-trans-actions .btn{min-height:38px;max-width:100%;white-space:normal}
+.gc-trans-note{font-size:11px;line-height:1.55;color:var(--ink-muted);margin:4px 0 0;overflow-wrap:anywhere}
+.gc-trans-formulas{display:grid;gap:9px}
+.gc-trans-formulas p{margin:0;background:var(--surface-2);padding:10px 12px;border:1px solid var(--line-subtle);border-radius:10px;font-size:12px;line-height:1.5}
+.gc-trans-links{display:flex;flex-wrap:wrap;gap:9px;margin-top:12px}
+.gc-trans-links a{color:var(--primary);font-size:11px;font-weight:700;text-underline-offset:3px}
+.gc-trans-section-title{font-size:12px;letter-spacing:.045em;text-transform:uppercase;font-weight:800;color:var(--primary);padding:10px 0 4px;border-bottom:1px solid var(--line)}
+.gc-trans-context{display:flex;flex-wrap:wrap;gap:7px;background:var(--primary-soft);border:1px solid var(--primary-border);border-radius:12px;padding:11px;font-size:11px;line-height:1.5;color:var(--ink);min-width:0}
+.gc-trans-context span{border-radius:7px;padding:3px 7px;background:var(--surface);max-width:100%;overflow-wrap:anywhere}
+.gc-trans-preview{border:1px solid var(--primary-border);background:linear-gradient(125deg,var(--primary-soft),var(--surface));border-radius:14px;padding:14px;min-width:0}
+.gc-trans-preview-title{font-weight:800;color:var(--primary);font-size:13px;line-height:1.4;margin-bottom:10px}
+.gc-trans-metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.gc-trans-metrics>div{display:flex;flex-direction:column;gap:6px;min-width:0;padding:9px;border-radius:9px;background:var(--surface);border:1px solid var(--line-subtle)}
+.gc-trans-metrics small{font-size:10px;line-height:1.35;color:var(--ink-muted)}
+.gc-trans-metrics b{font-size:clamp(12px,1.4vw,16px);font-family:var(--font-num);font-variant-numeric:tabular-nums;line-height:1.32;overflow-wrap:anywhere}
+.gc-trans-tiny{font-size:11px;color:var(--ink-muted);margin-top:4px}
+#tTable{min-width:850px}
+#tTable th,#tTable td{vertical-align:top}
+@media(max-width:860px){.gc-trans-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.gc-trans-actions .btn{flex:1 1 155px}}
+@media(max-width:620px){
+ #view-transisi .view-actions{display:flex;flex-wrap:wrap;gap:9px;min-width:0;width:100%}
+ #view-transisi .view-actions .field-group{flex:1 1 130px;min-width:0!important}
+ #view-transisi .view-actions select{width:100%}
+ .gc-transition-workspace .input-row-2,.gc-trans-assessment .input-row-2{grid-template-columns:minmax(0,1fr);gap:11px}
+ .gc-transition-workspace .panel,.gc-trans-assessment{padding:14px}
+ .gc-trans-preview{padding:10px}
+ .gc-trans-metrics>div{padding:9px 8px}
+}
+
 </style>
 </head>
 <body>
@@ -3453,7 +3491,7 @@ dialog.modal-sheet .modal-foot { background:var(--surface); }
         <div class="view-title-row">
           <div class="view-title-group">
             <h2>Risiko Transisi Debitur (Buku 2 OJK &amp; NGFS)</h2>
-            <p>Estimasi biaya karbon: Harga Karbon × Emisi yang harus diturunkan, per skenario NGFS dan horizon waktu.</p>
+            <p>Penilaian risiko transisi pembiayaan: skenario iklim, sensitivitas debitur, kapasitas mitigasi, dan early warning.</p>
           </div>
           <div class="view-actions">
             <label class="field-group" style="min-width:140px">
@@ -3469,18 +3507,119 @@ dialog.modal-sheet .modal-foot { background:var(--surface); }
       </div>
 
       <div id="tBanner"></div>
+      <!-- GC_TRANSITION_WORKSPACE_V1 -->
+      <div class="grid-2 gc-transition-workspace">
+        <section class="panel gc-trans-setup" aria-labelledby="trScenarioTitle">
+          <div class="panel-header"><div>
+            <h3 id="trScenarioTitle">01 · Asumsi Skenario &amp; Harga Karbon</h3>
+            <p>Isi parameter untuk skenario dan tahun di atas. Tidak ada angka NGFS yang ditambahkan otomatis.</p>
+          </div></div>
+          <form id="trScenarioForm" class="form-stack">
+            <div class="input-row-2">
+              <label class="field-group"><span class="field-label">Harga karbon (Rp/tCO₂e)</span>
+                <input id="trPrice" type="number" min="0" step="any" inputmode="decimal" placeholder="Isi dari dokumen sumber" required>
+              </label>
+              <label class="field-group"><span class="field-label">Emisi yang perlu diturunkan (%)</span>
+                <input id="trReduction" type="number" min="0" max="100" step="any" inputmode="decimal" placeholder="0–100%" required>
+              </label>
+            </div>
+            <label class="field-group"><span class="field-label">Sumber parameter &amp; versi data</span>
+              <input id="trSource" type="text" maxlength="300" placeholder="Mis. Buku 4 CRMS 2026, tabel/halaman/versi" required>
+            </label>
+            <div class="gc-trans-actions">
+              <button class="btn primary" type="submit" id="trScenarioSave">Simpan Asumsi</button>
+              <button class="btn" type="button" id="trScenarioReset">Hapus Asumsi Lokal</button>
+            </div>
+            <p class="gc-trans-note" id="trScenarioStatus" role="status">Belum ada parameter untuk skenario ini.</p>
+          </form>
+        </section>
+        <section class="panel gc-trans-guide">
+          <div class="panel-header"><div>
+            <h3>Metode &amp; Batasan Simulasi</h3>
+            <p>Penyaringan risiko, bukan penetapan rating kredit, proyeksi PD/LGD, maupun uji stres final.</p>
+          </div></div>
+          <div class="gc-trans-formulas">
+            <p><b>1 · Emisi berisiko</b> = Emisi Scope 1+2 debitur × Target penurunan (%)</p>
+            <p><b>2 · Biaya karbon bruto</b> = Emisi berisiko × Harga karbon</p>
+            <p><b>3 · Biaya indikatif neto</b> = Biaya bruto × (1 − mitigasi %) × (1 − biaya dialihkan %)</p>
+            <p><b>4 · EWI</b> = Biaya neto ÷ laba bersih debitur × 100%</p>
+          </div>
+          <p class="gc-trans-note">Ambang EWI dari parameter bank bersifat internal. Hasil sangat bergantung pada asumsi, emisi, profitabilitas, dan kondisi debitur; tidak otomatis menunjukkan ketidakpatuhan atau probabilitas gagal bayar.</p>
+          <div class="gc-trans-links">
+            <a href="https://ojk.go.id/id/Publikasi/Roadmap-dan-Pedoman/Perbankan/Pages/Panduan-Climate-Risk-Management-and-Scenario-Analysis-Perbankan-CRMS-2026.aspx" target="_blank" rel="noopener noreferrer">Panduan CRMS OJK 2026 ↗</a>
+            <a href="https://www.ngfs.net/ngfs-scenarios-portal/explore/" target="_blank" rel="noopener noreferrer">NGFS Scenario Portal ↗</a>
+          </div>
+        </section>
+      </div>
+      <section class="panel gc-trans-assessment" aria-labelledby="trAssTitle">
+        <div class="panel-header"><div>
+          <h3 id="trAssTitle">02 · Penilaian Risiko Transisi per Debitur</h3>
+          <p>Terhubung ke Data Investasi &amp; Pembiayaan (PCAF); setiap penilaian disimpan untuk skenario dan horizon terpilih.</p>
+        </div></div>
+        <form id="trAssessForm" class="form-stack">
+          <label class="field-group"><span class="field-label">Pilih debitur dari portofolio tahun aktif</span>
+            <select id="trDebtor" required><option value="">Pilih debitur...</option></select>
+          </label>
+          <div id="trDebtorContext" class="gc-trans-context">Pilih debitur untuk menampilkan profil emisi dan pembiayaan.</div>
+          <div class="gc-trans-section-title">Faktor Risiko Transisi · Penilaian Analis</div>
+          <div class="input-row-2">
+            <label class="field-group"><span class="field-label">Kebijakan, hukum &amp; harga karbon</span>
+              <select id="trPolicy" data-tr-rating></select>
+            </label>
+            <label class="field-group"><span class="field-label">Teknologi &amp; substitusi energi</span>
+              <select id="trTechnology" data-tr-rating></select>
+            </label>
+            <label class="field-group"><span class="field-label">Permintaan pasar &amp; perubahan konsumen</span>
+              <select id="trMarket" data-tr-rating></select>
+            </label>
+            <label class="field-group"><span class="field-label">Reputasi &amp; persepsi pemangku kepentingan</span>
+              <select id="trReputation" data-tr-rating></select>
+            </label>
+          </div>
+          <p class="gc-trans-note">Skala kualitatif: 1 = rendah, 2 = agak rendah, 3 = sedang, 4 = tinggi, 5 = sangat tinggi. Pilih “Belum dinilai” jika bukti tidak mencukupi.</p>
+          <div class="gc-trans-section-title">Rencana Transisi &amp; Ketahanan Keuangan</div>
+          <div class="input-row-2">
+            <label class="field-group"><span class="field-label">Status rencana transisi</span>
+              <select id="trPlan"><option value="">Belum diketahui</option><option value="tidak">Belum tersedia</option><option value="proses">Dalam penyusunan</option><option value="ada_nv">Ada, belum diverifikasi</option><option value="ada_v">Ada, terverifikasi</option></select>
+            </label>
+            <label class="field-group"><span class="field-label">Tahun target transisi debitur</span>
+              <input id="trTargetYear" type="number" min="2020" max="2100" step="1" inputmode="numeric" placeholder="Mis. 2030">
+            </label>
+            <label class="field-group"><span class="field-label">Mitigasi emisi tercapai / diasumsikan (%)</span>
+              <input id="trMitigation" type="number" min="0" max="100" step="any" inputmode="decimal" placeholder="0–100%, isi asumsi">
+            </label>
+            <label class="field-group"><span class="field-label">Biaya yang dapat dialihkan (%)</span>
+              <input id="trPassThrough" type="number" min="0" max="100" step="any" inputmode="decimal" placeholder="0–100%, isi asumsi">
+            </label>
+          </div>
+          <label class="field-group"><span class="field-label">Referensi bukti / dokumen pendukung</span>
+            <input id="trEvidence" type="text" maxlength="350" placeholder="Laporan debitur, rencana transisi, hasil wawancara, tanggal dokumen">
+          </label>
+          <label class="field-group"><span class="field-label">Catatan analis &amp; tindak lanjut</span>
+            <textarea id="trNotes" maxlength="1000" rows="3" placeholder="Identifikasi gap, rencana validasi, mitigasi, monitoring covenant..."></textarea>
+          </label>
+          <div id="trPreview" class="gc-trans-preview" aria-live="polite">Pilih debitur untuk melihat hasil indikatif.</div>
+          <div class="gc-trans-actions">
+            <button class="btn primary" type="submit" id="trAssessSave">Simpan Penilaian Draft</button>
+            <button class="btn" type="button" id="trAssessClear">Reset Form</button>
+            <button class="btn" type="button" id="trGoFin">Buka Data Pembiayaan</button>
+          </div>
+          <p class="gc-trans-note" id="trAssessmentStatus" role="status">Penilaian bersifat draft; perlu validasi manusia sebelum dijadikan keputusan kredit.</p>
+        </form>
+      </section>
       <div class="kpi-grid" id="tKpis"></div>
 
       <div class="panel">
         <div class="panel-header">
           <div>
             <h3>Simulasi Dampak Biaya Karbon per Debitur</h3>
-            <p>Rasio Biaya Karbon ÷ Laba Bersih sebagai Early Warning Indicator (ambang bank 20%)</p>
+            <p>Penyaringan biaya karbon bruto dan indikasi dampak neto setelah mitigasi. Ambang EWI mengikuti parameter internal bank.</p>
           </div>
         </div>
         <div class="table-responsive">
           <table id="tTable"></table>
         </div>
+        <div class="gc-trans-actions"><button type="button" id="trExport" class="btn">Unduh Hasil Skenario (CSV)</button></div>
       </div>
 
       <div class="grid-2">
@@ -6415,129 +6554,271 @@ async function saveFin(ev) {
   renderAll();
 }
 
-/* ---------- RISIKO TRANSISI DEBITUR (NGFS) ---------- */
-function renderTrans() {
-  const crow = trows("carbon").filter(r => r.status !== "arsip");
-  const scens = Array.from(new Set(crow.map(r => r.scen)));
-  const yrs = Array.from(new Set(crow.map(r => r.yr))).sort((a, b) => a - b);
-
-  fillSelect($("#tScen"), scens.map(v => ({ v, t: v })));
-  fillSelect($("#tYr"), yrs.map(v => ({ v: String(v), t: String(v) })));
-
-  const sc = $("#tScen").value || scens[0];
-  const yr = num($("#tYr").value) || yrs[0];
-  const y = S.year;
-  const k = K();
-  const ewi = k.ewiRatio ?? 20;
-
-  const cr = crow.find(r => r.scen === sc && r.yr === yr);
-  const ready = cr && cr.price != null && cr.red != null;
-
-  $("#tBanner").innerHTML = ready ?
-    '<div class="banner info">' +
-      '<div class="banner-content">' +
-        '<span><b>' + esc(sc) + ' (' + yr + '):</b> Harga Karbon Rp ' + nfa(cr.price, 0) + '/tCO₂e · Penurunan Emisi ' + nfa(cr.red, 2) + '% (Sumber: Buku 4 CRMS OJK)</span>' +
-      '</div>' +
-    '</div>' :
-    '<div class="banner">' +
-      '<span>Parameter harga karbon &amp; penurunan emisi untuk skenario ini belum lengkap.</span>' +
-    '</div>';
-
-  const xs = S.exposures.filter(x => x.year === y).map(x => {
-    const c = expCalc(x);
-    const E = (x.basis === "eeio" || x.basis === "belum") ? null : x.emis;
-    const red = (ready && E != null) ? (E * cr.red) / 100 : null;
-    const cost = (red != null) ? (red * cr.price) / 1e9 : null; // Rp Miliar
-    const ratio = (cost != null && x.profit > 0) ? (cost / x.profit) * 100 : null;
-    return Object.assign({}, x, c, { E, red, cost, ratio });
+/* ---------- RISIKO TRANSISI DEBITUR (NGFS) — GC_TRANSITION_WORKSPACE_V1 ---------- */
+const GC_TRANS_SCENARIO_STORE = "greencal_transition_scenario_assumptions_v1";
+const GC_TRANS_RATING_TEXT = ["Belum dinilai","1 · Rendah","2 · Agak rendah","3 · Sedang","4 · Tinggi","5 · Sangat tinggi"];
+const GC_TRANS_PLAN_TEXT = {"":"Belum diketahui","tidak":"Belum tersedia","proses":"Dalam penyusunan","ada_nv":"Ada, belum diverifikasi","ada_v":"Ada, terverifikasi"};
+function transKey(sc,yr) { return String(sc) + "|" + String(yr); }
+function transLoadOverrides() {
+  try {
+    const x=JSON.parse(localStorage.getItem(GC_TRANS_SCENARIO_STORE)||"{}");
+    return x&&typeof x==="object"&&!Array.isArray(x)?x:{};
+  }catch(e){return {};}
+}
+function transNum(raw,min,max) {
+  const v=raw===""||raw==null?null:Number(raw);
+  return v!==null&&Number.isFinite(v)&&v>=min&&v<=max?v:null;
+}
+function transScenario(sc,yr) {
+  const base=trows("carbon").find(r=>r.scen===sc&&Number(r.yr)===Number(yr)&&r.status!=="arsip");
+  const override=transLoadOverrides()[transKey(sc,yr)];
+  if(override&&transNum(override.price,0,1e12)!==null&&transNum(override.red,0,100)!==null&&override.source)
+    return {price:Number(override.price),red:Number(override.red),source:override.source,kind:"Asumsi pengguna",updatedAt:override.updatedAt,ready:true};
+  const valid=base&&transNum(base.price,0,1e12)!==null&&transNum(base.red,0,100)!==null;
+  return {price:valid?Number(base.price):null,red:valid?Number(base.red):null,source:valid?String(base.src||"Tabel parameter"):null,kind:valid?"Parameter tabel aplikasi":"Belum tersedia",ready:!!valid};
+}
+function transAssessment(x,sc,yr) { return x?.transitionAssessments?.[transKey(sc,yr)] || null; }
+function transRiskResult(x,scenario,sc,yr) {
+  const assessment=transAssessment(x,sc,yr);
+  const basisGap=x.basis==="eeio"||x.basis==="belum";
+  const emissions=!basisGap?transNum(x.emis,0,1e12):null;
+  const red=scenario.ready&&emissions!==null?emissions*scenario.red/100:null;
+  const cost=red!==null?red*scenario.price/1e9:null; // Rp miliar
+  const mit=assessment?transNum(assessment.mitigation,0,100):null;
+  const pass=assessment?transNum(assessment.passThrough,0,100):null;
+  const net=cost!==null&&mit!==null&&pass!==null?cost*(1-mit/100)*(1-pass/100):null;
+  const profit=transNum(x.profit,0,1e12);
+  const ratio=net!==null&&profit!==null&&profit>0?net/profit*100:null;
+  const ratings=assessment?[assessment.policy,assessment.technology,assessment.market,assessment.reputation]:[];
+  const completed=ratings.length===4&&ratings.every(v=>transNum(v,1,5)!==null)&&!!assessment.evidence;
+  return {E:emissions,red,cost,net,ratio,profit,assessment,completed};
+}
+function transSelected() {
+  return {sc:$("#tScen")?.value||"",yr:Number($("#tYr")?.value)||0};
+}
+function transRatingOpts() {
+  return GC_TRANS_RATING_TEXT.map((s,i)=>'<option value="'+(i===0?"":i)+'">'+esc(s)+'</option>').join("");
+}
+function transFillContext(x) {
+  const box=$("#trDebtorContext");
+  if(!box)return;
+  if(!x){box.innerHTML='Pilih debitur untuk menampilkan profil emisi, laba dan pembiayaan dari PCAF.';return;}
+  const gap=x.basis==="eeio"||x.basis==="belum"||transNum(x.emis,0,1e12)===null;
+  box.innerHTML='<span><b>Sektor:</b> '+esc(x.crsa||x.sector||"Belum dipetakan")+'</span>'+
+    '<span><b>Outstanding:</b> Rp '+nf(x.os,2)+' miliar</span>'+
+    '<span><b>Emisi debitur:</b> '+(gap?"Gap data — lengkapi di PCAF":nf(Number(x.emis),2)+" tCO₂e")+'</span>'+
+    '<span><b>Laba bersih:</b> '+(transNum(x.profit,0,1e12)===null?"Belum diisi":'Rp '+nf(x.profit,2)+' miliar')+'</span>';
+}
+function transFormData() {
+  const get=id=>$("#"+id);
+  return {
+    policy:get("trPolicy").value,technology:get("trTechnology").value,
+    market:get("trMarket").value,reputation:get("trReputation").value,
+    plan:get("trPlan").value,
+    targetYear:get("trTargetYear").value.trim(),
+    mitigation:get("trMitigation").value.trim(),
+    passThrough:get("trPassThrough").value.trim(),
+    evidence:get("trEvidence").value.trim(),
+    notes:get("trNotes").value.trim()
+  };
+}
+function transFormPopulate() {
+  const {sc,yr}=transSelected();
+  const id=$("#trDebtor").value;
+  const x=S.exposures.find(z=>z.id===id&&z.year===S.year);
+  const a=transAssessment(x,sc,yr)||{};
+  ["policy","technology","market","reputation","plan","targetYear","mitigation","passThrough","evidence","notes"].forEach(k=>{
+    const el=$("#tr"+k[0].toUpperCase()+k.slice(1));
+    if(el)el.value=a[k]??"";
   });
-
-  const an = xs.filter(x => x.cost != null);
-  const totCost = an.reduce((a, x) => a + x.cost, 0);
-  const over = an.filter(x => x.ratio != null && x.ratio > ewi).length;
-  const noPlan = xs.filter(x => x.tplan === "tidak" || !x.tplan).length;
-
-  $("#tKpis").innerHTML =
-    '<div class="kpi-card">' +
-      '<span class="kpi-label">Debitur Dianalisis</span>' +
-      '<span class="kpi-value num">' + an.length + ' / ' + xs.length + '</span>' +
-      '<span class="kpi-sub">Memiliki data emisi terukur</span>' +
-    '</div>' +
-    '<div class="kpi-card hero">' +
-      '<span class="kpi-label">Total Biaya Karbon</span>' +
-      '<span class="kpi-value num">' + (ready ? nf(totCost, 2) : "–") + '</span>' +
-      '<span class="kpi-sub">Rp Miliar / tahun · ' + esc(sc) + ' ' + (yr || "") + '</span>' +
-    '</div>' +
-    '<div class="kpi-card">' +
-      '<span class="kpi-label">Melewati Ambang Bank</span>' +
-      '<span class="kpi-value num">' + over + '</span>' +
-      '<span class="kpi-sub">Biaya Karbon &gt; ' + nfa(ewi) + '% Laba</span>' +
-    '</div>' +
-    '<div class="kpi-card">' +
-      '<span class="kpi-label">Tanpa Rencana Transisi</span>' +
-      '<span class="kpi-value num">' + noPlan + '</span>' +
-      '<span class="kpi-sub">Risiko transisi tinggi</span>' +
-    '</div>';
-
-  // Debtor transition table
-  const tb = $("#tTable");
-  if (!xs.length) {
-    tb.innerHTML = '<tbody><tr><td class="empty-state">Belum ada eksposur pembiayaan untuk dianalisis.</td></tr></tbody>';
-  } else {
-    tb.innerHTML =
-      '<thead><tr><th>Debitur</th><th>Tier</th><th class="r">Emisi (t)</th><th class="r">Turun (t)</th><th class="r">Biaya Karbon (Rp M)</th><th class="r">Laba (Rp M)</th><th class="r">Biaya/Laba</th><th>Status</th></tr></thead><tbody>' +
-      xs.sort((a, b) => (b.cost || 0) - (a.cost || 0)).map(x => {
-        const stChip = x.E == null ? '<span class="chip bad">Gap Data</span>' :
-          !ready ? '<span class="chip">Parameter Kosong</span>' :
-          x.ratio == null ? '<span class="chip warn">Laba Kosong</span>' :
-          x.ratio > ewi ? '<span class="chip bad">Early Warning</span>' : '<span class="chip ok">Aman</span>';
-
-        return (
-          '<tr>' +
-            '<td><b>' + esc(x.debtor) + '</b><div style="font-size:12px;color:var(--ink-muted)">' + esc(x.crsa || "Sektor belum dipilih") + '</div></td>' +
-            '<td>' + (x.tier ? "Tier " + esc(x.tier) : "–") + '</td>' +
-            '<td class="r num">' + (x.E != null ? nfa(x.E, 1) : "–") + '</td>' +
-            '<td class="r num">' + (x.red != null ? nfa(x.red, 1) : "–") + '</td>' +
-            '<td class="r num"><b>' + (x.cost != null ? nf(x.cost, 3) : "–") + '</b></td>' +
-            '<td class="r num">' + (x.profit != null ? nf(x.profit, 2) : "–") + '</td>' +
-            '<td class="r num">' + (x.ratio != null ? nf(x.ratio, 1) + "%" : "–") + '</td>' +
-            '<td>' + stChip + '</td>' +
-          '</tr>'
-        );
-      }).join("") + '</tbody>';
+  if($("#trPlan")&&!a.plan&&x?.tplan)$("#trPlan").value=x.tplan;
+  transFillContext(x);
+  const stat=$("#trAssessmentStatus");
+  stat.textContent=a.updatedAt?
+    "Draft tersimpan untuk "+esc(sc)+" / "+yr+" pada "+fmtDate(a.updatedAt)+". Belum divalidasi.":
+    "Belum ada draft penilaian untuk debitur, skenario dan horizon ini.";
+  transPreview();
+}
+function transPreview() {
+  const b=$("#trPreview");if(!b)return;
+  const {sc,yr}=transSelected(),x=S.exposures.find(z=>z.id===$("#trDebtor").value&&z.year===S.year);
+  if(!x){b.innerHTML="Pilih debitur untuk melihat hasil indikatif.";return;}
+  const scenario=transScenario(sc,yr);
+  const r=transRiskResult(x,scenario,sc,yr);
+  const form=transFormData();
+  const mit=transNum(form.mitigation,0,100),pass=transNum(form.passThrough,0,100);
+  const net=r.cost!==null&&mit!==null&&pass!==null?r.cost*(1-mit/100)*(1-pass/100):null;
+  const ratio=net!==null&&r.profit!==null&&r.profit>0?net/r.profit*100:null;
+  const threshold=K().ewiRatio??20;
+  b.innerHTML='<div class="gc-trans-preview-title">Simulasi debitur · '+esc(x.debtor)+'</div>'+
+    '<div class="gc-trans-metrics">'+
+      '<div><small>Emisi perlu diturunkan</small><b>'+(r.red!==null?nf(r.red,2)+" tCO₂e":"—")+'</b></div>'+
+      '<div><small>Biaya karbon bruto</small><b>'+(r.cost!==null?"Rp "+nf(r.cost,3)+" M":"—")+'</b></div>'+
+      '<div><small>Biaya neto asumsi mitigasi</small><b>'+(net!==null?"Rp "+nf(net,3)+" M":"—")+'</b></div>'+
+      '<div><small>Biaya neto / laba bersih</small><b>'+(ratio!==null?nf(ratio,1)+"%":"—")+'</b></div>'+
+    '</div><p class="gc-trans-note">'+
+    (!scenario.ready?"Lengkapi parameter harga karbon dan target penurunan terlebih dahulu. ":
+      mit===null||pass===null?"Isi kedua asumsi mitigasi dan pass-through agar biaya neto dapat dihitung. ":"")+
+    (r.E===null?"Emisi debitur perlu dilengkapi di PCAF. ":"")+
+    (r.profit===null||r.profit===0?"Data laba positif diperlukan untuk EWI. ":"")+
+    (ratio!==null?(ratio>threshold?"Indikasi EWI melampaui ambang bank "+nf(threshold,1)+"%. ":"EWI indikatif di bawah/sama dengan ambang bank "+nf(threshold,1)+"%; bukan jaminan risiko rendah. "):"")+
+    'Hasil indikatif dari input skenario dan debitur; bukan proyeksi PD/LGD.</p>';
+}
+function transReadScenarioForm() {
+  const price=transNum($("#trPrice").value,0,1e12);
+  const red=transNum($("#trReduction").value,0,100);
+  const source=$("#trSource").value.trim();
+  return {price,red,source};
+}
+function transSaveScenario(e) {
+  e.preventDefault();
+  const {sc,yr}=transSelected(),x=transReadScenarioForm();
+  if(x.price===null||x.red===null||x.source.length<6){toast("Isi harga karbon, penurunan 0–100%, dan referensi sumber (minimal 6 karakter).");return;}
+  const obj=transLoadOverrides();
+  obj[transKey(sc,yr)]={...x,updatedAt:nowIso()};
+  try{localStorage.setItem(GC_TRANS_SCENARIO_STORE,JSON.stringify(obj));}
+  catch(e){toast("Penyimpanan asumsi gagal. Periksa kapasitas browser.");return;}
+  toast("Asumsi skenario tersimpan lokal pada perangkat ini.");
+  renderTrans();
+}
+function transClearScenario() {
+  const {sc,yr}=transSelected(),obj=transLoadOverrides();
+  delete obj[transKey(sc,yr)];
+  try{localStorage.setItem(GC_TRANS_SCENARIO_STORE,JSON.stringify(obj));}
+  catch(e){toast("Gagal menghapus asumsi.");return;}
+  renderTrans();toast("Asumsi lokal dihapus; kembali ke parameter tabel jika tersedia.");
+}
+function transSaveAssessment(e) {
+  e.preventDefault();
+  const {sc,yr}=transSelected();
+  const ix=S.exposures.findIndex(x=>x.id===$("#trDebtor").value&&x.year===S.year);
+  if(ix<0){toast("Pilih debitur terlebih dahulu.");return;}
+  const data=transFormData();
+  for(const k of ["policy","technology","market","reputation"]) {
+    if(data[k]!==""&&transNum(data[k],1,5)===null){toast("Skala risiko harus 1–5 atau belum dinilai.");return;}
   }
-
-  // Sector breakdown
-  const secs = (st().crsaSectors || []).map(n => {
-    const g = xs.filter(x => (x.crsa || "") === n);
-    return {
-      n,
-      cnt: g.length,
-      os: g.reduce((a, x) => a + (x.os || 0), 0),
-      fin: g.reduce((a, x) => a + (x.fin || 0), 0),
-      cost: g.reduce((a, x) => a + (x.cost || 0), 0)
-    };
-  }).filter(r => r.cnt > 0);
-
-  $("#tSector").innerHTML = secs.length ?
-    '<thead><tr><th>Sektor Prioritas CRSA</th><th class="r">Debitur</th><th class="r">OS (Rp M)</th><th class="r">Financed (t)</th><th class="r">Biaya Karbon (Rp M)</th></tr></thead><tbody>' +
-    secs.map(r =>
-      '<tr>' +
-        '<td><b>' + esc(r.n) + '</b></td>' +
-        '<td class="r num">' + r.cnt + '</td>' +
-        '<td class="r num">' + nf(r.os) + '</td>' +
-        '<td class="r num">' + nf(r.fin, 1) + '</td>' +
-        '<td class="r num"><b>' + (ready ? nf(r.cost, 3) : "–") + '</b></td>' +
-      '</tr>'
-    ).join("") + '</tbody>' :
+  for(const k of ["mitigation","passThrough"]) {
+    if(data[k]!==""&&transNum(data[k],0,100)===null){toast("Mitigasi dan biaya dialihkan harus 0–100%.");return;}
+  }
+  if(data.targetYear!==""&&(!Number.isInteger(Number(data.targetYear))||transNum(data.targetYear,2020,2100)===null)){
+    toast("Tahun target transisi harus 2020–2100.");return;
+  }
+  if(!data.evidence){toast("Isi referensi bukti atau sumber penilaian, termasuk jika masih perlu validasi.");return;}
+  const x=S.exposures[ix];
+  x.transitionAssessments=x.transitionAssessments||{};
+  x.transitionAssessments[transKey(sc,yr)]={...data,updatedAt:nowIso(),status:"draft",scenario:sc,horizon:yr};
+  saveStateToStorage();
+  renderTrans();
+  toast("Draft penilaian transisi tersimpan pada data perangkat.");
+}
+function transResetForm() {
+  const x=$("#trDebtor"),id=x?.value;
+  if(!id)return;
+  ["trPolicy","trTechnology","trMarket","trReputation","trPlan","trTargetYear","trMitigation","trPassThrough","trEvidence","trNotes"].forEach(id=>{
+    const el=$("#"+id);if(el)el.value="";
+  });
+  $("#trAssessmentStatus").textContent="Form dikosongkan. Draft tersimpan tetap ada sampai Anda menyimpannya kembali.";
+  transPreview();
+}
+function transExportCsv() {
+  const {sc,yr}=transSelected(),scenario=transScenario(sc,yr),y=S.year;
+  const hdr=["Periode","Skenario","Horizon","Sumber asumsi","Debitur","Sektor CRSA","Outstanding Rp M","Emisi debitur tCO2e","Harga karbon Rp/t","Penurunan %","Biaya bruto Rp M","Mitigasi %","Biaya dialihkan %","Biaya neto Rp M","Laba Rp M","Biaya neto/Laba %","Kebijakan","Teknologi","Pasar","Reputasi","Rencana transisi","Target tahun","Bukti","Catatan","Status"];
+  const rows=[hdr];
+  S.exposures.filter(x=>x.year===y).forEach(x=>{
+    const r=transRiskResult(x,scenario,sc,yr),a=r.assessment||{};
+    rows.push([y,sc,yr,scenario.source||"",x.debtor,x.crsa||x.sector||"",x.os??"",r.E??"",scenario.price??"",scenario.red??"",r.cost??"",a.mitigation??"",a.passThrough??"",r.net??"",x.profit??"",r.ratio??"",a.policy??"",a.technology??"",a.market??"",a.reputation??"",a.plan??"",a.targetYear??"",a.evidence??"",a.notes??"",a.status||"Belum dinilai"]);
+  });
+  downloadBlob("simulasi-risiko-transisi-"+y+"-"+yr+".csv",toCsv(rows),"text/csv;charset=utf-8");
+  toast("Hasil analisis diunduh sebagai draft CSV.");
+}
+function renderTrans() {
+  const crow=trows("carbon").filter(r=>r.status!=="arsip");
+  const scens=Array.from(new Set(crow.map(r=>r.scen)));
+  const yrs=Array.from(new Set(crow.map(r=>r.yr))).sort((a,b)=>a-b);
+  if(!scens.length||!yrs.length) {
+    $("#tBanner").innerHTML='<div class="banner">Belum ada daftar skenario. Periksa tabel parameter karbon.</div>';
+    return;
+  }
+  const currentId=$("#trDebtor")?.value;
+  fillSelect($("#tScen"),scens.map(v=>({v,t:v})));
+  fillSelect($("#tYr"),yrs.map(v=>({v:String(v),t:String(v)})));
+  const {sc,yr}=transSelected(),scenario=transScenario(sc,yr);
+  const records=S.exposures.filter(x=>x.year===S.year);
+  const raw=transLoadOverrides()[transKey(sc,yr)];
+  $("#trPrice").value=scenario.ready?scenario.price:"";
+  $("#trReduction").value=scenario.ready?scenario.red:"";
+  $("#trSource").value=raw?.source||scenario.source||"";
+  $("#trScenarioStatus").textContent=scenario.ready?
+    scenario.kind+": "+scenario.source+". "+(scenario.updatedAt?"Disimpan "+fmtDate(scenario.updatedAt)+". ":"")+"Simulasi belum tervalidasi.":
+    "Parameter skenario belum lengkap. Masukkan harga karbon dan target reduksi dengan sumber yang dapat ditelusuri.";
+  $("#tBanner").innerHTML=scenario.ready?
+    '<div class="banner info"><div class="banner-content"><span><b>'+esc(sc)+' · '+yr+'</b> — Harga karbon Rp '+nfa(scenario.price,0)+'/tCO₂e; pengurangan '+nf(scenario.red,1)+'%. <b>'+esc(scenario.kind)+'</b>. Sumber: '+esc(scenario.source)+'. <b>Draft simulasi, perlu review.</b></span></div></div>':
+    '<div class="banner"><span><b>Parameter belum lengkap.</b> Hasil biaya karbon dan EWI belum dihitung. Tidak ada angka NGFS yang diperkirakan otomatis.</span></div>';
+  const list=records.map(x=>Object.assign({},x,transRiskResult(x,scenario,sc,yr)));
+  const complete=list.filter(x=>x.cost!==null);
+  const netReady=list.filter(x=>x.net!==null);
+  const threshold=K().ewiRatio??20;
+  const over=list.filter(x=>x.ratio!==null&&x.ratio>threshold).length;
+  const gaps=list.filter(x=>x.E===null||x.profit===null||x.profit===0).length;
+  const reviewed=list.filter(x=>x.completed).length;
+  $("#tKpis").innerHTML=
+    '<div class="kpi-card"><span class="kpi-label">Cakupan Emisi</span><span class="kpi-value num">'+complete.length+' / '+list.length+'</span><span class="kpi-sub">Debitur dapat dihitung dengan parameter aktif</span></div>'+
+    '<div class="kpi-card hero"><span class="kpi-label">Biaya Karbon Bruto</span><span class="kpi-value num">'+(scenario.ready?nf(complete.reduce((a,x)=>a+x.cost,0),3):"—")+'</span><span class="kpi-sub">Rp miliar; hanya debitur dengan data emisi</span></div>'+
+    '<div class="kpi-card"><span class="kpi-label">Biaya Neto Tersimulasi</span><span class="kpi-value num">'+(scenario.ready&&netReady.length?nf(netReady.reduce((a,x)=>a+x.net,0),3):"—")+'</span><span class="kpi-sub">Rp miliar; '+netReady.length+' debitur berasumsi lengkap</span></div>'+
+    '<div class="kpi-card"><span class="kpi-label">Early Warning Indikatif</span><span class="kpi-value num">'+over+'</span><span class="kpi-sub">EWI &gt; '+nf(threshold,1)+'%; penilaian dengan data lengkap '+reviewed+' / '+list.length+' · gap '+gaps+'</span></div>';
+  const debts=$("#trDebtor");
+  debts.innerHTML='<option value="">Pilih debitur...</option>'+
+    records.slice().sort((a,b)=>String(a.debtor||"").localeCompare(String(b.debtor||""),"id")).map(x=>'<option value="'+esc(x.id)+'">'+esc(x.debtor)+' · '+esc(x.sector||x.crsa||"Belum diklasifikasi")+'</option>').join("");
+  if(records.some(x=>x.id===currentId))debts.value=currentId;
+  ["trPolicy","trTechnology","trMarket","trReputation"].forEach(id=>$("#"+id).innerHTML=transRatingOpts());
+  transFormPopulate();
+  if(!records.length) {
+    $("#tTable").innerHTML='<tbody><tr><td class="empty-state">Belum ada eksposur pembiayaan. Tambahkan debitur di menu PCAF terlebih dahulu.</td></tr></tbody>';
+  } else {
+    const sorted=list.slice().sort((a,b)=>(b.cost??-1)-(a.cost??-1));
+    $("#tTable").innerHTML='<thead><tr>'+
+      '<th>Debitur &amp; sektor</th><th>Rencana</th><th class="r">Emisi (t)</th><th class="r">Biaya bruto (Rp M)</th>'+
+      '<th class="r">Biaya neto (Rp M)</th><th class="r">Neto / laba</th><th>Penilaian</th><th>Screening</th>'+
+      '</tr></thead><tbody>'+
+      sorted.map(x=>{
+        let status;
+        if(x.E===null)status='<span class="chip bad">Gap emisi</span>';
+        else if(!scenario.ready)status='<span class="chip warn">Asumsi kosong</span>';
+        else if(x.net===null)status='<span class="chip warn">Mitigasi belum dinilai</span>';
+        else if(x.ratio===null)status='<span class="chip warn">Laba belum tersedia</span>';
+        else if(x.ratio>threshold)status='<span class="chip bad">Early Warning</span>';
+        else status='<span class="chip primary">EWI ≤ ambang</span>';
+        const a=x.assessment||{};
+        return '<tr><td><b>'+esc(x.debtor||"—")+'</b><div class="gc-trans-tiny">'+esc(x.crsa||x.sector||"Sektor belum dipilih")+'</div></td>'+
+          '<td>'+esc(GC_TRANS_PLAN_TEXT[a.plan||x.tplan||""]||"Belum diketahui")+'</td>'+
+          '<td class="r num">'+(x.E===null?"—":nf(x.E,1))+'</td>'+
+          '<td class="r num">'+(x.cost===null?"—":nf(x.cost,3))+'</td>'+
+          '<td class="r num">'+(x.net===null?"—":nf(x.net,3))+'</td>'+
+          '<td class="r num">'+(x.ratio===null?"—":nf(x.ratio,1)+"%")+'</td>'+
+          '<td><span class="chip '+(x.completed?"ok":"warn")+'">'+(x.completed?"Draft lengkap":"Belum lengkap")+'</span></td>'+
+          '<td>'+status+'</td></tr>';
+      }).join("")+'</tbody>';
+  }
+  const secs=Array.from(new Set([...st().crsaSectors||[],...list.map(x=>x.crsa||x.sector||"Lainnya")])).map(n=>{
+    const g=list.filter(x=>(x.crsa||x.sector||"Lainnya")===n);
+    return {n,cnt:g.length,os:g.reduce((a,x)=>a+(Number(x.os)||0),0),fin:g.reduce((a,x)=>a+(Number(x.fin)||0),0),
+      cost:g.filter(x=>x.cost!==null).reduce((a,x)=>a+x.cost,0),available:g.filter(x=>x.cost!==null).length};
+  }).filter(x=>x.cnt);
+  $("#tSector").innerHTML=secs.length?
+    '<thead><tr><th>Sektor CRSA</th><th class="r">Debitur</th><th class="r">OS (Rp M)</th><th class="r">Financed (t)</th><th class="r">Biaya bruto (Rp M)</th></tr></thead><tbody>'+
+    secs.map(x=>'<tr><td><b>'+esc(x.n)+'</b></td><td class="r num">'+x.cnt+'</td><td class="r num">'+nf(x.os,2)+'</td><td class="r num">'+nf(x.fin,2)+'</td><td class="r num">'+(x.available?nf(x.cost,3):"—")+'</td></tr>').join("")+'</tbody>':
     '<tbody><tr><td class="empty-state">Belum ada data sektor.</td></tr></tbody>';
-
-  // PD Baseline Bucket
-  const pd = trows("pdbucket").filter(r => r.status !== "arsip");
-  $("#tPd").innerHTML =
-    '<thead><tr><th>Bucket Risiko</th><th class="r">Pooled Baseline PD (%)</th></tr></thead><tbody>' +
-    pd.map(r => '<tr><td>' + esc(r.name) + '</td><td class="r num">' + nf(r.pd, 2) + '%</td></tr>').join("") +
-    '</tbody>';
+  const pd=trows("pdbucket").filter(r=>r.status!=="arsip");
+  $("#tPd").innerHTML='<thead><tr><th>Bucket Risiko</th><th class="r">Pooled Baseline PD (%)</th></tr></thead><tbody>'+
+    pd.map(r=>'<tr><td>'+esc(r.name)+'</td><td class="r num">'+nf(r.pd,2)+'%</td></tr>').join("")+'</tbody>';
+  $("#trScenarioForm").onsubmit=transSaveScenario;
+  $("#trScenarioReset").onclick=transClearScenario;
+  debts.onchange=transFormPopulate;
+  $("#trAssessForm").onsubmit=transSaveAssessment;
+  $("#trAssessClear").onclick=transResetForm;
+  $("#trGoFin").onclick=()=>setTab("pembiayaan");
+  $("#trExport").onclick=transExportCsv;
+  ["trMitigation","trPassThrough"].forEach(id=>$("#"+id).oninput=transPreview);
 }
 
 /* ---------- OFFSET EMISI ---------- */
