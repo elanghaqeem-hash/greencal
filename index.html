@@ -8430,7 +8430,7 @@ function gcAiSaveEditor(silent=false){
   saveStateToStorage();
   GC_AI_EDITOR=null;
   GC_AI_EDITOR_SELECTION=null;
-  if(S.tab==="ai"&&LAST_AI_RESULT)displayAiResult(LAST_AI_RESULT);
+  if(LAST_AI_RESULT)displayAiResult(LAST_AI_RESULT);
   if(!silent)toast("Perubahan narasi tersimpan sebagai draft manual tahun "+y+".");
   return true;
 }
