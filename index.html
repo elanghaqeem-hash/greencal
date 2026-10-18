@@ -2595,7 +2595,7 @@ dialog.modal-sheet .modal-foot { background:var(--surface); }
 
 /* Professional banking login, responsive laptop and smartphone */
 .gc-auth-gate{position:fixed;inset:0;z-index:700;display:flex;align-items:center;justify-content:center;padding:24px;background:#ebf2ed;overflow:auto;overscroll-behavior:contain}
-.gc-auth-gate[hidden],#gcLoginForm[hidden],#gcForcePasswordForm[hidden],#gcBootstrapForm[hidden]{display:none!important}
+.gc-auth-gate[hidden],#gcLoginForm[hidden],#gcActivationForm[hidden],#gcForcePasswordForm[hidden],#gcBootstrapForm[hidden]{display:none!important}
 .gc-auth-layout{display:grid;grid-template-columns:minmax(0,1.04fr) minmax(0,.96fr);width:min(100%,1000px);min-height:570px;box-shadow:0 25px 75px rgba(12,67,46,.13);border-radius:24px;overflow:hidden;background:#fff}
 .gc-auth-aside{display:flex;flex-direction:column;justify-content:space-between;padding:37px 39px;color:#fff;background:radial-gradient(circle at 90% 15%,rgba(113,226,170,.17),transparent 38%),linear-gradient(145deg,#064331,#0e664b 70%,#094733);position:relative}
 .gc-auth-bank{display:flex;align-items:center;gap:12px;flex-wrap:wrap;font-size:10px;font-weight:800;letter-spacing:.11em;color:#d2f4e3}
@@ -2661,7 +2661,13 @@ dialog.modal-sheet .modal-foot { background:var(--surface); }
           <label for="gcLoginEmail">Email pengguna<input id="gcLoginEmail" type="email" autocomplete="username" required placeholder="Masukkan email Anda" spellcheck="false"></label>
           <label for="gcLoginPassword">Password<input id="gcLoginPassword" type="password" autocomplete="current-password" required placeholder="Masukkan password"></label>
           <button type="submit">Masuk ke Dashboard <span aria-hidden="true">→</span></button>
-          <p class="gc-auth-helper">Akses khusus Superadmin dan Maker. Password sementara wajib diganti pada login pertama.</p>
+          <p class="gc-auth-helper">Akses hanya untuk Superadmin dan Maker. Akun baru harus membuat password setelah verifikasi email.</p>
+        </form>
+        <form id="gcActivationForm" hidden autocomplete="off">
+          <div class="gc-auth-changeinfo">Setelah memasukkan kode verifikasi yang dikirim ke email, buat password pertama Anda. Password tidak dikirim atau disimpan melalui chat.</div>
+          <label for="gcActivatePassword">Buat password baru<input id="gcActivatePassword" type="password" autocomplete="new-password" minlength="12" maxlength="128" required placeholder="Minimal 12 karakter"></label>
+          <label for="gcActivateConfirm">Konfirmasi password<input id="gcActivateConfirm" type="password" autocomplete="new-password" minlength="12" maxlength="128" required placeholder="Ulangi password baru"></label>
+          <button type="submit">Aktivasi dan Simpan Password</button>
         </form>
         <form id="gcForcePasswordForm" hidden autocomplete="off">
           <div class="gc-auth-changeinfo">Aktivasi keamanan akun · Password baru minimal 12 karakter dan harus berisi huruf besar, kecil, angka, dan simbol.</div>
