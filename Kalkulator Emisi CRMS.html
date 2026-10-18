@@ -2308,6 +2308,105 @@ dialog.modal-sheet .modal-foot { background:var(--surface); }
 }
 @media(prefers-reduced-motion:reduce){.breakdown-table-toggle .toggle-arrow{transition:none;}}
 
+
+/* Admin AI cloud priority setup */
+.gc-ai-explainer{color:var(--ink-muted);font-size:12px;line-height:1.65;margin:0;overflow-wrap:anywhere}
+.gc-ai-provider{display:grid;grid-template-columns:27px minmax(0,1fr) 32px;gap:9px;align-items:start;padding:11px;border:1px solid var(--line);border-radius:13px;margin:8px 0;background:var(--surface)}
+.gc-ai-order{font:800 13px var(--font-main);background:var(--primary-soft);color:var(--primary);border-radius:50%;width:27px;height:27px;display:grid;place-items:center}
+.gc-ai-provider-body{min-width:0;display:grid;gap:8px}
+.gc-ai-provider-body .field-label{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.gc-ai-key-state{font-size:10px;font-weight:700;color:var(--ink-muted)}
+.gc-ai-provider-body input[type=text]{width:100%;min-height:39px;font-size:12px;padding:7px 9px}
+.gc-ai-switch{display:flex;align-items:center;gap:7px;font-size:11px;color:var(--ink-muted)}
+.gc-ai-movers{display:grid;gap:5px}
+.gc-ai-movers button{border:1px solid var(--line);background:var(--surface-2);border-radius:7px;height:31px;font-size:16px;cursor:pointer}
+
+
+/* GREENCAL V5 — actual activity toolbar/form controls; mobile-first, no fake buttons */
+#view-aktivitas .carbon-hero {padding:clamp(17px,2.4vw,25px);background:linear-gradient(112deg,#074431 0%,#086b50 63%,#168d69 100%);border-radius:22px;box-shadow:0 12px 30px rgba(6,79,51,.13)}
+#view-aktivitas .carbon-total {font-size:clamp(29px,4.8vw,44px);font-weight:800;letter-spacing:-.052em}
+#view-aktivitas .carbon-hero-main {margin:10px 0}
+#view-aktivitas .carbon-hero-note {font-size:12px;line-height:1.58}
+#view-aktivitas .carbon-hero-foot {display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:14px}
+#view-aktivitas .carbon-mini-stat {display:flex;align-items:center;gap:8px;min-width:0;padding:11px 10px;border-radius:13px;background:#effaf4;color:#124e39;font-size:11px;font-weight:650;line-height:1.35;border:1px solid rgba(255,255,255,.25)}
+#view-aktivitas .carbon-mini-stat b {font-size:17px;font-weight:800;letter-spacing:-.03em}
+#view-aktivitas .carbon-mini-stat small {display:block;font-size:10px;color:#70502b;margin-top:2px}
+#view-aktivitas .carbon-stat-icon {display:grid;place-items:center;flex-shrink:0;width:30px;height:30px;border-radius:10px;background:#d1f0de;color:#096a4a;font-size:16px;font-weight:800}
+#view-aktivitas .carbon-hero-warning {background:#fff0d1;color:#614522;border-color:#f2d69b}
+#view-aktivitas .carbon-hero-warning .carbon-stat-icon {background:#ffde9e;color:#865819}
+#view-aktivitas .carbon-scope-filters {display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;overflow:visible;padding:0;margin-top:14px}
+#view-aktivitas .carbon-scope-filters button {width:100%;min-width:0;white-space:normal;overflow-wrap:anywhere;line-height:1.2;min-height:42px;padding:10px 6px;font-size:12px}
+#view-aktivitas .carbon-scope-filters button[aria-pressed=true] {background:#fff;color:#085841}
+#view-aktivitas .activity-toolbar {display:grid;gap:10px;margin-bottom:14px;min-width:0}
+#view-aktivitas .activity-search-row {display:flex;align-items:stretch;gap:8px;min-width:0}
+#view-aktivitas .activity-search {width:100%;flex:1 1 auto;min-width:0}
+#view-aktivitas .activity-search input {height:48px;min-width:0;width:100%;border-radius:14px;background:var(--surface)}
+#view-aktivitas .activity-clear-search {width:44px;min-width:44px;min-height:44px;border-radius:12px;font-size:22px}
+#view-aktivitas .activity-controls-row {display:grid;grid-template-columns:minmax(0,1.1fr) auto minmax(0,1fr);gap:9px;align-items:stretch;min-width:0}
+#view-aktivitas .activity-view-toggle {display:flex;align-items:center;min-width:0;overflow:hidden;padding:3px;border:1px solid var(--line);background:var(--primary-soft);border-radius:14px}
+#view-aktivitas .activity-view-toggle button {flex:1 1 0;min-width:0;padding:9px 7px;min-height:40px;font-size:12px;font-weight:800;white-space:nowrap}
+#view-aktivitas .activity-view-toggle button[aria-pressed=true] {background:var(--primary);color:#fff;border-radius:11px;box-shadow:0 4px 10px rgba(8,82,59,.12)}
+#view-aktivitas .activity-filter-details {position:relative;min-width:0}
+#view-aktivitas .activity-filter-details > summary {display:flex;gap:6px;justify-content:center;align-items:center;border:1px solid var(--line);border-radius:13px;background:var(--surface);color:var(--ink);cursor:pointer;padding:9px 12px;font-size:12px;font-weight:800;list-style:none;min-height:47px;white-space:nowrap}
+#view-aktivitas .activity-filter-details > summary::-webkit-details-marker {display:none}
+#view-aktivitas .activity-filter-details[open] > summary {border-color:var(--primary);color:var(--primary);background:var(--primary-soft)}
+#view-aktivitas .activity-filter-popover {position:absolute;top:calc(100% + 7px);right:0;z-index:25;width:min(290px,calc(100vw - 34px));padding:13px;background:var(--surface);border:1px solid var(--line);border-radius:15px;box-shadow:0 16px 32px rgba(0,0,0,.14)}
+#view-aktivitas .activity-filter-popover select {width:100%;font-size:13px;min-height:44px}
+#view-aktivitas .activity-filter-popover button {width:100%;margin-top:12px;min-height:40px}
+#view-aktivitas .activity-sort-label {min-width:0;border:1px solid var(--line);border-radius:13px;background:var(--surface);display:flex;align-items:center;padding:0 9px;gap:6px;min-height:47px}
+#view-aktivitas .activity-sort-label > span {color:var(--primary);font-size:18px;font-weight:700}
+#view-aktivitas #fActSort {font-size:12px;min-width:0;width:100%;min-height:44px;height:44px;padding:0 14px 0 0;background:transparent;border:0;box-shadow:none}
+#view-aktivitas .activity-list-meta {display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:11px;font-weight:650;color:var(--ink-muted)}
+#view-aktivitas .activity-list-meta .btn {color:var(--primary);font-size:11px}
+#view-aktivitas #btnRecalc[hidden],#view-aktivitas #btnClearActivitySearch[hidden],#view-aktivitas #actDraftNotice[hidden],#view-aktivitas #aCancel[hidden] {display:none!important}
+#view-aktivitas .activity-form-heading {display:flex;align-items:flex-start;gap:13px;margin-bottom:4px}
+#view-aktivitas .activity-form-heading-icon {display:grid;place-items:center;flex-shrink:0;width:38px;height:38px;color:white;background:linear-gradient(135deg,#0a6a4c,#078764);border-radius:12px;font-size:24px;font-weight:700}
+#view-aktivitas .activity-form-heading h3 {margin:0;font-size:19px;font-weight:800;line-height:1.27}
+#view-aktivitas .activity-form-heading p {color:var(--ink-muted);font-size:12px;line-height:1.5;margin:5px 0 0}
+#view-aktivitas .calc-step-badge {font-size:12px;font-weight:800;letter-spacing:.02em;padding:11px 13px}
+#view-aktivitas .activity-form-actions {display:flex;flex-wrap:wrap;gap:9px;align-items:center;margin-top:8px}
+#view-aktivitas .activity-form-actions .btn {flex:1 1 150px;min-height:47px;font-weight:750;border-radius:13px}
+#view-aktivitas .activity-form-actions #aSave {flex-grow:1.3}
+#view-aktivitas .activity-form-actions #aCancel {flex:0 0 auto}
+#view-aktivitas .activity-form-footnote {color:var(--ink-muted);font-size:10.5px;line-height:1.6;margin:0}
+#view-aktivitas .activity-draft-notice {display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px;padding:11px 12px;border:1px solid var(--primary-border);background:var(--primary-soft);border-radius:13px}
+#view-aktivitas .activity-draft-text b {display:block;font-size:11.5px;color:var(--primary)}
+#view-aktivitas .activity-draft-text small {display:block;font-size:10px;color:var(--ink-muted)}
+#view-aktivitas .activity-draft-controls {display:flex;gap:6px;flex-wrap:wrap}
+#view-aktivitas .activity-draft-controls .btn {font-size:11px;min-height:36px;padding:6px 9px}
+@media(max-width:959px) {
+ #view-aktivitas .activity-form-actions .btn {flex-basis:130px}
+}
+@media(max-width:620px) {
+ #view-aktivitas .carbon-hero {padding:17px 15px;margin-bottom:16px}
+ #view-aktivitas .carbon-total {font-size:clamp(26px,7vw,35px)}
+ #view-aktivitas .carbon-hero-illustration {width:52px;height:52px;border-radius:16px}
+ #view-aktivitas .carbon-hero-illustration svg {width:30px;height:30px}
+ #view-aktivitas .carbon-hero-foot {grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
+ #view-aktivitas .carbon-mini-stat {padding:9px;gap:7px;font-size:10px}
+ #view-aktivitas .carbon-mini-stat b {font-size:15px}
+ #view-aktivitas .carbon-mini-stat:last-child:nth-child(odd) {grid-column:1/-1}
+ #view-aktivitas .carbon-stat-icon {width:27px;height:27px;border-radius:9px}
+ #view-aktivitas .carbon-scope-filters {grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;margin-top:12px}
+ #view-aktivitas .carbon-scope-filters button {min-height:38px;font-size:11px;padding:8px 4px}
+ #view-aktivitas .activity-controls-row {grid-template-columns:minmax(0,1.1fr) auto minmax(0,1fr);gap:6px}
+ #view-aktivitas .activity-view-toggle button {padding:8px 4px;min-height:40px;font-size:11px}
+ #view-aktivitas .activity-filter-details > summary {padding:8px;min-height:46px;font-size:11px}
+ #view-aktivitas .activity-filter-popover {right:-104px;max-width:calc(100vw - 40px)}
+ #view-aktivitas .activity-sort-label {padding-left:7px;padding-right:5px;gap:4px}
+ #view-aktivitas #fActSort {font-size:11px}
+ #view-aktivitas #actForm {padding:16px;border-radius:18px}
+ #view-aktivitas .activity-form-heading h3 {font-size:18px}
+ #view-aktivitas .activity-form-actions .btn {flex:1 1 120px;font-size:12px;padding:9px 10px}
+ #view-aktivitas .activity-form-actions #aCancel {flex:1 1 100%}
+}
+@media(max-width:360px) {
+ #view-aktivitas .activity-controls-row {grid-template-columns:minmax(0,1fr) auto}
+ #view-aktivitas .activity-sort-label {grid-column:1/-1}
+ #view-aktivitas .activity-filter-popover {right:0}
+}
+@media(prefers-reduced-motion:reduce){#view-aktivitas .carbon-scope-filters button{transition:none}}
+
 </style>
 </head>
 <body>
@@ -2611,26 +2710,27 @@ dialog.modal-sheet .modal-foot { background:var(--surface); }
       <div id="carbonActivityHero" aria-live="polite"></div>
       <div class="grid-form-list">
         <form class="panel form-stack" id="actForm" autocomplete="off">
-          <div style="display:flex;align-items:center;justify-content:space-between">
-            <h3 id="actFormTitle" style="margin:0">Tambah Data Aktivitas</h3>
-          </div>
+          <div class="activity-form-heading"><span class="activity-form-heading-icon" aria-hidden="true">＋</span><div>
+            <h3 id="actFormTitle">Tambah Data Aktivitas</h3>
+            <p>Catat aktivitas operasional untuk menghitung emisi GRK sesuai cakupan Scope 1–3.</p>
+          </div></div><div id="actDraftNotice" class="activity-draft-notice" role="status" hidden></div>
 
           <div class="calc-step-badge">1 · Periode &amp; Lokasi</div>
           <div class="input-row-2">
             <label class="field-group">
-              <span class="field-label">Periode</span>
-              <select id="aYear"></select>
+              <span class="field-label">Periode *</span>
+              <select id="aYear" required aria-label="Periode aktivitas"></select>
             </label>
             <label class="field-group">
-              <span class="field-label">Unit Kerja / Cabang</span>
-              <select id="aUnit"></select>
+              <span class="field-label">Unit Kerja / Cabang *</span>
+              <select id="aUnit" required aria-label="Pilih unit kerja atau cabang"></select>
             </label>
           </div>
 
           <div class="calc-step-badge">2 · Kategori Emisi</div>
           <label class="field-group">
-            <span class="field-label">Kategori (Buku 3)</span>
-            <select id="aCat"></select>
+            <span class="field-label">Kategori Emisi (Buku 3) *</span>
+            <select id="aCat" required aria-label="Kategori emisi Buku 3"></select>
           </label>
           <div class="data-card-desc" id="aCatInfo" style="font-size:12px"></div>
 
@@ -2648,29 +2748,61 @@ dialog.modal-sheet .modal-foot { background:var(--surface); }
 
           <div class="result-box" id="aResult" aria-live="polite"></div>
 
-          <div style="display:flex;gap:10px;margin-top:6px">
-            <button class="btn primary" type="submit" id="aSave" style="flex:1">Simpan Data</button>
-            <button class="btn" type="button" id="aCancel" hidden>Batal</button>
+          <div class="activity-form-actions">
+            <button class="btn" type="button" id="btnSaveActivityDraft" title="Simpan sementara di browser">Simpan Draft</button>
+            <button class="btn primary" type="submit" id="aSave">Tambah Aktivitas</button>
+            <button class="btn" type="button" id="aCancel" hidden>Batal Edit</button>
           </div>
+          <p class="activity-form-footnote">Draft hanya tersimpan di browser perangkat ini, belum menjadi angka pelaporan.</p>
         </form>
 
         <div style="min-width:0">
-          <div class="filter-bar">
-            <div class="search-input-wrap">
-              <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-              <input type="text" id="fSearch" placeholder="Cari unit, kategori, bukti...">
+          <div class="activity-toolbar" aria-label="Pengaturan daftar aktivitas">
+            <div class="activity-search-row">
+              <div class="search-input-wrap activity-search">
+                <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                <input type="search" id="fSearch" aria-label="Cari aktivitas" placeholder="Cari unit, kategori, bukti, deskripsi...">
+              </div>
+              <button class="btn sm activity-clear-search" type="button" id="btnClearActivitySearch" hidden aria-label="Bersihkan pencarian">×</button>
             </div>
-            <select id="fScope" style="width:auto;min-width:115px;min-height:40px;border-radius:var(--radius-pill);padding:0 12px">
-              <option value="">Semua Scope</option>
-              <option value="1">Scope 1</option>
-              <option value="2">Scope 2</option>
-              <option value="3">Scope 3</option>
+            <div class="activity-controls-row">
+              <div class="btn-group activity-view-toggle" id="actViewToggle" role="group" aria-label="Tampilan daftar aktivitas">
+                <button type="button" data-v="card" aria-pressed="true">▦ Kartu</button>
+                <button type="button" data-v="table" aria-pressed="false">☷ Tabel</button>
+              </div>
+              <details class="activity-filter-details" id="actFilterDetails">
+                <summary>⚲ Filter</summary>
+                <div class="activity-filter-popover">
+                  <label class="field-group" for="fQuality"><span class="field-label">Status data</span>
+                    <select id="fQuality">
+                      <option value="all">Semua status</option>
+                      <option value="real">Bukan data contoh</option>
+                      <option value="sample">Data contoh</option>
+                      <option value="missing">Tanpa referensi bukti</option>
+                      <option value="stale">Perlu hitung ulang</option>
+                    </select>
+                  </label>
+                  <button class="btn sm" id="btnResetActivityFilters" type="button">Reset filter</button>
+                </div>
+              </details>
+              <label class="activity-sort-label" for="fActSort"><span aria-hidden="true">↕</span>
+                <select id="fActSort" aria-label="Urutkan aktivitas">
+                  <option value="category">Kategori</option>
+                  <option value="latest">Terbaru</option>
+                  <option value="highest">Emisi terbesar</option>
+                  <option value="lowest">Emisi terkecil</option>
+                  <option value="unit">Nama unit A–Z</option>
+                </select>
+              </label>
+            </div>
+            <div class="activity-list-meta">
+              <span id="actResultsCount" role="status" aria-live="polite"></span>
+              <button class="btn sm" type="button" id="btnRecalc" hidden></button>
+            </div>
+            <select id="fScope" hidden aria-label="Filter berdasarkan scope">
+              <option value="">Semua Scope</option><option value="1">Scope 1</option>
+              <option value="2">Scope 2</option><option value="3">Scope 3</option>
             </select>
-            <div class="btn-group" id="actViewToggle">
-              <button data-v="card" aria-pressed="true" title="Tampilan Kartu (Mobile)">Kartu</button>
-              <button data-v="table" aria-pressed="false" title="Tampilan Tabel (Desktop)">Tabel</button>
-            </div>
-            <button class="btn sm" id="btnRecalc" hidden></button>
           </div>
 
           <div class="data-cards-list" id="actCardsList"></div>
@@ -5020,9 +5152,79 @@ function renderActForm() {
 
 function renderAct() {
   renderActForm();
+  renderActivityDraftState();
   renderActList();
 }
 
+
+
+/* Data draft is device-local and excluded from saved activity calculations. */
+const ACTIVITY_DRAFT_KEY = "green_activity_draft_v1";
+function getActivityDraft() {
+  try {
+    const raw = localStorage.getItem(ACTIVITY_DRAFT_KEY);
+    if (!raw) return null;
+    const d = JSON.parse(raw);
+    return d && typeof d === "object" && d.cat ? d : null;
+  } catch(err) { return null; }
+}
+function renderActivityDraftState() {
+  const host = $("#actDraftNotice");
+  if (!host) return;
+  const d = getActivityDraft();
+  host.hidden = !d;
+  if (!d) { host.innerHTML = ""; return; }
+  const stamp = d.savedAt ? new Date(d.savedAt) : null;
+  const when = stamp && !Number.isNaN(stamp.getTime()) ?
+    stamp.toLocaleString("id-ID",{dateStyle:"medium",timeStyle:"short"}) : "sebelumnya";
+  host.innerHTML =
+    '<div class="activity-draft-text"><b>Draft aktivitas tersedia</b><small>Disimpan '+esc(when)+' · hanya di perangkat ini</small></div>' +
+    '<div class="activity-draft-controls"><button class="btn sm" type="button" id="btnRestoreActivityDraft">Lanjutkan</button>' +
+    '<button class="btn sm" type="button" id="btnRemoveActivityDraft">Hapus draft</button></div>';
+  $("#btnRestoreActivityDraft").onclick = restoreActivityDraft;
+  $("#btnRemoveActivityDraft").onclick = () => {
+    try { localStorage.removeItem(ACTIVITY_DRAFT_KEY); }
+    catch(err) { toast("Tidak dapat menghapus draft."); return; }
+    renderActivityDraftState();
+    toast("Draft telah dihapus.");
+  };
+}
+function saveActivityDraft() {
+  const d = {
+    year:Number($("#aYear").value) || S.year,
+    unit:$("#aUnit").value,cat:$("#aCat").value,
+    inputs:readActInputs(),
+    desc:$("#aDesc").value,evidence:$("#aEvidence").value,
+    savedAt:new Date().toISOString()
+  };
+  try { localStorage.setItem(ACTIVITY_DRAFT_KEY,JSON.stringify(d)); }
+  catch(err) { toast("Penyimpanan lokal tidak diizinkan browser."); return; }
+  renderActivityDraftState();
+  toast("Draft tersimpan di browser. Belum termasuk data emisi.");
+}
+function restoreActivityDraft() {
+  const d = getActivityDraft();
+  if (!d) return;
+  if (S.editActId) { toast("Batalkan proses edit sebelum memulihkan draft."); return; }
+  fillYear($("#aYear"),d.year);
+  fillSelect($("#aUnit"),(st().units||[]).map(u=>({v:u,t:u})),d.unit);
+  fillSelect($("#aCat"),catOptions(),d.cat);
+  renderActFields(d.inputs||{});
+  $("#aDesc").value=d.desc||"";
+  $("#aEvidence").value=d.evidence||"";
+  calcAct();
+  $("#actForm").scrollIntoView({behavior:"smooth",block:"start"});
+  toast("Draft dipulihkan. Periksa kembali sebelum menyimpan.");
+}
+function clearActivityFilters() {
+  $("#fScope").value="";
+  $("#fSearch").value="";
+  $("#fQuality").value="all";
+  $("#fActSort").value="category";
+  $("#actFilterDetails").open=false;
+  renderActList();
+  toast("Semua filter aktivitas direset.");
+}
 
 /* GC-CARBON-EXPERIENCE-v2: overview is derived exclusively from registered activity data */
 function renderCarbonActivityHero() {
@@ -5055,9 +5257,9 @@ function renderCarbonActivityHero() {
       '</div>' +
       '<p class="carbon-hero-note">' + (current.length ? 'Total emisi dari aktivitas Scope 1, 2, dan 3 yang tercatat pada tahun terpilih. Angka bukan klaim penurunan emisi.' : 'Belum ada data aktivitas untuk periode ini. Tambahkan data agar jejak karbon dapat dihitung.') + '</p>' +
       '<div class="carbon-hero-foot">' +
-        '<span class="carbon-mini-pill">' + current.length + ' aktivitas tercatat</span>' +
-        '<span class="carbon-mini-pill">' + calculated + ' hasil perhitungan</span>' +
-        (sampleCount ? '<span class="carbon-mini-pill carbon-hero-warning">Termasuk ' + sampleCount + ' data contoh · belum terverifikasi</span>' : '') +
+        '<div class="carbon-mini-stat"><span class="carbon-stat-icon" aria-hidden="true">▤</span><span><b>' + current.length + '</b> aktivitas tercatat</span></div>' +
+        '<div class="carbon-mini-stat"><span class="carbon-stat-icon" aria-hidden="true">▦</span><span><b>' + calculated + '</b> hasil perhitungan</span></div>' +
+        (sampleCount ? '<div class="carbon-mini-stat carbon-hero-warning"><span class="carbon-stat-icon" aria-hidden="true">!</span><span><b>' + sampleCount + ' data contoh</b><small>Belum terverifikasi</small></span></div>' : '') +
       '</div>' +
       '<div class="carbon-scope-filters" id="carbonScopeFilters" aria-label="Filter berdasarkan scope">' +
         options.map(o => '<button type="button" data-carbon-scope="' + o[0] + '" aria-pressed="' + String(filter === o[0]) + '">' + o[1] + ' · ' + o[2] + '</button>').join("") +
@@ -5075,11 +5277,26 @@ function renderActList() {
   const sc = $("#fScope").value;
   const q = ($("#fSearch").value || "").trim().toLowerCase();
 
+  const quality = $("#fQuality")?.value || "all";
+  const sorting = $("#fActSort")?.value || "category";
   const rows = S.entries.filter(e =>
     e.year === y &&
-    (!sc || (CAT(e.cat) || {}).s === sc) &&
-    (!q || (e.unitKerja + " " + ((CAT(e.cat) || {}).t || "") + " " + (e.desc || "") + " " + (e.evidence || "")).toLowerCase().includes(q))
-  ).sort((a, b) => CATS.indexOf(CAT(a.cat)) - CATS.indexOf(CAT(b.cat)));
+    (!sc || String((CAT(e.cat) || {}).s) === sc) &&
+    (quality === "all" ||
+      (quality === "real" && !e.contoh) ||
+      (quality === "sample" && !!e.contoh) ||
+      (quality === "missing" && !String(e.evidence || "").trim()) ||
+      (quality === "stale" && entryStale(e))) &&
+    (!q || (String(e.unitKerja || "") + " " + ((CAT(e.cat) || {}).t || "") + " " + (e.desc || "") + " " + (e.evidence || "") + " " + (e.summary || "")).toLowerCase().includes(q))
+  ).sort((a, b) => {
+    if (sorting === "latest") return String(b.at || "").localeCompare(String(a.at || ""));
+    if (sorting === "highest") return (Number(entryT(b, S.method)) || 0) - (Number(entryT(a, S.method)) || 0);
+    if (sorting === "lowest") return (Number(entryT(a, S.method)) || 0) - (Number(entryT(b, S.method)) || 0);
+    if (sorting === "unit") return String(a.unitKerja || "").localeCompare(String(b.unitKerja || ""), "id");
+    return CATS.indexOf(CAT(a.cat)) - CATS.indexOf(CAT(b.cat));
+  });
+  $("#actResultsCount").textContent = "Menampilkan " + rows.length + " dari " + S.entries.filter(e => e.year === y).length + " aktivitas";
+  $("#btnClearActivitySearch").hidden = !q;
 
   const stale = S.entries.filter(e => e.year === y && entryStale(e)).length;
   const br = $("#btnRecalc");
@@ -5096,7 +5313,7 @@ function renderActList() {
   });
 
   if (!rows.length) {
-    const emptyHtml = '<div class="empty-state"><p>Belum ada data aktivitas untuk filter ini. Klik <b>+ Tambah Data</b> atau gunakan <b>Kalkulator Cepat</b>.</p></div>';
+    const emptyHtml = '<div class="empty-state"><p>Tidak ada aktivitas sesuai filter ini. Ubah filter, atau gunakan tombol <b>Reset filter</b>.</p></div>';
     $("#actCardsList").innerHTML = emptyHtml;
     $("#actTable").innerHTML = '<tbody><tr><td class="empty-state">' + emptyHtml + '</td></tr></tbody>';
     return;
@@ -5214,8 +5431,8 @@ function resetAct() {
   S.editActId = null;
   $("#aDesc").value = "";
   $("#aEvidence").value = "";
-  $("#actFormTitle").textContent = "Catat Aktivitas";
-  $("#aSave").textContent = "Simpan Data";
+  $("#actFormTitle").textContent = "Tambah Data Aktivitas";
+  $("#aSave").textContent = "Tambah Aktivitas";
   $("#aCancel").hidden = true;
   renderActFields({});
 }
@@ -5253,6 +5470,7 @@ async function saveAct(ev) {
   }
 
   saveStateToStorage();
+  try { localStorage.removeItem(ACTIVITY_DRAFT_KEY); } catch (err) {}
   resetAct();
   renderAll();
 }
@@ -6231,7 +6449,12 @@ function bindEvents() {
   $("#aCat").onchange = () => renderActFields({});
   $("#fSearch").oninput = renderActList;
   $("#fScope").onchange = renderActList;
+  $("#fQuality").onchange = renderActList;
+  $("#fActSort").onchange = renderActList;
   $("#btnRecalc").onclick = recalcAll;
+  $("#btnClearActivitySearch").onclick = () => { $("#fSearch").value = ""; renderActList(); $("#fSearch").focus(); };
+  $("#btnResetActivityFilters").onclick = clearActivityFilters;
+  $("#btnSaveActivityDraft").onclick = saveActivityDraft;
 
   $("#finForm").onsubmit = saveFin;
   $("#xCancel").onclick = resetFin;
@@ -6309,9 +6532,8 @@ document.addEventListener("DOMContentLoaded", boot);
 
 /* ---------- TIERED AI ANALYTICS ENGINE ---------- */
 const DEFAULT_AI_CONFIG = {
-  tier: "tier2", // "tier1" | "tier2" | "tier3"
+  tier: "tier3", // server-side AI is the default; Tier 1/2 remain opt-in local analyses
   provider: "gemini", // "gemini" | "openai" | "custom"
-  apiKey: "",
   model: "gemini-1.5-flash",
   customEndpoint: "",
   autoRunOnYearChange: false,
@@ -6322,7 +6544,14 @@ const DEFAULT_AI_CONFIG = {
 function getAiConfig() {
   try {
     const raw = localStorage.getItem("green_ai_config");
-    return raw ? Object.assign({}, DEFAULT_AI_CONFIG, JSON.parse(raw)) : DEFAULT_AI_CONFIG;
+    const old = raw ? JSON.parse(raw) : {};
+    // Eliminate any browser-stored legacy credentials immediately.
+    if (old.apiKey || old.customEndpoint) {
+      delete old.apiKey;
+      delete old.customEndpoint;
+      localStorage.setItem("green_ai_config", JSON.stringify(old));
+    }
+    return Object.assign({}, DEFAULT_AI_CONFIG, old, {tier:"tier3"});
   } catch(e) {
     return DEFAULT_AI_CONFIG;
   }
@@ -6330,7 +6559,8 @@ function getAiConfig() {
 
 function saveAiConfig(cfg) {
   try {
-    localStorage.setItem("green_ai_config", JSON.stringify(cfg));
+    const safe = {tier:"tier3",targetReductionYear:Number(cfg.targetReductionYear)||2030,targetReductionPct:Number(cfg.targetReductionPct)||35};
+    localStorage.setItem("green_ai_config", JSON.stringify(safe));
   } catch(e) {}
 }
 
@@ -6518,81 +6748,30 @@ function runAiTier2(summaryData, year) {
   });
 }
 
-/* Tier 3: Cloud Generative AI (Gemini / OpenAI API) */
+/* Tier 3: calls Cloudflare Worker; never passes keys to browser. Admin-defined ordered failover. */
 async function runAiTier3(summaryData, year, config) {
-  // If API key is missing, fallback smoothly to Tier 2 with note
-  if (!config.apiKey || !config.apiKey.trim()) {
-    const t2 = runAiTier2(summaryData, year);
-    t2.tierUsed = "Tier 3 (Fallback ke Tier 2: API Key belum diisi oleh Admin)";
-    t2.apiNote = "Kunci API Cloud belum diisi di Pengaturan AI. Analisis dijalankan menggunakan mesin lokal Tier 2 ESG Advisory.";
-    return t2;
-  }
-
-  const s = summaryData;
-  const prompt = 
-    "Anda adalah ESG & Climate Risk Advisor Senior untuk perbankan di Indonesia. Berikan analisis eksekutif komprehensif berdasarkan data emisi karbon tahun " + year + " berikut:\\n" +
-    "- Lembaga: " + (st().orgName || "Bank") + "\\n" +
-    "- Standar: Buku 1-7 Panduan CRMS OJK 2026 & PCAF Standard\\n" +
-    "- Total Emisi Bruto: " + nf(s.total, 2) + " tCO2e\\n" +
-    "- Scope 1: " + nf(s.by["1"], 2) + " tCO2e (" + (s.total ? nf(s.by["1"]/s.total*100, 1) : 0) + "%)\\n" +
-    "- Scope 2: " + nf(s.by["2"], 2) + " tCO2e (" + (s.total ? nf(s.by["2"]/s.total*100, 1) : 0) + "%)\\n" +
-    "- Scope 3 (Kat 1-14): " + nf(s.by["3"], 2) + " tCO2e\\n" +
-    "- Scope 3 Kat 15 (Pembiayaan PCAF): " + nf(s.fin, 2) + " tCO2e\\n" +
-    "- Portofolio Coverage: " + (s.osAll ? nf(s.osCov/s.osAll*100, 1) : 0) + "% (Rp " + nf(s.osCov) + " / " + nf(s.osAll) + " Miliar)\\n" +
-    "- Skor Data Quality Tertimbang: " + (s.dqW != null ? nf(s.dqW, 1) : "N/A") + "\\n\\n" +
-    "Sajikan analisis dalam Bahasa Indonesia yang formal dan profesional dengan struktur:\\n" +
-    "1. Executive Summary & Evaluasi Kesiapan Audit OJK / IFRS S2\\n" +
-    "2. Identifikasi Hotspot Emisi & Risiko Finansial (termasuk dampak biaya karbon NGFS)\\n" +
-    "3. Rekomendasi Dekarbonisasi Prioritas (Jangka Pendek 2026-2027 & Jangka Panjang 2030)\\n" +
-    "4. Teks Draf Pernyataan Direksi untuk Laporan Keberlanjutan Tahunan.";
-
-  try {
-    let responseText = "";
-    if (config.provider === "gemini") {
-      const url = "https://generativelanguage.googleapis.com/v1beta/models/" + (config.model || "gemini-1.5-flash") + ":generateContent?key=" + config.apiKey.trim();
-      const res = await fetch(url, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          contents: [{ parts: [{ text: prompt }] }],
-          generationConfig: { temperature: 0.2, maxOutputTokens: 2000 }
-        })
-      });
-      if (!res.ok) throw new Error("API Gemini Error: HTTP " + res.status);
-      const json = await res.json();
-      responseText = json.candidates[0].content.parts[0].text;
-    } else {
-      // OpenAI format
-      const url = "https://api.openai.com/v1/chat/completions";
-      const res = await fetch(url, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": "Bearer " + config.apiKey.trim()
-        },
-        body: JSON.stringify({
-          model: config.model || "gpt-4o-mini",
-          messages: [{ role: "user", content: prompt }],
-          temperature: 0.2
-        })
-      });
-      if (!res.ok) throw new Error("API OpenAI Error: HTTP " + res.status);
-      const json = await res.json();
-      responseText = json.choices[0].message.content;
-    }
-
-    const t2 = runAiTier2(summaryData, year);
-    return Object.assign({}, t2, {
-      tierUsed: "Tier 3: Cloud LLM Generative AI (" + (config.provider === "gemini" ? "Google Gemini" : "OpenAI") + " - " + config.model + ")",
-      narrative: responseText
-    });
-  } catch(err) {
-    console.warn("Cloud AI call failed, falling back to Tier 2:", err);
-    const t2 = runAiTier2(summaryData, year);
-    t2.tierUsed = "Tier 3 (Koneksi API Gagal, Fallback ke Tier 2)";
-    t2.apiNote = "Panggilan API gagal (" + err.message + "). Analisis tetap disajikan dengan mesin lokal Tier 2.";
-    return t2;
-  }
+  const s=summaryData;
+  const payload={
+    year,total:s.total,scope1:s.by["1"],scope2:s.by["2"],scope3:s.by["3"],financed:s.fin,
+    osCovered:s.osCov,osTotal:s.osAll,dataQuality:s.dqW,scope2Method:S.method
+  };
+  let result, response;
+  try{
+    response=await fetch("/api/ai/analyze",{method:"POST",headers:{"Content-Type":"application/json"},
+      body:JSON.stringify(payload),credentials:"same-origin",cache:"no-store"});
+    result=await response.json();
+  }catch(e){throw Error("Tidak bisa menjangkau layanan AI server. Periksa koneksi atau autentikasi Cloudflare Access.");}
+  if(!response.ok||!result.ok)throw Error(result.message||("Layanan AI gagal (HTTP "+response.status+")."));
+  const local=runAiTier2(s,year);
+  return Object.assign({},local,{
+    grade:"—",score:"—",gradeLabel:"Draf AI • Belum diverifikasi",
+    tierUsed:"AI Cloud: "+result.provider+" / "+result.model,
+    narrative:result.narrative,
+    apiNote:"Provider aktif: "+result.provider+" ("+result.model+"). "+
+      (result.failedProviders?.length?"Failover dari: "+result.failedProviders.join(", ")+". ":"")+
+      "Hasil AI adalah DRAF untuk review manusia; bukan hasil audit atau penetapan kepatuhan.",
+    generatedAt:result.generatedAt
+  });
 }
 
 /* Master AI Runner */
@@ -6624,9 +6803,9 @@ let LAST_AI_RESULT = null;
 function renderAiView() {
   const cfg = getAiConfig();
   const tierLabels = {
-    tier1: "Tier 1 · Aturan Regulasi OJK (Lokal)",
-    tier2: "Tier 2 · ESG & Dekarbonisasi Strategis",
-    tier3: "Tier 3 · Cloud LLM Generatif (" + (cfg.provider === "gemini" ? "Gemini" : "OpenAI") + ")"
+    tier1: "Tier 1 · Pengecekan data lokal (bukan audit)",
+    tier2: "Tier 2 · Simulasi strategi (belum divalidasi)",
+    tier3: "AI Cloud · Prioritas model ditentukan Admin"
   };
 
   $("#aiActiveTierBadge").textContent = tierLabels[cfg.tier] || "Tier 2";
@@ -6677,12 +6856,12 @@ function displayAiResult(res) {
     '<div class="kpi-card hero" style="margin-bottom:20px;background:linear-gradient(135deg, #0A4230, #06271D)">' +
       '<div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:12px">' +
         '<div>' +
-          '<span class="kpi-label" style="color:rgba(255,255,255,0.85)"><i class="kpi-dot" style="background:#4ADE80"></i>Skor Kematangan Emisi (Emission Maturity)</span>' +
+          '<span class="kpi-label" style="color:rgba(255,255,255,0.85)"><i class="kpi-dot" style="background:#4ADE80"></i>Indikator Kesiapan Data (Bukan Skor Kepatuhan)</span>' +
           '<div class="ai-grade-row">' +
             '<span style="font-family:var(--font-num);font-size:42px;font-weight:900;color:#FFFFFF;line-height:1">Grade ' + res.grade + '</span>' +
             '<span style="font-size:15px;color:rgba(255,255,255,0.9);font-weight:600">' + esc(res.gradeLabel) + '</span>' +
           '</div>' +
-          '<div class="kpi-sub">Indeks Kesiapan Audit: <b>' + res.score + '/100</b> · Mesin: <b>' + esc(res.tierUsed) + '</b></div>' +
+          '<div class="kpi-sub">Indeks simulasi: <b>' + res.score + '/100</b> · Mesin: <b>' + esc(res.tierUsed) + '</b></div>' +
         '</div>' +
         '<div class="ai-result-actions">' +
           '<button class="btn sm" id="btnCopyAi" style="background:rgba(255,255,255,0.15);color:#FFFFFF;border:0">Salin Analisa</button>' +
@@ -6730,7 +6909,7 @@ function displayAiResult(res) {
     '<div class="grid-2">' +
       '<div class="panel">' +
         '<div class="panel-header">' +
-          '<div><h3>Evaluasi Kepatuhan &amp; Gap Data (OJK 2026)</h3><p>Hal kritis yang perlu diselesaikan sebelum audit eksternal</p></div>' +
+          '<div><h3>Temuan Awal dan Gap Data (Review Diperlukan)</h3><p>Hal kritis yang perlu diselesaikan sebelum audit eksternal</p></div>' +
         '</div>' +
         '<ul class="alert-list">' +
           (res.issues.length ? res.issues.map(is => 
@@ -6738,17 +6917,17 @@ function displayAiResult(res) {
               '<span class="chip ' + (is.sev === "high" ? "bad" : "warn") + '">' + (is.sev === "high" ? "Kritis" : "Perhatian") + '</span>' +
               '<div><b>' + esc(is.title) + '</b><div style="font-size:12px;color:var(--ink-muted);margin-top:2px">' + esc(is.desc) + '</div></div>' +
             '</li>'
-          ).join("") : '<li class="alert-item"><span class="chip ok">Nihil</span><span>Tidak ditemukan gap kepatuhan data.</span></li>') +
+          ).join("") : '<li class="alert-item"><span class="chip ok">Nihil</span><span>Belum ditemukan gap oleh pemeriksaan otomatis; verifikasi bukti tetap diperlukan.</span></li>') +
         '</ul>' +
       '</div>' +
       '<div class="panel">' +
         '<div class="panel-header">' +
-          '<div><h3>Kekuatan Pelaporan Terverifikasi</h3><p>Poin positif kesiapan pengungkapan keberlanjutan</p></div>' +
+          '<div><h3>Indikasi Data Tercatat — Memerlukan Validasi</h3><p>Poin positif kesiapan pengungkapan keberlanjutan</p></div>' +
         '</div>' +
         '<ul class="alert-list">' +
           (res.strengths.length ? res.strengths.map(st => 
             '<li class="alert-item">' +
-              '<span class="chip ok">Terpenuhi</span>' +
+              '<span class="chip ok">Tercatat</span>' +
               '<div><b>' + esc(st.title) + '</b><div style="font-size:12px;color:var(--ink-muted);margin-top:2px">' + esc(st.desc) + '</div></div>' +
             '</li>'
           ).join("") : '<li class="alert-item"><span>Belum ada metrik yang terpenuhi.</span></li>') +
@@ -6762,7 +6941,7 @@ function displayAiResult(res) {
       '<div class="panel-header">' +
         '<div>' +
           '<h3>Draf Narasi Pengungkapan Laporan Keberlanjutan (TCFD / ISSB S2)</h3>' +
-          '<p>Teks analitis formal siap salin untuk dimasukkan ke laporan tahunan dewan direksi.</p>' +
+          '<p>Draf AI memerlukan validasi angka, referensi dan persetujuan manusia sebelum digunakan dalam laporan resmi.</p>' +
         '</div>' +
       '</div>' +
       '<div class="result-box" style="background:var(--surface);font-family:var(--font-main);font-size:13.5px;line-height:1.7;white-space:pre-wrap;max-height:450px;overflow-y:auto">' +
@@ -6811,107 +6990,57 @@ function displayAiResult(res) {
   }
 }
 
-/* ---------- ADMIN MODAL: TIERED AI CONFIGURATION ---------- */
-function openAiConfigDialog() {
-  const cfg = getAiConfig();
-
-  let html = 
-    '<div class="form-stack">' +
-      '<p style="font-size:13px;color:var(--ink-muted);margin:0">Atur tingkatan kecerdasan buatan (AI Tier) yang digunakan untuk menganalisis emisi dan risiko iklim portofolio.</p>' +
-      
-      '<div class="field-group">' +
-        '<span class="field-label">Pilihan AI Berjenjang</span>' +
-        '<div class="ai-tier-options">' +
-          '<label class="data-card ai-tier-option">' +
-            '<input class="ai-tier-input" type="radio" name="aiTierRadio" value="tier1"' + (cfg.tier === "tier1" ? " checked" : "") + ' style="margin-top:3px">' +
-            '<div>' +
-              '<b>Tier 1: AI Heuristik &amp; Aturan Regulasi OJK</b>' +
-              '<div style="font-size:12px;color:var(--ink-muted);margin-top:2px">100% lokal &amp; instan. Audit checklist kepatuhan Buku 1-7 OJK CRMS 2026, jejak bukti, dan scoring kematangan tanpa butuh internet.</div>' +
-            '</div>' +
-          '</label>' +
-
-          '<label class="data-card ai-tier-option">' +
-            '<input class="ai-tier-input" type="radio" name="aiTierRadio" value="tier2"' + (cfg.tier === "tier2" ? " checked" : "") + ' style="margin-top:3px">' +
-            '<div>' +
-              '<b>Tier 2: AI Rekomendasi ESG &amp; Dekarbonisasi Strategis (Disarankan)</b>' +
-              '<div style="font-size:12px;color:var(--ink-muted);margin-top:2px">Pemodelan strategi reduksi emisi nyata: PLTS Atap kantor cabang, elektrifikasi armada kendaraan dinas, efisiensi energi AC, dan Transition Finance portofolio.</div>' +
-            '</div>' +
-          '</label>' +
-
-          '<label class="data-card ai-tier-option">' +
-            '<input class="ai-tier-input" type="radio" name="aiTierRadio" value="tier3"' + (cfg.tier === "tier3" ? " checked" : "") + ' style="margin-top:3px">' +
-            '<div>' +
-              '<b>Tier 3: Cloud LLM Generative AI (Gemini / OpenAI API)</b>' +
-              '<div style="font-size:12px;color:var(--ink-muted);margin-top:2px">Menggunakan model bahasa besar cloud untuk menghasilkan draf narasi Sustainability Report profesional siap saji. Memerlukan API Key.</div>' +
-            '</div>' +
-          '</label>' +
-        '</div>' +
-      '</div>' +
-
-      '<div class="ai-cloud-options" id="tier3OptionsBox" style="display:' + (cfg.tier === "tier3" ? "block" : "none") + ';border-top:1px solid var(--line);padding-top:14px">' +
-        '<div class="input-row-2">' +
-          '<label class="field-group">' +
-            '<span class="field-label">Provider Cloud AI</span>' +
-            '<select id="cfgAiProvider">' +
-              '<option value="gemini"' + (cfg.provider === "gemini" ? " selected" : "") + '>Google Gemini</option>' +
-              '<option value="openai"' + (cfg.provider === "openai" ? " selected" : "") + '>OpenAI</option>' +
-            '</select>' +
-          '</label>' +
-          '<label class="field-group">' +
-            '<span class="field-label">Model Name</span>' +
-            '<input type="text" id="cfgAiModel" value="' + esc(cfg.model || "gemini-1.5-flash") + '">' +
-          '</label>' +
-        '</div>' +
-        '<label class="field-group" style="margin-top:10px">' +
-          '<span class="field-label">API Key (khusus pengujian)</span>' +
-          '<input type="password" id="cfgAiKey" autocomplete="off" placeholder="Masukkan API Key" value="' + esc(cfg.apiKey || "") + '">' +
-          '<p class="ai-credential-note">Untuk penggunaan produksi, simpan kunci API melalui secret backend/Cloudflare Worker, bukan di browser.</p>' +
-        '</label>' +
-      '</div>' +
-
-      '<div class="input-row-2" style="border-top:1px solid var(--line);padding-top:14px">' +
-        '<label class="field-group">' +
-          '<span class="field-label">Tahun Target Dekarbonisasi</span>' +
-          '<input type="number" id="cfgAiYear" value="' + (cfg.targetReductionYear || 2030) + '">' +
-        '</label>' +
-        '<label class="field-group">' +
-          '<span class="field-label">Target Reduksi Emisi (%)</span>' +
-          '<input type="number" id="cfgAiPct" value="' + (cfg.targetReductionPct || 35) + '">' +
-        '</label>' +
-      '</div>' +
-    '</div>';
-
-  openDlg("Pengaturan AI Berjenjang · Admin", html, [
-    {
-      t: "Simpan Konfigurasi",
-      primary: true,
-      fn: async () => {
-        const selectedTier = $('input[name="aiTierRadio"]:checked').value;
-        const newCfg = {
-          tier: selectedTier,
-          provider: $("#cfgAiProvider").value,
-          model: $("#cfgAiModel").value.trim() || "gemini-1.5-flash",
-          apiKey: $("#cfgAiKey").value.trim(),
-          targetReductionYear: num($("#cfgAiYear").value) || 2030,
-          targetReductionPct: num($("#cfgAiPct").value) || 35
-        };
-
-        saveAiConfig(newCfg);
-        await logAudit("Ubah Konfigurasi AI", "Mesin AI Berjenjang", "Tier aktif: " + newCfg.tier);
-        toast("Konfigurasi AI Tier berhasil disimpan!");
-        LAST_AI_RESULT = null; // force recalculation with new tier
-        renderAiView();
-        return true;
-      }
-    }
-  ]);
-
-  // Bind radio toggle for Tier 3 options box
-  $$('input[name="aiTierRadio"]').forEach(r => {
-    r.onchange = () => {
-      const box = $("#tier3OptionsBox");
-      if (box) box.style.display = r.value === "tier3" ? "block" : "none";
-    };
+/* Admin provider priority. Keys are Cloudflare Worker secrets — never browser fields. */
+async function openAiConfigDialog() {
+  let status,reply;
+  try{
+    reply=await fetch("/api/ai/status",{credentials:"same-origin",cache:"no-store"});
+    status=await reply.json();
+  }catch(e){toast("Pengaturan AI memerlukan Cloudflare Access yang aktif.");return;}
+  if(!reply.ok){toast(status.message||"Pengaturan AI belum bisa diakses.");return;}
+  if(status.role!=="Admin"){toast("Hanya Admin dapat mengubah prioritas dan model AI.");return;}
+  const entries=status.config.order||[];
+  const names={gemini:"Google Gemini",openai:"OpenAI",openrouter:"OpenRouter",groq:"Groq"};
+  const rows=entries.map((p,i) =>
+    '<div class="gc-ai-provider" data-ai-provider="'+esc(p.provider)+'">'+
+      '<span class="gc-ai-order">'+(i+1)+'</span>'+
+      '<div class="gc-ai-provider-body"><label class="field-label">'+esc(names[p.provider]||p.provider)+
+      ' <span class="gc-ai-key-state">'+(p.hasKey?'Secret tersedia':'Secret belum dipasang')+'</span></label>'+
+      '<input class="gc-ai-model" aria-label="Model '+esc(p.provider)+'" type="text" value="'+esc(p.model)+'" maxlength="100">'+
+      '<label class="gc-ai-switch"><input type="checkbox" class="gc-ai-enabled"'+(p.enabled?' checked':'')+'>Aktifkan model</label>'+
+      '</div><div class="gc-ai-movers"><button type="button" class="gc-ai-up" aria-label="Naikkan prioritas">↑</button>'+
+      '<button type="button" class="gc-ai-down" aria-label="Turunkan prioritas">↓</button></div></div>'
+  ).join("");
+  openDlg("Admin · Pengaturan Prioritas AI",
+    '<div class="form-stack"><p class="gc-ai-explainer">Urutan paling atas dicoba terlebih dahulu. Bila API gagal, sistem otomatis berpindah ke model aktif berikutnya. Hanya Admin yang dapat mengubah konfigurasi.</p>'+
+    '<div id="gcAiChain">'+rows+'</div>'+
+    '<p class="gc-ai-explainer"><b>Keamanan:</b> API key tidak diisi atau disimpan di browser. Admin memasang secret <code>AI_KEY_GEMINI</code>, <code>AI_KEY_OPENAI</code>, <code>AI_KEY_OPENROUTER</code> atau <code>AI_KEY_GROQ</code> pada Cloudflare Worker → Settings → Variables and Secrets.</p></div>',
+    [{t:"Simpan Prioritas AI",primary:true,fn:async()=>{
+      const order=Array.from(document.querySelectorAll("#gcAiChain .gc-ai-provider")).map(row=>({
+        provider:row.dataset.aiProvider,model:row.querySelector(".gc-ai-model").value.trim(),
+        enabled:row.querySelector(".gc-ai-enabled").checked
+      }));
+      let r,data;
+      try{
+        r=await fetch("/api/ai/settings",{method:"POST",credentials:"same-origin",
+          headers:{"Content-Type":"application/json"},body:JSON.stringify({order})});
+        data=await r.json();
+      }catch(e){toast("Tidak dapat menyimpan konfigurasi server.");return false;}
+      if(!r.ok){toast(data.message||"Penyimpanan gagal.");return false;}
+      LAST_AI_RESULT=null;
+      toast("Urutan AI disimpan di server oleh Admin.");
+      return true;
+    }}]);
+  const host=document.querySelector("#gcAiChain");
+  host?.addEventListener("click",e=>{
+    const b=e.target.closest(".gc-ai-up,.gc-ai-down");
+    if(!b)return;
+    const row=b.closest(".gc-ai-provider");
+    const target=b.classList.contains("gc-ai-up")?row.previousElementSibling:row.nextElementSibling;
+    if(!target)return;
+    if(b.classList.contains("gc-ai-up"))host.insertBefore(row,target);
+    else host.insertBefore(target,row);
+    Array.from(host.children).forEach((r,i)=>r.querySelector(".gc-ai-order").textContent=i+1);
   });
 }
 
