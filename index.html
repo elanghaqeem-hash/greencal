@@ -4523,7 +4523,7 @@ const CATS = [
     id: "s3_c6", s: "3", ref: "S3-Cat 6 Perjalanan Bisnis", t: "Kat. 6 · Perjalanan dinas",
     d: "Scope 3 Kat. 6: udara domestik/internasional, bus/taksi/kereta, feri/kapal/speedboat, dan hotel. Faktor dari tabel perjalanan CRMS Buku 3 OJK 2026; kendaraan sewa dan speedboat dapat menggunakan proxy yang perlu validasi.",
     f: [
-      OPT("m", "Kategori perjalanan", [["udara", "✈ Penerbangan domestik / internasional"], ["darat", "🚌 Perjalanan darat (bus, taksi, kereta, dll)"], ["laut", "⛴ Perjalanan laut (feri, kapal, speedboat)"], ["hotel", "🏨 Penginapan hotel"]]),
+      OPT("m", "Kategori perjalanan", [["udara", "✈ Penerbangan domestik / internasional"], ["darat", "🚌 Perjalanan darat (bus, taksi, kereta, dll)"], ["laut", "⛴ Perjalanan laut (feri, kapal, speedboat)"], ["hotel", "🏨 Penginapan hotel"], ["jarak", "Metode historis (data sebelum pembaruan)"]]),
       OPT("region", "Wilayah penerbangan", [["domestik", "Domestik (antar kota di Indonesia)"], ["internasional", "Internasional (lintas negara)"]], { show: show("m", "udara") }),
       OPT("cls", "Kelas penerbangan", [["Economy", "Ekonomi"], ["Premium Economy", "Ekonomi Premium"], ["Business", "Bisnis"], ["First", "Kelas Utama"], ["Unknown", "Kelas tidak diketahui"]], { show: show("m", "udara") }),
       OPT("land", "Jenis transportasi darat", [["bus", "Bus antarkota / bus umum"], ["shuttle", "Bus shuttle / travel (proxy bus)"], ["taxi", "Taksi konvensional"], ["ride_hailing", "Taksi online (proxy taksi)"], ["train", "Kereta antarkota"], ["city_rail", "KRL / MRT / LRT (proxy kereta perkotaan)"], ["car", "Mobil rental (per kendaraan)"], ["motorbike", "Sepeda motor / ojek (per kendaraan)"]], { show: show("m", "darat") }),
@@ -4629,7 +4629,7 @@ const CATS = [
         return {co2,ch4:0,n2o:0,oth:0,bio:0,refs:[["travel",r.key]],
           L:[basis === "spend" ? "Hotel (biaya): "+nfa(units)+" IDR × "+nfx(r.co2)+" kg CO₂/IDR" :
              "Hotel (tamu-malam): "+guests+" tamu × "+nights+" malam = "+nfa(units)+" guest.night × "+nfx(r.co2)+" kg CO₂/guest.night",
-             "Hasil "+nfa(co2)+" kg CO₂ · "+r.src+"; lokasi, kamar, dan bintang hanya metadata, TIDAK mengubah faktor nasional proxy. Pilih salah satu metode, jangan dihitung ganda."]};
+             "Hasil "+nfa(co2)+" kg CO₂ · "+r.src+"; lokasi, kamar, dan bintang hanya metadata, TIDAK mengubah faktor umum. Pilih salah satu metode, jangan dihitung ganda."]};
       }
       // Historical compatibility for records saved before the modality selector was introduced.
       if (mode === "jarak") {
