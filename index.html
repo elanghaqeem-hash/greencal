@@ -6590,7 +6590,7 @@ function transRiskResult(x,scenario,sc,yr) {
   const profit=transNum(x.profit,0,1e12);
   const ratio=net!==null&&profit!==null&&profit>0?net/profit*100:null;
   const ratings=assessment?[assessment.policy,assessment.technology,assessment.market,assessment.reputation]:[];
-  const completed=ratings.length===4&&ratings.every(v=>transNum(v,1,5)!==null)&&!!assessment.evidence;
+  const completed=ratings.length===4&&ratings.every(v=>transNum(v,1,5)!==null)&&!!assessment.evidence&&!!assessment.plan&&mit!==null&&pass!==null;
   return {E:emissions,red,cost,net,ratio,profit,assessment,completed};
 }
 function transSelected() {
@@ -6754,7 +6754,7 @@ function renderTrans() {
   $("#tBanner").innerHTML=scenario.ready?
     '<div class="banner info"><div class="banner-content"><span><b>'+esc(sc)+' · '+yr+'</b> — Harga karbon Rp '+nfa(scenario.price,0)+'/tCO₂e; pengurangan '+nf(scenario.red,1)+'%. <b>'+esc(scenario.kind)+'</b>. Sumber: '+esc(scenario.source)+'. <b>Draft simulasi, perlu review.</b></span></div></div>':
     '<div class="banner"><span><b>Parameter belum lengkap.</b> Hasil biaya karbon dan EWI belum dihitung. Tidak ada angka NGFS yang diperkirakan otomatis.</span></div>';
-  const list=records.map(x=>Object.assign({},x,transRiskResult(x,scenario,sc,yr)));
+  const list=records.map(x=>Object.assign({},x,expCalc(x),transRiskResult(x,scenario,sc,yr)));
   const complete=list.filter(x=>x.cost!==null);
   const netReady=list.filter(x=>x.net!==null);
   const threshold=K().ewiRatio??20;
