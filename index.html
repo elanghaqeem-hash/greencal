@@ -2308,6 +2308,19 @@ dialog.modal-sheet .modal-foot { background:var(--surface); }
 }
 @media(prefers-reduced-motion:reduce){.breakdown-table-toggle .toggle-arrow{transition:none;}}
 
+
+/* Admin AI cloud priority setup */
+.gc-ai-explainer{color:var(--ink-muted);font-size:12px;line-height:1.65;margin:0;overflow-wrap:anywhere}
+.gc-ai-provider{display:grid;grid-template-columns:27px minmax(0,1fr) 32px;gap:9px;align-items:start;padding:11px;border:1px solid var(--line);border-radius:13px;margin:8px 0;background:var(--surface)}
+.gc-ai-order{font:800 13px var(--font-main);background:var(--primary-soft);color:var(--primary);border-radius:50%;width:27px;height:27px;display:grid;place-items:center}
+.gc-ai-provider-body{min-width:0;display:grid;gap:8px}
+.gc-ai-provider-body .field-label{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.gc-ai-key-state{font-size:10px;font-weight:700;color:var(--ink-muted)}
+.gc-ai-provider-body input[type=text]{width:100%;min-height:39px;font-size:12px;padding:7px 9px}
+.gc-ai-switch{display:flex;align-items:center;gap:7px;font-size:11px;color:var(--ink-muted)}
+.gc-ai-movers{display:grid;gap:5px}
+.gc-ai-movers button{border:1px solid var(--line);background:var(--surface-2);border-radius:7px;height:31px;font-size:16px;cursor:pointer}
+
 </style>
 </head>
 <body>
@@ -6309,9 +6322,8 @@ document.addEventListener("DOMContentLoaded", boot);
 
 /* ---------- TIERED AI ANALYTICS ENGINE ---------- */
 const DEFAULT_AI_CONFIG = {
-  tier: "tier2", // "tier1" | "tier2" | "tier3"
+  tier: "tier3", // server-side AI is the default; Tier 1/2 remain opt-in local analyses
   provider: "gemini", // "gemini" | "openai" | "custom"
-  apiKey: "",
   model: "gemini-1.5-flash",
   customEndpoint: "",
   autoRunOnYearChange: false,
@@ -6322,7 +6334,14 @@ const DEFAULT_AI_CONFIG = {
 function getAiConfig() {
   try {
     const raw = localStorage.getItem("green_ai_config");
-    return raw ? Object.assign({}, DEFAULT_AI_CONFIG, JSON.parse(raw)) : DEFAULT_AI_CONFIG;
+    const old = raw ? JSON.parse(raw) : {};
+    // Eliminate any browser-stored legacy credentials immediately.
+    if (old.apiKey || old.customEndpoint) {
+      delete old.apiKey;
+      delete old.customEndpoint;
+      localStorage.setItem("green_ai_config", JSON.stringify(old));
+    }
+    return Object.assign({}, DEFAULT_AI_CONFIG, old, {tier:"tier3"});
   } catch(e) {
     return DEFAULT_AI_CONFIG;
   }
@@ -6330,7 +6349,8 @@ function getAiConfig() {
 
 function saveAiConfig(cfg) {
   try {
-    localStorage.setItem("green_ai_config", JSON.stringify(cfg));
+    const safe = {tier:"tier3",targetReductionYear:Number(cfg.targetReductionYear)||2030,targetReductionPct:Number(cfg.targetReductionPct)||35};
+    localStorage.setItem("green_ai_config", JSON.stringify(safe));
   } catch(e) {}
 }
 
@@ -6518,81 +6538,30 @@ function runAiTier2(summaryData, year) {
   });
 }
 
-/* Tier 3: Cloud Generative AI (Gemini / OpenAI API) */
+/* Tier 3: calls Cloudflare Worker; never passes keys to browser. Admin-defined ordered failover. */
 async function runAiTier3(summaryData, year, config) {
-  // If API key is missing, fallback smoothly to Tier 2 with note
-  if (!config.apiKey || !config.apiKey.trim()) {
-    const t2 = runAiTier2(summaryData, year);
-    t2.tierUsed = "Tier 3 (Fallback ke Tier 2: API Key belum diisi oleh Admin)";
-    t2.apiNote = "Kunci API Cloud belum diisi di Pengaturan AI. Analisis dijalankan menggunakan mesin lokal Tier 2 ESG Advisory.";
-    return t2;
-  }
-
-  const s = summaryData;
-  const prompt = 
-    "Anda adalah ESG & Climate Risk Advisor Senior untuk perbankan di Indonesia. Berikan analisis eksekutif komprehensif berdasarkan data emisi karbon tahun " + year + " berikut:\\n" +
-    "- Lembaga: " + (st().orgName || "Bank") + "\\n" +
-    "- Standar: Buku 1-7 Panduan CRMS OJK 2026 & PCAF Standard\\n" +
-    "- Total Emisi Bruto: " + nf(s.total, 2) + " tCO2e\\n" +
-    "- Scope 1: " + nf(s.by["1"], 2) + " tCO2e (" + (s.total ? nf(s.by["1"]/s.total*100, 1) : 0) + "%)\\n" +
-    "- Scope 2: " + nf(s.by["2"], 2) + " tCO2e (" + (s.total ? nf(s.by["2"]/s.total*100, 1) : 0) + "%)\\n" +
-    "- Scope 3 (Kat 1-14): " + nf(s.by["3"], 2) + " tCO2e\\n" +
-    "- Scope 3 Kat 15 (Pembiayaan PCAF): " + nf(s.fin, 2) + " tCO2e\\n" +
-    "- Portofolio Coverage: " + (s.osAll ? nf(s.osCov/s.osAll*100, 1) : 0) + "% (Rp " + nf(s.osCov) + " / " + nf(s.osAll) + " Miliar)\\n" +
-    "- Skor Data Quality Tertimbang: " + (s.dqW != null ? nf(s.dqW, 1) : "N/A") + "\\n\\n" +
-    "Sajikan analisis dalam Bahasa Indonesia yang formal dan profesional dengan struktur:\\n" +
-    "1. Executive Summary & Evaluasi Kesiapan Audit OJK / IFRS S2\\n" +
-    "2. Identifikasi Hotspot Emisi & Risiko Finansial (termasuk dampak biaya karbon NGFS)\\n" +
-    "3. Rekomendasi Dekarbonisasi Prioritas (Jangka Pendek 2026-2027 & Jangka Panjang 2030)\\n" +
-    "4. Teks Draf Pernyataan Direksi untuk Laporan Keberlanjutan Tahunan.";
-
-  try {
-    let responseText = "";
-    if (config.provider === "gemini") {
-      const url = "https://generativelanguage.googleapis.com/v1beta/models/" + (config.model || "gemini-1.5-flash") + ":generateContent?key=" + config.apiKey.trim();
-      const res = await fetch(url, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          contents: [{ parts: [{ text: prompt }] }],
-          generationConfig: { temperature: 0.2, maxOutputTokens: 2000 }
-        })
-      });
-      if (!res.ok) throw new Error("API Gemini Error: HTTP " + res.status);
-      const json = await res.json();
-      responseText = json.candidates[0].content.parts[0].text;
-    } else {
-      // OpenAI format
-      const url = "https://api.openai.com/v1/chat/completions";
-      const res = await fetch(url, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": "Bearer " + config.apiKey.trim()
-        },
-        body: JSON.stringify({
-          model: config.model || "gpt-4o-mini",
-          messages: [{ role: "user", content: prompt }],
-          temperature: 0.2
-        })
-      });
-      if (!res.ok) throw new Error("API OpenAI Error: HTTP " + res.status);
-      const json = await res.json();
-      responseText = json.choices[0].message.content;
-    }
-
-    const t2 = runAiTier2(summaryData, year);
-    return Object.assign({}, t2, {
-      tierUsed: "Tier 3: Cloud LLM Generative AI (" + (config.provider === "gemini" ? "Google Gemini" : "OpenAI") + " - " + config.model + ")",
-      narrative: responseText
-    });
-  } catch(err) {
-    console.warn("Cloud AI call failed, falling back to Tier 2:", err);
-    const t2 = runAiTier2(summaryData, year);
-    t2.tierUsed = "Tier 3 (Koneksi API Gagal, Fallback ke Tier 2)";
-    t2.apiNote = "Panggilan API gagal (" + err.message + "). Analisis tetap disajikan dengan mesin lokal Tier 2.";
-    return t2;
-  }
+  const s=summaryData;
+  const payload={
+    year,total:s.total,scope1:s.by["1"],scope2:s.by["2"],scope3:s.by["3"],financed:s.fin,
+    osCovered:s.osCov,osTotal:s.osAll,dataQuality:s.dqW,scope2Method:S.method
+  };
+  let result, response;
+  try{
+    response=await fetch("/api/ai/analyze",{method:"POST",headers:{"Content-Type":"application/json"},
+      body:JSON.stringify(payload),credentials:"same-origin",cache:"no-store"});
+    result=await response.json();
+  }catch(e){throw Error("Tidak bisa menjangkau layanan AI server. Periksa koneksi atau autentikasi Cloudflare Access.");}
+  if(!response.ok||!result.ok)throw Error(result.message||("Layanan AI gagal (HTTP "+response.status+")."));
+  const local=runAiTier2(s,year);
+  return Object.assign({},local,{
+    grade:"—",score:"—",gradeLabel:"Draf AI • Belum diverifikasi",
+    tierUsed:"AI Cloud: "+result.provider+" / "+result.model,
+    narrative:result.narrative,
+    apiNote:"Provider aktif: "+result.provider+" ("+result.model+"). "+
+      (result.failedProviders?.length?"Failover dari: "+result.failedProviders.join(", ")+". ":"")+
+      "Hasil AI adalah DRAF untuk review manusia; bukan hasil audit atau penetapan kepatuhan.",
+    generatedAt:result.generatedAt
+  });
 }
 
 /* Master AI Runner */
@@ -6624,9 +6593,9 @@ let LAST_AI_RESULT = null;
 function renderAiView() {
   const cfg = getAiConfig();
   const tierLabels = {
-    tier1: "Tier 1 · Aturan Regulasi OJK (Lokal)",
-    tier2: "Tier 2 · ESG & Dekarbonisasi Strategis",
-    tier3: "Tier 3 · Cloud LLM Generatif (" + (cfg.provider === "gemini" ? "Gemini" : "OpenAI") + ")"
+    tier1: "Tier 1 · Pengecekan data lokal (bukan audit)",
+    tier2: "Tier 2 · Simulasi strategi (belum divalidasi)",
+    tier3: "AI Cloud · Prioritas model ditentukan Admin"
   };
 
   $("#aiActiveTierBadge").textContent = tierLabels[cfg.tier] || "Tier 2";
@@ -6677,12 +6646,12 @@ function displayAiResult(res) {
     '<div class="kpi-card hero" style="margin-bottom:20px;background:linear-gradient(135deg, #0A4230, #06271D)">' +
       '<div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:12px">' +
         '<div>' +
-          '<span class="kpi-label" style="color:rgba(255,255,255,0.85)"><i class="kpi-dot" style="background:#4ADE80"></i>Skor Kematangan Emisi (Emission Maturity)</span>' +
+          '<span class="kpi-label" style="color:rgba(255,255,255,0.85)"><i class="kpi-dot" style="background:#4ADE80"></i>Indikator Kesiapan Data (Bukan Skor Kepatuhan)</span>' +
           '<div class="ai-grade-row">' +
             '<span style="font-family:var(--font-num);font-size:42px;font-weight:900;color:#FFFFFF;line-height:1">Grade ' + res.grade + '</span>' +
             '<span style="font-size:15px;color:rgba(255,255,255,0.9);font-weight:600">' + esc(res.gradeLabel) + '</span>' +
           '</div>' +
-          '<div class="kpi-sub">Indeks Kesiapan Audit: <b>' + res.score + '/100</b> · Mesin: <b>' + esc(res.tierUsed) + '</b></div>' +
+          '<div class="kpi-sub">Indeks simulasi: <b>' + res.score + '/100</b> · Mesin: <b>' + esc(res.tierUsed) + '</b></div>' +
         '</div>' +
         '<div class="ai-result-actions">' +
           '<button class="btn sm" id="btnCopyAi" style="background:rgba(255,255,255,0.15);color:#FFFFFF;border:0">Salin Analisa</button>' +
@@ -6730,7 +6699,7 @@ function displayAiResult(res) {
     '<div class="grid-2">' +
       '<div class="panel">' +
         '<div class="panel-header">' +
-          '<div><h3>Evaluasi Kepatuhan &amp; Gap Data (OJK 2026)</h3><p>Hal kritis yang perlu diselesaikan sebelum audit eksternal</p></div>' +
+          '<div><h3>Temuan Awal dan Gap Data (Review Diperlukan)</h3><p>Hal kritis yang perlu diselesaikan sebelum audit eksternal</p></div>' +
         '</div>' +
         '<ul class="alert-list">' +
           (res.issues.length ? res.issues.map(is => 
@@ -6738,17 +6707,17 @@ function displayAiResult(res) {
               '<span class="chip ' + (is.sev === "high" ? "bad" : "warn") + '">' + (is.sev === "high" ? "Kritis" : "Perhatian") + '</span>' +
               '<div><b>' + esc(is.title) + '</b><div style="font-size:12px;color:var(--ink-muted);margin-top:2px">' + esc(is.desc) + '</div></div>' +
             '</li>'
-          ).join("") : '<li class="alert-item"><span class="chip ok">Nihil</span><span>Tidak ditemukan gap kepatuhan data.</span></li>') +
+          ).join("") : '<li class="alert-item"><span class="chip ok">Nihil</span><span>Belum ditemukan gap oleh pemeriksaan otomatis; verifikasi bukti tetap diperlukan.</span></li>') +
         '</ul>' +
       '</div>' +
       '<div class="panel">' +
         '<div class="panel-header">' +
-          '<div><h3>Kekuatan Pelaporan Terverifikasi</h3><p>Poin positif kesiapan pengungkapan keberlanjutan</p></div>' +
+          '<div><h3>Indikasi Data Tercatat — Memerlukan Validasi</h3><p>Poin positif kesiapan pengungkapan keberlanjutan</p></div>' +
         '</div>' +
         '<ul class="alert-list">' +
           (res.strengths.length ? res.strengths.map(st => 
             '<li class="alert-item">' +
-              '<span class="chip ok">Terpenuhi</span>' +
+              '<span class="chip ok">Tercatat</span>' +
               '<div><b>' + esc(st.title) + '</b><div style="font-size:12px;color:var(--ink-muted);margin-top:2px">' + esc(st.desc) + '</div></div>' +
             '</li>'
           ).join("") : '<li class="alert-item"><span>Belum ada metrik yang terpenuhi.</span></li>') +
@@ -6762,7 +6731,7 @@ function displayAiResult(res) {
       '<div class="panel-header">' +
         '<div>' +
           '<h3>Draf Narasi Pengungkapan Laporan Keberlanjutan (TCFD / ISSB S2)</h3>' +
-          '<p>Teks analitis formal siap salin untuk dimasukkan ke laporan tahunan dewan direksi.</p>' +
+          '<p>Draf AI memerlukan validasi angka, referensi dan persetujuan manusia sebelum digunakan dalam laporan resmi.</p>' +
         '</div>' +
       '</div>' +
       '<div class="result-box" style="background:var(--surface);font-family:var(--font-main);font-size:13.5px;line-height:1.7;white-space:pre-wrap;max-height:450px;overflow-y:auto">' +
@@ -6811,107 +6780,57 @@ function displayAiResult(res) {
   }
 }
 
-/* ---------- ADMIN MODAL: TIERED AI CONFIGURATION ---------- */
-function openAiConfigDialog() {
-  const cfg = getAiConfig();
-
-  let html = 
-    '<div class="form-stack">' +
-      '<p style="font-size:13px;color:var(--ink-muted);margin:0">Atur tingkatan kecerdasan buatan (AI Tier) yang digunakan untuk menganalisis emisi dan risiko iklim portofolio.</p>' +
-      
-      '<div class="field-group">' +
-        '<span class="field-label">Pilihan AI Berjenjang</span>' +
-        '<div class="ai-tier-options">' +
-          '<label class="data-card ai-tier-option">' +
-            '<input class="ai-tier-input" type="radio" name="aiTierRadio" value="tier1"' + (cfg.tier === "tier1" ? " checked" : "") + ' style="margin-top:3px">' +
-            '<div>' +
-              '<b>Tier 1: AI Heuristik &amp; Aturan Regulasi OJK</b>' +
-              '<div style="font-size:12px;color:var(--ink-muted);margin-top:2px">100% lokal &amp; instan. Audit checklist kepatuhan Buku 1-7 OJK CRMS 2026, jejak bukti, dan scoring kematangan tanpa butuh internet.</div>' +
-            '</div>' +
-          '</label>' +
-
-          '<label class="data-card ai-tier-option">' +
-            '<input class="ai-tier-input" type="radio" name="aiTierRadio" value="tier2"' + (cfg.tier === "tier2" ? " checked" : "") + ' style="margin-top:3px">' +
-            '<div>' +
-              '<b>Tier 2: AI Rekomendasi ESG &amp; Dekarbonisasi Strategis (Disarankan)</b>' +
-              '<div style="font-size:12px;color:var(--ink-muted);margin-top:2px">Pemodelan strategi reduksi emisi nyata: PLTS Atap kantor cabang, elektrifikasi armada kendaraan dinas, efisiensi energi AC, dan Transition Finance portofolio.</div>' +
-            '</div>' +
-          '</label>' +
-
-          '<label class="data-card ai-tier-option">' +
-            '<input class="ai-tier-input" type="radio" name="aiTierRadio" value="tier3"' + (cfg.tier === "tier3" ? " checked" : "") + ' style="margin-top:3px">' +
-            '<div>' +
-              '<b>Tier 3: Cloud LLM Generative AI (Gemini / OpenAI API)</b>' +
-              '<div style="font-size:12px;color:var(--ink-muted);margin-top:2px">Menggunakan model bahasa besar cloud untuk menghasilkan draf narasi Sustainability Report profesional siap saji. Memerlukan API Key.</div>' +
-            '</div>' +
-          '</label>' +
-        '</div>' +
-      '</div>' +
-
-      '<div class="ai-cloud-options" id="tier3OptionsBox" style="display:' + (cfg.tier === "tier3" ? "block" : "none") + ';border-top:1px solid var(--line);padding-top:14px">' +
-        '<div class="input-row-2">' +
-          '<label class="field-group">' +
-            '<span class="field-label">Provider Cloud AI</span>' +
-            '<select id="cfgAiProvider">' +
-              '<option value="gemini"' + (cfg.provider === "gemini" ? " selected" : "") + '>Google Gemini</option>' +
-              '<option value="openai"' + (cfg.provider === "openai" ? " selected" : "") + '>OpenAI</option>' +
-            '</select>' +
-          '</label>' +
-          '<label class="field-group">' +
-            '<span class="field-label">Model Name</span>' +
-            '<input type="text" id="cfgAiModel" value="' + esc(cfg.model || "gemini-1.5-flash") + '">' +
-          '</label>' +
-        '</div>' +
-        '<label class="field-group" style="margin-top:10px">' +
-          '<span class="field-label">API Key (khusus pengujian)</span>' +
-          '<input type="password" id="cfgAiKey" autocomplete="off" placeholder="Masukkan API Key" value="' + esc(cfg.apiKey || "") + '">' +
-          '<p class="ai-credential-note">Untuk penggunaan produksi, simpan kunci API melalui secret backend/Cloudflare Worker, bukan di browser.</p>' +
-        '</label>' +
-      '</div>' +
-
-      '<div class="input-row-2" style="border-top:1px solid var(--line);padding-top:14px">' +
-        '<label class="field-group">' +
-          '<span class="field-label">Tahun Target Dekarbonisasi</span>' +
-          '<input type="number" id="cfgAiYear" value="' + (cfg.targetReductionYear || 2030) + '">' +
-        '</label>' +
-        '<label class="field-group">' +
-          '<span class="field-label">Target Reduksi Emisi (%)</span>' +
-          '<input type="number" id="cfgAiPct" value="' + (cfg.targetReductionPct || 35) + '">' +
-        '</label>' +
-      '</div>' +
-    '</div>';
-
-  openDlg("Pengaturan AI Berjenjang · Admin", html, [
-    {
-      t: "Simpan Konfigurasi",
-      primary: true,
-      fn: async () => {
-        const selectedTier = $('input[name="aiTierRadio"]:checked').value;
-        const newCfg = {
-          tier: selectedTier,
-          provider: $("#cfgAiProvider").value,
-          model: $("#cfgAiModel").value.trim() || "gemini-1.5-flash",
-          apiKey: $("#cfgAiKey").value.trim(),
-          targetReductionYear: num($("#cfgAiYear").value) || 2030,
-          targetReductionPct: num($("#cfgAiPct").value) || 35
-        };
-
-        saveAiConfig(newCfg);
-        await logAudit("Ubah Konfigurasi AI", "Mesin AI Berjenjang", "Tier aktif: " + newCfg.tier);
-        toast("Konfigurasi AI Tier berhasil disimpan!");
-        LAST_AI_RESULT = null; // force recalculation with new tier
-        renderAiView();
-        return true;
-      }
-    }
-  ]);
-
-  // Bind radio toggle for Tier 3 options box
-  $$('input[name="aiTierRadio"]').forEach(r => {
-    r.onchange = () => {
-      const box = $("#tier3OptionsBox");
-      if (box) box.style.display = r.value === "tier3" ? "block" : "none";
-    };
+/* Admin provider priority. Keys are Cloudflare Worker secrets — never browser fields. */
+async function openAiConfigDialog() {
+  let status,reply;
+  try{
+    reply=await fetch("/api/ai/status",{credentials:"same-origin",cache:"no-store"});
+    status=await reply.json();
+  }catch(e){toast("Pengaturan AI memerlukan Cloudflare Access yang aktif.");return;}
+  if(!reply.ok){toast(status.message||"Pengaturan AI belum bisa diakses.");return;}
+  if(status.role!=="Admin"){toast("Hanya Admin dapat mengubah prioritas dan model AI.");return;}
+  const entries=status.config.order||[];
+  const names={gemini:"Google Gemini",openai:"OpenAI",openrouter:"OpenRouter",groq:"Groq"};
+  const rows=entries.map((p,i) =>
+    '<div class="gc-ai-provider" data-ai-provider="'+esc(p.provider)+'">'+
+      '<span class="gc-ai-order">'+(i+1)+'</span>'+
+      '<div class="gc-ai-provider-body"><label class="field-label">'+esc(names[p.provider]||p.provider)+
+      ' <span class="gc-ai-key-state">'+(p.hasKey?'Secret tersedia':'Secret belum dipasang')+'</span></label>'+
+      '<input class="gc-ai-model" aria-label="Model '+esc(p.provider)+'" type="text" value="'+esc(p.model)+'" maxlength="100">'+
+      '<label class="gc-ai-switch"><input type="checkbox" class="gc-ai-enabled"'+(p.enabled?' checked':'')+'>Aktifkan model</label>'+
+      '</div><div class="gc-ai-movers"><button type="button" class="gc-ai-up" aria-label="Naikkan prioritas">↑</button>'+
+      '<button type="button" class="gc-ai-down" aria-label="Turunkan prioritas">↓</button></div></div>'
+  ).join("");
+  openDlg("Admin · Pengaturan Prioritas AI",
+    '<div class="form-stack"><p class="gc-ai-explainer">Urutan paling atas dicoba terlebih dahulu. Bila API gagal, sistem otomatis berpindah ke model aktif berikutnya. Hanya Admin yang dapat mengubah konfigurasi.</p>'+
+    '<div id="gcAiChain">'+rows+'</div>'+
+    '<p class="gc-ai-explainer"><b>Keamanan:</b> API key tidak diisi atau disimpan di browser. Admin memasang secret <code>AI_KEY_GEMINI</code>, <code>AI_KEY_OPENAI</code>, <code>AI_KEY_OPENROUTER</code> atau <code>AI_KEY_GROQ</code> pada Cloudflare Worker → Settings → Variables and Secrets.</p></div>',
+    [{t:"Simpan Prioritas AI",primary:true,fn:async()=>{
+      const order=Array.from(document.querySelectorAll("#gcAiChain .gc-ai-provider")).map(row=>({
+        provider:row.dataset.aiProvider,model:row.querySelector(".gc-ai-model").value.trim(),
+        enabled:row.querySelector(".gc-ai-enabled").checked
+      }));
+      let r,data;
+      try{
+        r=await fetch("/api/ai/settings",{method:"POST",credentials:"same-origin",
+          headers:{"Content-Type":"application/json"},body:JSON.stringify({order})});
+        data=await r.json();
+      }catch(e){toast("Tidak dapat menyimpan konfigurasi server.");return false;}
+      if(!r.ok){toast(data.message||"Penyimpanan gagal.");return false;}
+      LAST_AI_RESULT=null;
+      toast("Urutan AI disimpan di server oleh Admin.");
+      return true;
+    }}]);
+  const host=document.querySelector("#gcAiChain");
+  host?.addEventListener("click",e=>{
+    const b=e.target.closest(".gc-ai-up,.gc-ai-down");
+    if(!b)return;
+    const row=b.closest(".gc-ai-provider");
+    const target=b.classList.contains("gc-ai-up")?row.previousElementSibling:row.nextElementSibling;
+    if(!target)return;
+    if(b.classList.contains("gc-ai-up"))host.insertBefore(row,target);
+    else host.insertBefore(target,row);
+    Array.from(host.children).forEach((r,i)=>r.querySelector(".gc-ai-order").textContent=i+1);
   });
 }
 
