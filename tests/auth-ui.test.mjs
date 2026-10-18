@@ -15,14 +15,18 @@ test("GreenCal public calculator does not require a login or MFA form",()=>{
  assert.match(client,/role:"public"/);
 });
 
-test("public calculator isolates browser-local state",()=>{
- assert.match(client,/greencal_public_data_v1/);
- assert.match(client,/localStorage.setItem\(STORE/);
- assert.match(client,/localStorage.getItem\(STORE/);
+test("public calculator isolates browser data by verified IP scope",()=>{
+ assert.match(client,/greencal_ip_scope_v1_/);
+ assert.match(client,/fetch\("\/api\/client-scope"/);
+ assert.match(client,/scopeReady=true/);
+ assert.match(client,/localStorage.setItem\(scopedStore/);
+ assert.match(client,/localStorage.getItem\(scopedStore/);
+ assert.match(client,/localStorage.removeItem\(scopedStore/);
  assert.match(client,/entries:Array.isArray/);
  assert.match(client,/exposures:Array.isArray/);
  assert.match(client,/offsets:Array.isArray/);
- assert.doesNotMatch(client,/credentials:"same-origin"/);
+ assert.match(client,/LEGACY_STORE="greencal_public_data_v1"/);
+ assert.doesNotMatch(client,/localStorage.getItem\(LEGACY_STORE\)/);
 });
 
 test("admin-only UI and key configuration are hidden in public mode",()=>{
