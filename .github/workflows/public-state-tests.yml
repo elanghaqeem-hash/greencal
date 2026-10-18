@@ -1,0 +1,20 @@
+name: GreenCal public state regression
+on:
+  pull_request:
+    paths:
+      - 'src/public-state.js'
+      - 'src/worker.js'
+      - 'tests/public-state.test.mjs'
+      - 'migrations/0003_public_scoped_state.sql'
+      - '.github/workflows/public-state-tests.yml'
+  workflow_dispatch:
+jobs:
+  public-state-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Run public state and role regression tests
+        run: node --test tests/public-state.test.mjs tests/rbac.test.mjs
