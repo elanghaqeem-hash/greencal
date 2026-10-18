@@ -2697,6 +2697,18 @@ dialog.modal-sheet .modal-foot { background:var(--surface); }
 @media(max-width:420px){#finForm{padding:16px;border-radius:17px}#finForm .input-row-2{gap:10px}#finForm .field-label{font-size:11px}#finForm input:not([type=checkbox]),#finForm select{font-size:13px;padding:9px 10px;min-height:44px}}
 @media(max-width:340px){#finForm .input-row-2{grid-template-columns:minmax(0,1fr)}}
 
+
+/* Mobile-first: avoid clipping and mismatched label heights in narrow form columns. */
+#finForm{container-type:inline-size}
+#finForm .input-row-2{grid-template-columns:minmax(0,1fr)!important;gap:16px!important}
+#finForm .input-row-2>.field-group{width:100%;min-width:0}
+#finForm .field-label{min-height:0;overflow-wrap:normal;word-break:normal;font-size:13px!important;line-height:1.5}
+#finForm input,#finForm select{width:100%;min-width:0;max-width:100%;font-size:14px!important}
+#finForm select{white-space:nowrap;padding-right:30px}
+#finForm input[type=number]{appearance:textfield;-moz-appearance:textfield}
+#finForm input[type=number]::-webkit-inner-spin-button,#finForm input[type=number]::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
+@container (min-width:600px){#finForm .input-row-2{grid-template-columns:repeat(2,minmax(0,1fr))!important;align-items:start}}
+
 </style>
 </head>
 <body>
