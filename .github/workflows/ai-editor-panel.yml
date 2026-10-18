@@ -1,0 +1,28 @@
+name: GreenCal narrative editor UI regression
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'index.html'
+      - 'tests/ai-editor-panel.test.mjs'
+      - '.github/workflows/ai-editor-panel.yml'
+  pull_request:
+    paths:
+      - 'index.html'
+      - 'tests/ai-editor-panel.test.mjs'
+      - '.github/workflows/ai-editor-panel.yml'
+permissions:
+  contents: read
+jobs:
+  narrative-editor-ui:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Validate narrative editor, historical calculations and access
+        run: |
+          node --test tests/ai-editor-panel.test.mjs tests/business-travel.test.mjs tests/auth-ui.test.mjs tests/rbac.test.mjs
+          node --check auth-client.js
+          node --check src/worker.js
