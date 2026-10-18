@@ -7818,6 +7818,116 @@ function saveAiConfig(cfg) {
   } catch(e) {}
 }
 
+
+/* GreenCal AI narrative v3: readable data-backed disclosure draft without Markdown. */
+function gcNarrativePlain(text) {
+  return String(text ?? "")
+    .replace(/\r\n?/g,"\n")
+    .replace(/^\s*#{1,6}\s*/gm,"")
+    .replace(/^\s*[-+*]\s+/gm,"")
+    .replace(/^\s*>\s*/gm,"")
+    .replace(/\[([^\]]+)\]\(https?:\/\/[^)]+\)/g,"$1")
+    .replace(/[*#`~]/g,"")
+    .replace(/\n{3,}/g,"\n\n")
+    .trim();
+}
+function gcNarrativeDraft(data,year,assessment,initiatives=[],potential=null) {
+  const s=data,es=s.es||[],xs=s.xs||[],fmt=n=>nf(n,2);
+  const total=s.total||0,count=es.length,finCount=xs.length;
+  const missingActivity=es.filter(x=>!String(x.evidence||"").trim()).length;
+  const missingFin=xs.filter(x=>!String(x.evidence||"").trim()).length;
+  const noPlan=xs.filter(x=>!x.tplan||x.tplan==="tidak").length;
+  const finGap=xs.filter(x=>x.fin==null).length;
+  const financedCoverage=s.osAll>0?(s.osCov/s.osAll)*100:null;
+  const sources=[
+    {name:"Scope 1",value:s.by["1"]||0},
+    {name:"Scope 2",value:s.by["2"]||0},
+    {name:"Scope 3 operasional",value:s.by["3"]||0},
+    {name:"Scope 3 Kategori 15 atau emisi pembiayaan PCAF",value:s.fin||0}
+  ];
+  const top=sources.slice().sort((a,b)=>b.value-a.value)[0];
+  const sections=[];
+  if(!count&&!finCount){
+    sections.push("GAMBARAN UMUM TAHUN "+year+"\n"+
+      "Data aktivitas dan eksposur pembiayaan untuk periode ini belum tersedia. GreenCal belum mempunyai dasar yang cukup untuk menetapkan jumlah emisi, kontribusi setiap scope, atau hasil dekarbonisasi. Kekosongan data tidak dapat diartikan sebagai emisi nol.");
+  }else{
+    sections.push("GAMBARAN UMUM DAN PROFIL EMISI\n"+
+      "Berdasarkan "+count+" catatan aktivitas dan "+finCount+" data eksposur pembiayaan yang tercatat untuk tahun "+year+
+      ", jumlah emisi yang dapat dihitung sebesar "+fmt(total)+" tCO₂e. Komposisinya mencakup Scope 1 sebesar "+
+      fmt(s.by["1"]||0)+" tCO₂e, Scope 2 sebesar "+fmt(s.by["2"]||0)+" tCO₂e, Scope 3 operasional sebesar "+
+      fmt(s.by["3"]||0)+" tCO₂e, dan emisi pembiayaan PCAF sebesar "+fmt(s.fin||0)+" tCO₂e. "+
+      "Cakupan angka tersebut hanya meliputi data yang masuk ke kalkulator, bukan otomatis seluruh aktivitas organisasi.");
+    if(total>0){
+      const pct=nf(top.value/total*100,1);
+      const topic=top.name.includes("PCAF")?"Prioritas evaluasi terletak pada data emisi debitur, attribution factor, klasifikasi sektor, dan rencana transisi portofolio.":
+        top.name==="Scope 2"?"Perlu ditinjau intensitas pemakaian listrik kantor, fasilitas pendingin ruangan, serta kemungkinan efisiensi energi yang layak.":
+        top.name==="Scope 1"?"Tindak lanjut diarahkan pada konsumsi BBM mesin dan kendaraan, serta sumber emisi langsung lain yang terdata.":
+        "Evaluasi perlu diarahkan pada kategori Scope 3 yang paling material dan dasar perhitungan dari aktivitas tidak langsung.";
+      sections.push("SUMBER EMISI DOMINAN\n"+
+        "Kontribusi terbesar berasal dari "+top.name+" sebesar "+fmt(top.value)+" tCO₂e atau "+
+        pct+"% dari total terhitung. "+topic+" Angka proporsi perlu dievaluasi kembali jika terdapat data yang belum diinput.");
+    } else {
+      sections.push("SUMBER EMISI DAN KETERBATASAN\n"+
+        "Seluruh nilai emisi yang tersedia saat ini terhitung nol. Kondisi ini perlu diverifikasi terhadap aktivitas, periode, faktor emisi, dan validitas input sebelum ditafsirkan sebagai pencapaian kinerja.");
+    }
+  }
+  const scoreText=assessment.score==null?"Indeks kelengkapan data belum dapat dihitung karena data dasar belum memadai.":
+    "Indeks indikatif kelengkapan data internal sebesar "+assessment.score+"/100 dengan grade "+assessment.grade+
+    " ("+assessment.gradeLabel+").";
+  const quality=[scoreText,"Sebanyak "+missingActivity+" dari "+count+" catatan aktivitas dan "+
+    missingFin+" dari "+finCount+" data pembiayaan belum dilengkapi referensi bukti."];
+  if(finCount){
+    quality.push(financedCoverage===null?
+      "Persentase cakupan outstanding pembiayaan belum dapat dihitung karena data nominal belum memadai.":
+      "Cakupan pembiayaan dengan financed emissions terhitung mencapai "+nf(financedCoverage,1)+
+      "% dari Rp "+fmt(s.osAll)+" miliar outstanding yang diregistrasikan.");
+    quality.push("Terdapat "+finGap+" eksposur yang belum dapat dihitung emisi terbiayainya dan "+
+      noPlan+" debitur tanpa rencana transisi yang tercatat memadai.");
+    if(s.dqW!=null)quality.push("Rata-rata tertimbang indikator kualitas data PCAF sebesar "+
+      nf(s.dqW,2)+" pada skala aplikasi, dan tetap memerlukan pemeriksaan sumber.");
+  }else quality.push("Data debitur dan metode PCAF belum dapat ditelaah sampai eksposur pembiayaan dimasukkan.");
+  sections.push("KELENGKAPAN DATA DAN KESIAPAN PELAPORAN\n"+quality.join(" "));
+  if(finCount){
+    const large=xs.filter(x=>x.fin>0).sort((a,b)=>b.fin-a.fin).slice(0,3);
+    const sectors=[...new Set(large.map(x=>x.crsa||x.sector).filter(Boolean))];
+    sections.push("RISIKO IKLIM DAN IMPLIKASI PEMBIAYAAN\n"+
+      (sectors.length?"Sektor yang muncul dalam kelompok penyumbang emisi pembiayaan terbesar antara lain "+sectors.join(", ")+". ":"")+
+      "Penilaian risiko transisi perlu mempertimbangkan tekanan kebijakan karbon, perubahan teknologi, permintaan pasar, dan kesiapan keuangan debitur. "+
+      "Sebanyak "+noPlan+" debitur masih memerlukan pelengkapan status rencana transisi. "+
+      "Informasi tersebut adalah indikator kebutuhan kajian, bukan penetapan otomatis probabilitas gagal bayar atau penurunan kualitas kredit.");
+  }else{
+    sections.push("RISIKO IKLIM DAN PEMBIAYAAN\n"+
+      "Penilaian dampak iklim pada portofolio belum memadai tanpa input sektor, nilai eksposur, emisi, dan rencana transisi debitur. "+
+      "Keputusan manajemen risiko kredit harus didukung asesmen dan bukti sumber tambahan.");
+  }
+  const actions=(assessment.recommendations||[]).filter(Boolean).slice(0,6);
+  sections.push("REKOMENDASI PRIORITAS\n"+
+    (actions.length?actions.map((a,i)=>(i?"Selanjutnya, ":"Untuk langkah awal, ")+a.charAt(0).toLowerCase()+a.slice(1)).join(" "):
+      "Tetapkan sumber data, unit pemilik, serta dokumen pendukung emisi sebelum menyusun rencana mitigasi.")+
+    " Penanggung jawab dan tenggat pelaksanaan perlu ditetapkan melalui rencana aksi internal.");
+  if(potential!=null&&potential>0&&initiatives.length){
+    sections.push("ARAH DEKARBONISASI DAN SENSITIVITAS\n"+
+      "Data saat ini memungkinkan penyusunan ilustrasi awal melalui "+initiatives.length+
+      " opsi intervensi, antara lain "+initiatives.slice(0,4).map(x=>x.name.toLowerCase()).join(", ")+
+      ". Dengan asumsi sensitivitas yang digunakan aplikasi dan pemisahan sumber emisi, besaran indikatif adalah "+
+      fmt(potential)+" tCO₂e per tahun"+
+      (total>0?" atau "+nf(potential/total*100,1)+"% dari emisi terhitung":"")+
+      ". Nilai ini bukan capaian aktual, proyeksi terverifikasi, atau target bank. "+
+      "Validasi baseline, kelayakan teknis, biaya investasi, dan risiko penghitungan ganda wajib dilakukan terlebih dahulu.");
+  }else{
+    sections.push("ARAH DEKARBONISASI\n"+
+      "Belum tersedia dasar memadai untuk menyatakan persentase atau tonase pengurangan emisi tahunan. "+
+      "Tetapkan baseline dan ukur peluang mitigasi berdasarkan kegiatan atau portofolio yang benar-benar tercatat. "+
+      "Jangan mencantumkan angka reduksi nol sebagai keberhasilan strategi.");
+  }
+  sections.push("CATATAN METODOLOGI DAN VALIDASI\n"+
+    "Narasi ini merupakan draf analisis otomatis berbasis data yang dimasukkan pengguna. "+
+    "Indeks internal bukan skor kepatuhan OJK, kesimpulan audit, maupun opini assurance. "+
+    "Sebelum digunakan dalam laporan keberlanjutan, angka perlu direkonsiliasi dengan dokumen sumber, "+
+    "diverifikasi metodologinya, dan memperoleh persetujuan penanggung jawab yang berwenang.");
+  return gcNarrativePlain(sections.join("\n\n"));
+}
+
 /* Tier 1: Local OJK Regulatory & Heuristic Rule Engine */
 function runAiTier1(summaryData, year) {
   const s = summaryData;
@@ -7898,13 +8008,20 @@ function runAiTier1(summaryData, year) {
 
   let grade = "A";
   let gradeLabel = "Unggul (Kesiapan Audit Tinggi)";
-  if (scoreNum < 60) { grade = "D"; gradeLabel = "Perlu Pembenahan Mendesak"; }
+  if (s.es.length===0 && s.xs.length===0) { scoreNum=null; grade="—"; gradeLabel="Data belum memadai"; }
+  else if (scoreNum < 60) { grade = "D"; gradeLabel = "Perlu Pembenahan Mendesak"; }
   else if (scoreNum < 75) { grade = "C"; gradeLabel = "Cukup (Memenuhi Syarat Dasar)"; }
   else if (scoreNum < 90) { grade = "B"; gradeLabel = "Baik (Siap Dilaporkan)"; }
 
-  recommendations.push("Prioritaskan penambahan referensi bukti nomor faktur pada data yang masih kosong.");
-  if (covPct < 70) recommendations.push("Lakukan engagement pada 5 debitur dengan outstanding terbesar untuk memperoleh data emisi terverifikasi (Tier 1/2).");
-  recommendations.push("Gunakan platform SIGN-SMART KLHK atau faktor Buku 3 OJK untuk pembaruan berkala faktor emisi.");
+  if (missingEv>0) recommendations.push("Lengkapi referensi bukti pada "+missingEv+" catatan aktivitas yang belum terdokumentasi.");
+  if(!hasS1) recommendations.push("Inventarisasi sumber emisi langsung dan lakukan rekonsiliasi konsumsi BBM, kendaraan, dan refrigeran yang relevan.");
+  if(!hasS2) recommendations.push("Lengkapi konsumsi energi dibeli dan cocokkan data kWh dengan rekening atau meter per unit kerja.");
+  if (s.xs.length>0 && covPct<90) recommendations.push("Prioritaskan debitur dengan outstanding terbesar yang belum memiliki perhitungan dan bukti emisi PCAF.");
+  if (s.xs.length===0) recommendations.push("Daftarkan eksposur pembiayaan dan sumber perhitungan PCAF sebelum menilai emisi terbiayai.");
+  if (noPlan>0) recommendations.push("Lakukan penilaian risiko transisi dan tindak lanjut rencana transisi pada "+noPlan+" debitur dengan status belum memadai.");
+  if (s.by["2"]>0) recommendations.push("Audit konsumsi listrik dan identifikasi efisiensi energi pada unit kerja yang berkontribusi besar.");
+  if (s.fin>0) recommendations.push("Tinjau sektor dengan financed emissions tertinggi dan kualitas attribution factor serta rencana transisi debitur.");
+  if (s.es.length>0) recommendations.push("Validasi versi, sumber, dan penerapan faktor emisi pada setiap kategori aktivitas yang tercatat.");
 
   return {
     tierUsed: "Tier 1: AI Heuristik & Aturan Regulasi OJK",
@@ -7914,7 +8031,7 @@ function runAiTier1(summaryData, year) {
     issues,
     strengths,
     recommendations,
-    narrative: "Berdasarkan simulasi otomatis atas data yang dimasukkan, indeks indikatif kelengkapan data adalah **" + scoreNum + "/100** (grade internal **" + grade + "**). Ini bukan penilaian kepatuhan OJK atau kesimpulan audit; bukti dan metode harus divalidasi sebelum pelaporan."
+    narrative: gcNarrativeDraft(s,year,{score:scoreNum,grade,gradeLabel,recommendations})
   };
 }
 
@@ -7998,7 +8115,7 @@ function runAiTier2(summaryData, year) {
     tierUsed: "Tier 2: AI ESG & Dekarbonisasi Strategis (Advisory Engine)",
     initiatives,
     totalPotRed,
-    narrative: base.narrative + " Melalui implementasi paket strategi dekarbonisasi terarah, lembaga berpotensi menurunkan emisi hingga **" + nf(totalPotRed, 2) + " tCO₂e/tahun** (" + (s.total > 0 ? nf((totalPotRed / s.total) * 100, 1) : "0") + "% dari baseline)."
+    narrative: gcNarrativeDraft(s,year,base,initiatives,totalPotRed>0?totalPotRed:null)
   });
 }
 
@@ -8020,7 +8137,7 @@ async function runAiTier3(summaryData, year, config) {
   return Object.assign({},local,{
     grade:"—",score:"—",gradeLabel:"Draf AI • Belum diverifikasi",
     tierUsed:"AI Cloud: "+result.provider+" / "+result.model,
-    narrative:result.narrative,
+    narrative:gcNarrativePlain(result.narrative),
     apiNote:"Provider aktif: "+result.provider+" ("+result.model+"). "+
       (result.failedProviders?.length?"Failover dari: "+result.failedProviders.join(", ")+". ":"")+
       "Hasil AI adalah DRAF untuk review manusia; bukan hasil audit atau penetapan kepatuhan.",
