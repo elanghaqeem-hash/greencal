@@ -187,10 +187,20 @@ export async function publicAiRequest(request,env,scope) {
  const cfg=await loadConfig(env);
  if(!cfg.order.some(x=>x.enabled&&(x.sealedKey||env[keyVar[x.provider]])))
    return error(503,"AI_NOT_CONFIGURED","Tidak ada model AI aktif dengan API key.");
- // Validate before charging a request against the daily budget.
- let body;
- try{body=validate(await request.clone().json());}catch(e){return error(400,"INVALID_INPUT",e.message);}
+ // Bound payload before JSON parsing or charging against the daily quota.
  if(Number(request.headers.get("content-length")||0)>8192)return error(413,"INPUT_TOO_LARGE","Data terlalu besar.");
+ let body,raw="";
+ try{
+   const reader=request.body?.getReader();
+   if(!reader)return error(400,"INVALID_INPUT","Isi analisis wajib diisi.");
+   while(true){
+     const {value,done}=await reader.read();
+     if(done)break;
+     raw+=new TextDecoder().decode(value,{stream:true});
+     if(raw.length>8192){await reader.cancel();return error(413,"INPUT_TOO_LARGE","Data terlalu besar.");}
+   }
+   body=validate(JSON.parse(raw));
+ }catch(e){return error(400,"INVALID_INPUT",e.message);}
  const day=new Date().toISOString().slice(0,10);
  const quota=await env.DB.prepare(
    "INSERT INTO gc_public_ai_limits(scope_id,day,requests) VALUES(?,?,1) ON CONFLICT(scope_id,day) DO UPDATE SET requests=requests+1 WHERE requests<5"
