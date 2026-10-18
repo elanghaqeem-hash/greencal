@@ -8801,19 +8801,67 @@ function displayAiResult(res) {
       '</div>' +
     '</div>';
 
-  // Executive Narrative Text
-  html += 
-    '<div class="panel">' +
-      '<div class="panel-header">' +
-        '<div>' +
-          '<h3>Draf Narasi Pengungkapan Laporan Keberlanjutan (TCFD / ISSB S2)</h3>' +
-          '<p>Draf AI memerlukan validasi angka, referensi dan persetujuan manusia sebelum digunakan dalam laporan resmi.</p>' +
+  // Editorial Word-like WYSIWYG panel: saved manual draft takes precedence over generated narrative.
+  const edited=gcAiDraft(),stale=edited&&edited.fingerprint!==gcAiFingerprint(S.year);
+  html +=
+    '<div class="panel gc-ai-editor-panel">' +
+      '<div class="panel-header gc-ai-editor-heading">' +
+        '<div><h3>Draf Narasi Pengungkapan Laporan Keberlanjutan (TCFD / ISSB S2)</h3>' +
+          '<p>Narasi dapat diedit manual seperti dokumen Word. Perubahan hanya disimpan sebagai draft dan memerlukan validasi sebelum pelaporan resmi.</p></div>' +
+        '<div class="gc-ai-editor-actions">' +
+          '<button type="button" class="btn sm primary" id="gcAiEdit">Edit Narasi</button>' +
+          '<button type="button" class="btn sm primary" id="gcAiSave" hidden>Simpan Perubahan</button>' +
+          '<button type="button" class="btn sm" id="gcAiCancel" hidden>Batalkan</button>' +
+          '<button type="button" class="btn sm" id="gcAiRestore" '+(edited?'':'hidden')+'>Gunakan Hasil Otomatis</button>' +
         '</div>' +
       '</div>' +
-      '<div class="gc-ai-narrative" aria-label="Narasi analitis">' + gcNarrativeHtml(res.narrative) + '</div>' +
+      '<div class="gc-ai-editor-meta" aria-live="polite">' +
+        '<span id="gcAiDraftBadge" class="gc-ai-draft-badge" '+(edited?'':'hidden')+'>Draft manual · '+(edited?esc(edited.updatedAt?.replace("T"," ").slice(0,16)||"Tersimpan"):"")+'</span>' +
+        (stale?'<span class="gc-ai-editor-warning">Data emisi berubah sejak draft disimpan. Tinjau kembali angka dan narasinya.</span>':'') +
+        '<span id="gcAiEditorStatus">Pilih Edit Narasi untuk mengubah isi maupun format dokumen.</span>' +
+      '</div>' +
+      '<div class="gc-ai-toolbar" id="gcAiToolbar" role="toolbar" aria-label="Peralatan format narasi" hidden>' +
+        '<div class="gc-ai-toolgroup">' +
+          '<label class="gc-ai-toolbar-label" for="gcAiBlock">Gaya</label>' +
+          '<select id="gcAiBlock" aria-label="Gaya paragraf"><option value="p">Paragraf</option><option value="h2">Judul 1</option><option value="h3">Judul 2</option><option value="blockquote">Kutipan</option></select>' +
+        '</div>' +
+        '<div class="gc-ai-toolgroup">' +
+          '<label class="gc-ai-toolbar-label" for="gcAiFontSize">Ukuran</label>' +
+          '<select id="gcAiFontSize" aria-label="Ukuran huruf"><option value="2">12</option><option value="3" selected>14</option><option value="4">18</option><option value="5">24</option></select>' +
+        '</div>' +
+        '<div class="gc-ai-toolgroup">' +
+          '<button type="button" data-gc-format="bold" title="Tebal (Ctrl+B)" aria-label="Tebalkan teks"><b>B</b></button>' +
+          '<button type="button" data-gc-format="italic" title="Miring (Ctrl+I)" aria-label="Miringkan teks"><i>I</i></button>' +
+          '<button type="button" data-gc-format="underline" title="Garis bawah (Ctrl+U)" aria-label="Garis bawah"><u>U</u></button>' +
+          '<button type="button" data-gc-format="strikeThrough" title="Coret" aria-label="Coret teks"><s>S</s></button>' +
+        '</div>' +
+        '<div class="gc-ai-toolgroup">' +
+          '<button type="button" data-gc-format="insertUnorderedList" title="Daftar poin" aria-label="Daftar poin">• ≡</button>' +
+          '<button type="button" data-gc-format="insertOrderedList" title="Daftar bernomor" aria-label="Daftar bernomor">1. ≡</button>' +
+        '</div>' +
+        '<div class="gc-ai-toolgroup">' +
+          '<button type="button" data-gc-format="justifyLeft" title="Rata kiri" aria-label="Rata kiri">☰</button>' +
+          '<button type="button" data-gc-format="justifyCenter" title="Rata tengah" aria-label="Rata tengah">≡</button>' +
+          '<button type="button" data-gc-format="justifyRight" title="Rata kanan" aria-label="Rata kanan">☷</button>' +
+          '<button type="button" data-gc-format="justifyFull" title="Rata kiri kanan" aria-label="Rata kiri kanan">▤</button>' +
+        '</div>' +
+        '<div class="gc-ai-toolgroup">' +
+          '<label class="gc-ai-color-label" for="gcAiColor">Warna <input id="gcAiColor" type="color" value="#126247" title="Ubah warna huruf" aria-label="Warna huruf"></label>' +
+          '<button type="button" data-gc-format="createLink" title="Tambahkan tautan HTTPS" aria-label="Tambahkan tautan">🔗</button>' +
+          '<button type="button" data-gc-format="removeFormat" title="Hapus format teks" aria-label="Hapus format teks">Tx</button>' +
+        '</div>' +
+        '<div class="gc-ai-toolgroup">' +
+          '<button type="button" data-gc-format="undo" title="Batalkan perubahan (Ctrl+Z)" aria-label="Undo">↶</button>' +
+          '<button type="button" data-gc-format="redo" title="Ulangi perubahan" aria-label="Redo">↷</button>' +
+        '</div>' +
+      '</div>' +
+      '<div id="gcAiNarrativeView" class="gc-ai-narrative" aria-label="Narasi analitis terpilih">' + gcAiNarrativeHtml(res) + '</div>' +
+      '<div id="gcAiNarrativeEditor" class="gc-ai-narrative gc-ai-editable" contenteditable="true" role="textbox" aria-label="Editor narasi laporan keberlanjutan" aria-multiline="true" spellcheck="true" hidden></div>' +
+      '<p class="gc-ai-editor-footer">Mode draft manual · Format akan dipertahankan saat disimpan, disalin, atau diekspor. Semua kesimpulan tetap memerlukan verifikasi manusia.</p>' +
     '</div>';
 
   box.innerHTML = html;
+  gcAiBindEditor(res);
 
   // Bind Actions
   const btnCopy = $("#btnCopyAi");
