@@ -1916,6 +1916,52 @@ dialog.modal-sheet .modal-foot { background:var(--surface); }
     [data-theme="dark"] #scopeDonut .carbon-ring-svg {filter:none}
     @media(prefers-reduced-motion:reduce){#scopeDonut .carbon-source,#scopeDonut .carbon-ring-svg circle{transition:none}}
 
+    /* Bank Riau Kepri Syariah official user-supplied wordmark; isolated on white for dark mode. */
+    .brks-logo-wrap {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 178px;
+      height: 48px;
+      flex: 0 0 178px;
+      padding: 4px 7px;
+      background: #ffffff;
+      border: 1px solid #e5ece7;
+      border-radius: 10px;
+      box-shadow: 0 1px 3px rgba(12, 53, 37, .05);
+    }
+    .brks-logo-img { display:block; width:100%; height:100%; object-fit:contain; }
+    .brand-block { gap: 12px; max-width: 100%; }
+    .brand-info { min-width: 0; }
+    .brand-sub { max-width: 100%; }
+    @media (min-width: 860px) {
+      .brks-logo-wrap { width: 190px; flex-basis: 190px; height: 52px; }
+      .header-inner { height: max(var(--header-h), 72px); }
+    }
+    @media (min-width: 621px) and (max-width: 859px) {
+      .brks-logo-wrap { width: 158px; flex-basis: 158px; height: 44px; }
+      .brand-title { font-size: 15px; }
+      .brand-block { gap: 9px; }
+    }
+    @media (max-width: 620px) {
+      .brks-logo-wrap {
+        width: clamp(114px, 37vw, 152px);
+        flex-basis: clamp(114px, 37vw, 152px);
+        height: 43px;
+        padding: 3px 5px;
+        border-radius: 9px;
+      }
+      .brand-block { gap: 8px; overflow: hidden; }
+      .brand-info { overflow: hidden; }
+      .brand-title { font-size: clamp(13.5px, 3.8vw, 16px); line-height: 1.25; }
+      .brand-sub { font-size: 10.5px; }
+    }
+    @media (max-width: 359px) {
+      .brks-logo-wrap { width: 112px; flex-basis: 112px; height: 40px; }
+      .brand-title { white-space: normal; font-size: 13px; line-height: 1.18; }
+      .brand-sub { font-size: 10px; }
+    }
+
   </style>
 </head>
 <body>
@@ -1925,12 +1971,9 @@ dialog.modal-sheet .modal-foot { background:var(--surface); }
     <div class="container">
       <div class="header-inner">
         <a href="#" class="brand-block" id="brandLogo">
-          <div class="brand-logo" aria-hidden="true">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"/>
-              <path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"/>
-            </svg>
-          </div>
+          <span class="brks-logo-wrap">
+            <img class="brks-logo-img" src="./assets/brks-syariah.svg" width="360" height="79" alt="BRK Syariah — berkah untuk semua" fetchpriority="high">
+          </span>
           <div class="brand-info">
             <h1 class="brand-title">
               Green Calculator
