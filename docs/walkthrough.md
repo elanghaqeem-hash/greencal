@@ -1,60 +1,75 @@
-# Walkthrough: Pengembangan Sistem Green Calculator Mobile-Friendly & Lengkap
+# Walkthrough - Peningkatan Sistem Green Calculator CRMS 2026 & Fitur Analisa AI Berjenjang
 
-Sistem Green Calculator telah berhasil ditingkatkan menjadi aplikasi web modern yang **lengkap, user-friendly, dan dioptimalkan secara *mobile-first*** untuk penggunaan di *smartphone* (HP) maupun komputer desktop/laptop, mengacu pada standar **Buku 1–7 Panduan CRMS OJK 2026** dan standar **PCAF (Partnership for Carbon Accounting Financials)**.
-
----
-
-## 🌟 Fitur Baru & Peningkatan Utama
-
-### 1. Ergonomi & Antarmuka Mobile-First (HP)
-- **Bottom Navigation Bar (Bilah Navigasi Bawah)**: Menu utama (Ringkasan, Kalkulator Cepat, Aktivitas, Pembiayaan, Lainnya) diposisikan di bagian bawah layar agar mudah dijangkau dengan satu ibu jari.
-- **Tampilan Kartu Adaptif (*Mobile Card View*)**: Pada layar ponsel, data aktivitas dan eksposur debitur otomatis disajikan dalam bentuk kartu yang rapi dan ringkas, bukan tabel lebar yang sulit digeser.
-- **Tampilan Tabel Desktop**: Tersedia tombol pengalih (*Toggle*) antara **Kartu** dan **Tabel** sewaktu-waktu.
-- **Floating Action Button (FAB) `+ Catat`**: Tombol aksi mengambang di pojok kanan bawah HP untuk menambah catatan emisi secara instan.
-- **Keyboard Angka Otomatis**: Bidang masukan dilengkapi `inputmode="decimal"` dan `inputmode="numeric"`, serta ukuran font minimum 15px/16px agar browser HP (Safari/Chrome) tidak melakukan *auto-zoom* yang mengganggu.
-- **Mode Gelap / Terang (*Dark/Light Mode*)**: Tombol saklar tema di *header* dengan dukungan otomatis mengikuti preferensi sistem perangkat.
-
-### 2. Fitur Baru: "Kalkulator Cepat" (*Wizard Mode*)
-Dirancang khusus untuk staf lapangan atau kantor cabang yang ingin menghitung emisi harian secara instan tanpa perlu membuka formulir kompleks:
-1. ⚡ **Listrik PLN**: Masukkan kWh atau nominal tagihan rekening listrik (Rp); sistem otomatis mengonversi ke tCO₂e berdasarkan sistem kelistrikan (154 sistem kelistrikan PLN Indonesia) atau rata-rata nasional.
-2. ⛽ **BBM Kendaraan & Genset**: Masukkan jenis BBM (Pertalite, Pertamax, Solar, Dexlite, dll.) dan volume liter; langsung menghitung emisi Scope 1.
-3. ❄️ **AC & Pendingin Ruangan**: Menghitung kebocoran freon berdasarkan jenis refrigeran (R-410A, R-32, R-22) dan kapasitas/unit AC.
-4. ✈️ **Perjalanan Dinas**: Menghitung emisi penerbangan (ekonomi/bisnis, km, pulang-pergi/sekali jalan) dan transportasi dinas.
-5. 💼 **Pembiayaan Debitur (PCAF)**: Menghitung *Attribution Factor* (AF) dan emisi terbiayai (*financed emissions*) dalam 10 detik.
-> Setiap kalkulator cepat memiliki tombol **"Simpan ke Data Aktivitas"** atau **"Simpan ke Pembiayaan"** untuk langsung menyimpannya ke laporan resmi.
-
-### 3. Penyimpanan Persisten Offline & Cadangan Data
-- **Penyimpanan Otomatis (`localStorage`)**: Data aktivitas, pembiayaan, dan pengaturan tersimpan aman di browser HP meskipun tab ditutup atau HP di-*restart*.
-- **Cadangan & Pemulihan (Backup & Restore)**: Fitur 1-klik untuk mengunduh seluruh data dalam format JSON dan memulihkannya kembali di perangkat lain.
-- **Ekspor CSV**: Unduh laporan Ringkasan, Data Aktivitas, dan Pembiayaan PCAF ke file CSV.
-- **Tombol "Bagikan" (Web Share API)**: Memungkinkan berbagi ringkasan angka emisi secara langsung ke WhatsApp, Email, atau aplikasi perpesanan lain dari HP.
-
-### 4. Visualisasi Data Interaktif & Ringan
-- **Donut Chart SVG Interaktif**: Diagram lingkaran komposisi emisi per Scope (Scope 1, Scope 2, Scope 3 Kat 1–14, dan Scope 3 Kat 15 Financed) tanpa beban pustaka eksternal (*zero external heavy dependencies*).
-- **Grafik Batang Bertumpuk (*Stacked Bars*)**: Kontribusi emisi per unit kerja/kantor cabang.
-- **Distribusi Tier Debitur**: Pemetaan kualitas data debitur Tier 1–4 OJK dan status rencana transisi *Net Zero 2050*.
+Sistem **Green Calculator CRMS** telah berhasil diperbarui dan disempurnakan secara menyeluruh untuk memenuhi kebutuhan operasional perbankan & lembaga jasa keuangan sesuai standar **Buku 1–7 Panduan CRMS OJK 2026** dan standar **PCAF (Partnership for Carbon Accounting Financials)**.
 
 ---
 
-## 📁 File yang Dihasilkan
+## 1. Masalah yang Ditemukan & Solusinya
 
-| File | Keterangan |
-| :--- | :--- |
-| [`index.html`](file:///c:/Users/sasib/Downloads/Green%20Cal/index.html) | File utama aplikasi web Green Calculator responsif & lengkap (mudah di-host di server/web/GitHub Pages). |
-| [`Kalkulator Emisi CRMS.html`](file:///c:/Users/sasib/Downloads/Green%20Cal/Kalkulator%20Emisi%20CRMS.html) | File sumber yang telah dimutakhirkan dengan antarmuka & mesin kalkulasi baru yang sama. |
+- **Kendala Sebelumnya (Sesuai Screenshot Pengguna):**
+  Pada implementasi awal, kartu ringkasan emisi, donut chart, dan unit kerja tampak kosong karena fungsi rendering DOM mengalami `ReferenceError` saat inisialisasi awal (`boot()`).
+- **Solusi yang Diterapkan:**
+  - Dilakukan refaktorisasi arsitektur perakitan file mandiri (*single-file self-contained*) `index.html` dan `Kalkulator Emisi CRMS.html` (ukuran ~431 KB tanpa dependensi eksternal).
+  - Memastikan seluruh modul skrip (`CORE_SCRIPT`, `UI_SCRIPT`, `MODULES_SCRIPT`, `AI_SCRIPT`, `AI_UI_SCRIPT`) digabungkan dan di-export secara tepat ke objek `window`.
+  - Mengisolasi 22 tabel parameter baseline Buku 3 OJK ke dalam `<script type="application/json" id="baseline">` terstruktur.
+  - Memperbaiki styling elemen `<select>` dropdown tahun pada header agar rapi dan tidak bentrok dengan layout form global.
 
 ---
 
-## 🧪 Hasil Pengujian & Verifikasi
+## 2. Fitur Baru: Analisa AI dengan Pilihan Berjenjang (Tiered AI)
 
-Semua uji otomatis berhasil dijalankan dengan hasil:
-1. **Verifikasi Ekstraksi & Integritas Basis Data**: 22 tabel faktor emisi lengkap dari Buku 3 OJK CRMS 2026 terverifikasi valid (154 sistem grid, 119 gas GWP, 44 bahan bakar stasioner, 18 bahan bakar bergerak, 105 pengadaan barang/jasa, dll.).
-2. **Uji Sintaksis JavaScript**: Tidak ada eror sintaksis (`SyntaxError`) pada mesin logika aplikasi.
-3. **Uji Akurasi Matematika & Rumus**:
-   - Scope 2 Listrik (1.000 kWh Batam): `0.7648 tCO₂e` (Sesuai faktor grid Batam 0.76 kg/kWh).
-   - Scope 1 BBM Bergerak (100 gal Pertamax): `0.775 tCO₂e` (Sesuai faktor bensin Pertamax).
-   - Scope 3 Kat 15 PCAF (Outstanding 50, Denom 100, Emisi 2000): Attribution Factor 0.50 → `1000 tCO₂e` (Sesuai rumus PCAF).
-4. **Uji Fungsionalitas Mobile**:
-   - Transisi *tab* bawah berjalan mulus.
-   - Tombol *Kalkulator Cepat* menghitung emisi seketika dan menyimpan ke daftar aktivitas.
-   - Mode gelap/terang merespons dengan cepat dan menyimpan preferensi tema pengguna.
+Sistem kini dilengkapi dengan modul **Analisa AI (Berjenjang)** yang dapat diakses langsung melalui menu navigasi desktop maupun tab navigasi seluler bawah (*mobile bottom navigation*).
+
+Tingkatan kecerdasan buatan (*AI Tiers*) diatur secara fleksibel oleh **User Admin**:
+
+| Tingkat AI | Mesin / Teknologi | Karakteristik & Kegunaan | Kebutuhan Jaringan |
+| :--- | :--- | :--- | :--- |
+| **Tier 1: AI Heuristik & Aturan Regulasi OJK** | Deterministic Audit Rule Engine | Checklist kepatuhan Buku 1–7 OJK CRMS 2026, validasi bukti audit (*evidence trail*), data gap debitur PCAF, dan penetapan **Skor Kematangan (Maturity Grade A–D)**. | 100% Offline (Tanpa Internet) |
+| **Tier 2: AI Rekomendasi ESG & Dekarbonisasi Strategis (Disarankan)** | Advisory & Decarbonization Modeling Engine | Menghitung potensi riil penurunan emisi tCO₂e/tahun, estimasi investasi (*Capex*), dan periode pengembalian (*payback period*) untuk: <br>1. **PLTS Atap** kantor cabang & pusat<br>2. **Elektrifikasi Kendaraan Dinas (EV)**<br>3. **Efisiensi AC Inverter & Smart Sensor**<br>4. **Skema Pembiayaan Khusus Transisi Hijau** untuk debitur Kat. 15 PCAF. | 100% Offline (Tanpa Internet) |
+| **Tier 3: Cloud LLM Generative AI** | Google Gemini (1.5 Flash/Pro) / OpenAI (GPT-4o) | Menghasilkan draf narasi eksekutif laporan keberlanjutan (*Sustainability Report / IFRS S2 / TCFD*) siap saji. Dilengkapi fitur **fallback otomatis ke Tier 2** jika API key belum diisi atau koneksi internet terputus. | Cloud API (Memerlukan API Key) |
+
+### Pengaturan AI oleh Admin:
+- Klik tombol **⚙️ Pengaturan AI (Admin)** pada tab Analisa AI.
+- Admin dapat memilih tingkatan aktif (Tier 1 / Tier 2 / Tier 3).
+- Mengatur target tahun dekarbonisasi (mis. 2030) dan target persentase penurunan emisi (mis. 35%).
+- Konfigurasi tersimpan secara lokal dan aman di browser (`localStorage`).
+- Dilengkapi tombol **Unduh Laporan AI (.md)** dan **Salin Teks Rekomendasi**.
+
+---
+
+## 3. Desain Responsif & Ramah Pengguna di Perangkat HP (Mobile-Friendly)
+
+- **Touch Target & Ergonomi:** Seluruh tombol dan kontrol form memiliki tinggi minimal **44px** sesuai standar ergonomi sentuh iOS/Android.
+- **Bottom Navigation Bar:** Navigasi 5 tab utama di bagian bawah layar HP (`Ringkasan`, `Analisa AI`, `Kalkulator`, `Aktivitas`, `Lainnya`).
+- **Floating Action Button (FAB):** Tombol aksi cepat di sudut kanan bawah untuk kalkulasi instan.
+- **Dark Mode / Light Mode:** Dukungan tema gelap otomatis dan tombol toggle tema di header.
+- **Kalkulator Cepat (Wizard Form):** 5 form instan untuk menginput pemakaian listrik PLN, BBM kendaraan/genset, freon AC, tiket perjalanan dinas, dan pembiayaan debitur.
+
+---
+
+## 4. Hasil Verifikasi Sistem
+
+Pengujian otomatis dijalankan secara menyeluruh:
+1. **Inisialisasi Runtime (`boot`):** Berjalan mulus tanpa error `ReferenceError` maupun `TypeError`.
+2. **Dashboard Visual:**
+   - 4 Kartu KPI (*Total Emisi*, *Scope 1*, *Scope 2*, *Scope 3*) terisi angka riil.
+   - Donut Chart SVG SVG ter-render interaktif dengan label persentase per Scope.
+   - Baris unit kerja menampilkan kontribusi emisi Kantor Pusat dan Cabang.
+   - Indikator Kesiapan Audit OJK / IFRS S2 menampilkan status hijau/kuning.
+3. **Simulasi Eksekusi 3 Tingkat AI:**
+   - *Tier 1*: Menghasilkan predikat Grade A (100/100) - Unggul.
+   - *Tier 2*: Menghitung potensi reduksi emisi sebesar **1.698,91 tCO₂e/tahun** dari 4 inisiatif dekarbonisasi.
+   - *Tier 3*: Fallback lancar saat API key kosong dengan catatan informatif bagi pengguna.
+
+---
+
+## 5. Tautan untuk Membuka Aplikasi
+
+Sistem web server aktif dan siap dibuka melalui peramban:
+
+- **Buka di Laptop/Komputer:**  
+  [http://localhost:3000](http://localhost:3000)
+- **Buka di HP / Smartphone (terhubung ke jaringan Wi-Fi yang sama):**  
+  `http://192.168.1.16:3000`
+- **Membuka File Langsung Secara Offline:**  
+  Buka file `c:\Users\sasib\Downloads\Green Cal\index.html` atau `c:\Users\sasib\Downloads\Green Cal\Kalkulator Emisi CRMS.html` langsung dengan klik dua kali di browser (Google Chrome, Edge, Safari, dll.).
