@@ -3726,6 +3726,7 @@ dialog.modal-sheet .modal-foot { background:var(--surface); }
         <p style="margin:0 0 14px;font-size:12.5px;color:var(--ink-muted)">Data pekerjaan publik tersimpan di browser perangkat ini, bukan di database bersama. Unduh cadangan JSON secara berkala dan jangan masukkan data rahasia debitur.</p>
         <div style="display:flex;gap:10px;flex-wrap:wrap">
           <button class="btn sm" id="btnBackupJson">Unduh Cadangan (JSON)</button>
+          <button class="btn sm danger" id="btnClearPublicData" type="button">Hapus Data di Perangkat</button>
           <label class="btn sm" style="cursor:pointer" data-admin-only>
             <span>Pulihkan Cadangan (Admin)</span>
             <input type="file" id="fileRestoreJson" accept=".json" style="display:none">
@@ -7174,6 +7175,7 @@ function bindEvents() {
 
   // Menu Backup & Restore
   $("#btnBackupJson").onclick = backupJson;
+  $("#btnClearPublicData").onclick = () => confirmDlg("Hapus data perangkat?", "Semua aktivitas, pembiayaan, dan offset yang disimpan di browser ini akan dihapus. Unduh cadangan JSON terlebih dahulu bila diperlukan.", "Hapus Data Lokal", () => { S.entries=[]; S.exposures=[]; S.offsets=[]; S.audit=[]; saveStateToStorage(); LAST_AI_RESULT=null; renderAll(); toast("Data lokal perangkat berhasil dikosongkan."); });
   $("#fileRestoreJson").onchange = restoreJson;
   $("#btnResetData").onclick = () => {
     if (!GC_AUTH.isAdmin) { toast("Hanya Admin yang dapat mereset data."); return; }
@@ -7194,7 +7196,7 @@ async function boot() {
     S.settings = data?.settings || clone(DEFAULT_SETTINGS);
     S.tables = data?.tables || clone(BASE.tables);
     S.classes = data?.classes || clone(DEFAULT_CLASSES);
-    S.isAdmin = false;
+    S.isAdmin = GC_AUTH.user?.role === "public"; // Local record editing only; Worker remains protected.
     S.tab = "ringkasan";
     renderAll();
     setTab("ringkasan");
@@ -7346,7 +7348,7 @@ function runAiTier1(summaryData, year) {
     issues,
     strengths,
     recommendations,
-    narrative: "Berdasarkan penilaian deterministik kepatuhan Buku 1-7 CRMS OJK 2026, lembaga Anda memperoleh predikat **" + grade + " (" + gradeLabel + ")** dengan skor kepatuhan **" + scoreNum + "/100**."
+    narrative: "Berdasarkan simulasi otomatis atas data yang dimasukkan, indeks indikatif kelengkapan data adalah **" + scoreNum + "/100** (grade internal **" + grade + "**). Ini bukan penilaian kepatuhan OJK atau kesimpulan audit; bukti dan metode harus divalidasi sebelum pelaporan."
   };
 }
 
