@@ -6,10 +6,11 @@ Repository utama pengembangan GreenCal.
 
 Materi, dokumentasi, dan kode dapat ditambahkan melalui commit atau pull request. Gunakan branch terpisah untuk perubahan yang memerlukan review sebelum digabungkan ke `main`.
 
-## Struktur yang disarankan
+## Struktur Proyek
 
-- `docs/` — dokumentasi proyek
-- `materials/` — materi dan referensi
-- `src/` — kode aplikasi (ketika tersedia)
+- `docs/` — dokumentasi proyek & artefak pengembangan:
+  - [`docs/walkthrough.md`](docs/walkthrough.md) — Rangkuman peningkatan fitur, pengujian, dan panduan sistem Green Calculator
+  - [`docs/implementation_plan.md`](docs/implementation_plan.md) — Rencana implementasi teknis & metodologi OJK CRMS / PCAF
+- `index.html` — Aplikasi web utama Green Calculator (mobile-friendly & desktop)
+- `Kalkulator Emisi CRMS.html` — Versi cadangan / standalone kalkulator emisi CRMS OJK
 
-> Folder di atas adalah rencana struktur, bukan folder yang telah dibuat.
