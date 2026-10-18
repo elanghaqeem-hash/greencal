@@ -8200,6 +8200,229 @@ function gcNarrativeHtml(raw) {
   }).join("");
 }
 
+
+/* GC WYSIWYG NARRATIVE EDITOR v1 */
+let GC_AI_EDITOR = null;
+let GC_AI_EDITOR_SELECTION = null;
+const GC_AI_ALLOWED_TAGS=new Set(["DIV","P","BR","B","STRONG","I","EM","U","S","STRIKE","H2","H3","H4","H5","UL","OL","LI","BLOCKQUOTE","SPAN","A","FONT"]);
+const GC_AI_DROP_TAGS=new Set(["SCRIPT","STYLE","IFRAME","OBJECT","EMBED","IMG","SVG","MATH","FORM","INPUT","TEXTAREA","BUTTON","VIDEO","AUDIO","LINK","META"]);
+function gcAiColor(color) {
+  const v=String(color||"").trim();
+  return /^(?:#[0-9a-f]{3,8}|(?:rgb|rgba|hsl|hsla)\(\s*[0-9.,%\s]+\))$/i.test(v)?v:"";
+}
+function gcAiCleanHtml(raw) {
+  const template=document.createElement("template");
+  template.innerHTML=String(raw||"").slice(0,100000);
+  const out=document.createElement("div");
+  function scrub(node,parent,depth){
+    if(depth>50)return;
+    if(node.nodeType===3){parent.appendChild(document.createTextNode(node.textContent||""));return;}
+    if(node.nodeType!==1)return;
+    const tag=node.tagName.toUpperCase();
+    if(GC_AI_DROP_TAGS.has(tag))return;
+    const el=document.createElement(GC_AI_ALLOWED_TAGS.has(tag)?(tag==="FONT"?"SPAN":tag.toLowerCase()):"span");
+    if(tag==="FONT"){
+      const color=gcAiColor(node.getAttribute("color"));
+      if(color)el.style.color=color;
+    }
+    if(["DIV","P","H2","H3","H4","H5","BLOCKQUOTE","SPAN"].includes(tag)){
+      const alignment=node.style?.textAlign;
+      if(["left","right","center","justify"].includes(alignment))el.style.textAlign=alignment;
+      const color=gcAiColor(node.style?.color);
+      if(color)el.style.color=color;
+    }
+    if(tag==="A"){
+      const href=(node.getAttribute("href")||"").trim();
+      if(/^https:\/\//i.test(href)||/^mailto:/i.test(href)){
+        el.setAttribute("href",href.slice(0,1200));
+        el.setAttribute("target","_blank");
+        el.setAttribute("rel","noopener noreferrer");
+      }
+    }
+    Array.from(node.childNodes).forEach(child=>scrub(child,el,depth+1));
+    parent.appendChild(el);
+  }
+  Array.from(template.content.childNodes).forEach(n=>scrub(n,out,0));
+  return out.innerHTML;
+}
+function gcAiDraft(year=S.year){
+  const item=S.narrativeDrafts?.[String(year)];
+  return item&&typeof item.html==="string"&&item.html.length<100000?item:null;
+}
+function gcAiFingerprint(year=S.year){
+  const entries=S.entries.filter(e=>e.year===year)
+    .map(e=>[e.id,e.cat,e.inputs,e.res,e.evidence,e.year]);
+  const financing=S.exposures.filter(e=>e.year===year)
+    .map(e=>[e.id,e.os,e.denom,e.emis,e.basis,e.tplan,e.evidence,e.sector,e.year]);
+  const raw=JSON.stringify({year,method:S.method,entries,financing});
+  let hash=2166136261;
+  for(let i=0;i<raw.length;i++)hash=Math.imul(hash^raw.charCodeAt(i),16777619);
+  return (hash>>>0).toString(36);
+}
+function gcAiNarrativeHtml(res){
+  const draft=gcAiDraft();
+  return draft?gcAiCleanHtml(draft.html):gcNarrativeHtml(res.narrative);
+}
+function gcAiNarrativeText(res) {
+  const wrap=document.createElement("div");
+  wrap.innerHTML=gcAiNarrativeHtml(res);
+  return gcNarrativePlain(wrap.innerText||wrap.textContent||"");
+}
+function gcAiSetEditMode(enabled){
+  const editor=$("#gcAiNarrativeEditor"),toolbar=$("#gcAiToolbar"),view=$("#gcAiNarrativeView");
+  if(!editor||!toolbar||!view)return;
+  editor.hidden=!enabled;
+  toolbar.hidden=!enabled;
+  view.hidden=enabled;
+  const toggle=$("#gcAiEdit"),save=$("#gcAiSave"),cancel=$("#gcAiCancel");
+  if(toggle)toggle.hidden=enabled;
+  if(save)save.hidden=!enabled;
+  if(cancel)cancel.hidden=!enabled;
+  if(enabled)editor.focus();
+}
+function gcAiRememberSelection() {
+  if(!GC_AI_EDITOR)return;
+  const node=$("#gcAiNarrativeEditor"),sel=window.getSelection();
+  if(node&&sel?.rangeCount&&node.contains(sel.anchorNode))
+    GC_AI_EDITOR_SELECTION=sel.getRangeAt(0).cloneRange();
+}
+function gcAiRestoreSelection(){
+  const editor=$("#gcAiNarrativeEditor"),sel=window.getSelection();
+  if(!editor)return;
+  editor.focus();
+  if(GC_AI_EDITOR_SELECTION&&sel){
+    try{sel.removeAllRanges();sel.addRange(GC_AI_EDITOR_SELECTION);}
+    catch(e){GC_AI_EDITOR_SELECTION=null;}
+  }
+}
+function gcAiSetChanged() {
+  if(!GC_AI_EDITOR)return;
+  GC_AI_EDITOR.dirty=true;
+  const msg=$("#gcAiEditorStatus");
+  if(msg)msg.textContent="Perubahan belum disimpan. Pilih Simpan Perubahan untuk menyimpan draft.";
+  gcAiRememberSelection();
+}
+function gcAiEditorCommand(command,value=null){
+  if(!GC_AI_EDITOR)return;
+  gcAiRestoreSelection();
+  const el=$("#gcAiNarrativeEditor");
+  if(!el)return;
+  if(command==="createLink"){
+    const url=window.prompt("Masukkan tautan HTTPS yang valid:", "https://");
+    if(!url)return;
+    if(!/^https:\/\//i.test(url.trim())){toast("Tautan harus menggunakan HTTPS.");return;}
+    document.execCommand("createLink",false,url.trim().slice(0,1200));
+  }else document.execCommand(command,false,value);
+  gcAiSetChanged();
+  el.focus();
+}
+function gcAiOpenEditor(){
+  const editor=$("#gcAiNarrativeEditor"),view=$("#gcAiNarrativeView");
+  if(!editor||!view)return;
+  const year=S.year;
+  GC_AI_EDITOR={year,dirty:false,startedAt:Date.now()};
+  GC_AI_EDITOR_SELECTION=null;
+  editor.innerHTML=gcAiCleanHtml(view.innerHTML);
+  gcAiSetEditMode(true);
+  const status=$("#gcAiEditorStatus");
+  if(status)status.textContent="Mode edit aktif. Pilih teks dan gunakan toolbar untuk mengubah format.";
+}
+function gcAiSaveEditor(silent=false){
+  if(!GC_AI_EDITOR)return true;
+  const editor=$("#gcAiNarrativeEditor");
+  if(!editor)return false;
+  const content=gcAiCleanHtml(editor.innerHTML);
+  const plain=editor.innerText?.trim()||editor.textContent?.trim()||"";
+  if(!plain){toast("Narasi tidak boleh kosong. Tambahkan teks sebelum menyimpan.");return false;}
+  if(content.length>60000){toast("Narasi terlalu panjang. Batasi maksimal 60.000 karakter HTML.");return false;}
+  const y=GC_AI_EDITOR.year;
+  if(!S.narrativeDrafts||typeof S.narrativeDrafts!=="object")S.narrativeDrafts={};
+  S.narrativeDrafts[String(y)]={html:content,updatedAt:nowIso(),fingerprint:gcAiFingerprint(y),status:"draft-manual"};
+  saveStateToStorage();
+  GC_AI_EDITOR=null;
+  GC_AI_EDITOR_SELECTION=null;
+  if(S.tab==="ai"&&LAST_AI_RESULT)displayAiResult(LAST_AI_RESULT);
+  if(!silent)toast("Perubahan narasi tersimpan sebagai draft manual tahun "+y+".");
+  return true;
+}
+function gcAiCancelEditor() {
+  GC_AI_EDITOR=null;
+  GC_AI_EDITOR_SELECTION=null;
+  if(LAST_AI_RESULT)displayAiResult(LAST_AI_RESULT);
+}
+function gcAiEnsureSaved() {
+  if(!GC_AI_EDITOR)return true;
+  if(GC_AI_EDITOR.dirty)return gcAiSaveEditor(true);
+  gcAiCancelEditor();
+  return true;
+}
+function gcAiRestoreAutomatic(){
+  if(!gcAiDraft())return;
+  confirmDlg("Kembalikan narasi otomatis?",
+    "Draft manual periode "+S.year+" akan dihapus. Hasil narasi akan kembali menggunakan analisis otomatis; tindakan ini tidak dapat dibatalkan.",
+    "Gunakan Hasil Otomatis",()=>{
+      delete S.narrativeDrafts[String(S.year)];
+      GC_AI_EDITOR=null;
+      GC_AI_EDITOR_SELECTION=null;
+      saveStateToStorage();
+      if(LAST_AI_RESULT)displayAiResult(LAST_AI_RESULT);
+      toast("Narasi otomatis dipulihkan untuk periode "+S.year+".");
+    });
+}
+function gcAiBindEditor(res){
+  $("#gcAiEdit")?.addEventListener("click",gcAiOpenEditor);
+  $("#gcAiSave")?.addEventListener("click",()=>gcAiSaveEditor());
+  $("#gcAiCancel")?.addEventListener("click",gcAiCancelEditor);
+  $("#gcAiRestore")?.addEventListener("click",gcAiRestoreAutomatic);
+  const root=$("#gcAiNarrativeEditor");
+  const toolbar=$("#gcAiToolbar");
+  if(!root||!toolbar)return;
+  root.addEventListener("input",gcAiSetChanged);
+  root.addEventListener("keyup",gcAiRememberSelection);
+  root.addEventListener("mouseup",gcAiRememberSelection);
+  root.addEventListener("touchend",gcAiRememberSelection);
+  root.addEventListener("paste",e=>{
+    e.preventDefault();
+    const text=e.clipboardData?.getData("text/plain")||"";
+    gcAiRestoreSelection();
+    if(!document.execCommand("insertText",false,text)){
+      const sel=window.getSelection();
+      if(sel?.rangeCount){
+        const range=sel.getRangeAt(0);
+        range.deleteContents();
+        range.insertNode(document.createTextNode(text));
+      }
+    }
+    gcAiSetChanged();
+  });
+  root.addEventListener("drop",e=>e.preventDefault());
+  root.addEventListener("keydown",e=>{
+    if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==="s"){
+      e.preventDefault();gcAiSaveEditor();
+    }
+  });
+  toolbar.addEventListener("mousedown",e=>{
+    if(e.target.closest("button[data-gc-format]"))e.preventDefault();
+  });
+  toolbar.addEventListener("click",e=>{
+    const button=e.target.closest("button[data-gc-format]");
+    if(button)gcAiEditorCommand(button.dataset.gcFormat);
+  });
+  const blocks=$("#gcAiBlock");
+  if(blocks)blocks.addEventListener("change",()=>{
+    gcAiEditorCommand("formatBlock",blocks.value);
+    blocks.value="p";
+  });
+  const color=$("#gcAiColor");
+  if(color)color.addEventListener("input",()=>gcAiEditorCommand("foreColor",color.value));
+  const current=gcAiDraft();
+  if(current){
+    const stamp=$("#gcAiDraftBadge"),reset=$("#gcAiRestore");
+    if(stamp)stamp.hidden=false;
+    if(reset)reset.hidden=false;
+  }
+}
+
 /* Tier 1: Local OJK Regulatory & Heuristic Rule Engine */
 function runAiTier1(summaryData, year) {
   const s = summaryData;
