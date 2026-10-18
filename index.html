@@ -5496,6 +5496,146 @@ function clearActivityFilters() {
   toast("Semua filter aktivitas direset.");
 }
 
+
+/* GreenCal desktop sidebar – persisted preference, mobile navigation unchanged */
+const GC_SIDEBAR_PREF = "greencal_desktop_sidebar_collapsed";
+function initDesktopSidebar() {
+  const btn=document.getElementById("gcSidebarToggle");
+  const sidebar=document.getElementById("gcSidebar");
+  const head=document.querySelector("header.app-header");
+  if (!btn || !sidebar || !head) return;
+  let collapsed=false;
+  try {collapsed=localStorage.getItem(GC_SIDEBAR_PREF)==="1";} catch(e){}
+  const setCollapsed=(state,persist)=>{
+    collapsed=!!state;
+    document.body.classList.toggle("gc-sidebar-collapsed",collapsed);
+    btn.setAttribute("aria-expanded",String(!collapsed));
+    btn.setAttribute("aria-label",collapsed?"Tampilkan sidebar":"Sembunyikan sidebar");
+    btn.setAttribute("title",collapsed?"Tampilkan menu samping":"Sembunyikan menu samping");
+    sidebar.setAttribute("aria-hidden",String(collapsed));
+    sidebar.inert=collapsed;
+    const chevron=btn.querySelector("path.gc-sidebar-arrow");
+    if(chevron)chevron.setAttribute("d",collapsed?"m12 9 3 3-3 3":"m15 9-3 3 3 3");
+    if(persist){try{localStorage.setItem(GC_SIDEBAR_PREF,collapsed?"1":"0");}catch(e){}}
+  };
+  const updateHeaderHeight=()=>{
+    const height=Math.ceil(head.getBoundingClientRect().height);
+    document.documentElement.style.setProperty("--gc-sidebar-top",height+"px");
+  };
+  btn.onclick=()=>setCollapsed(!collapsed,true);
+  setCollapsed(collapsed,false);
+  updateHeaderHeight();
+  if(typeof ResizeObserver==="function"){
+    const observer=new ResizeObserver(updateHeaderHeight);
+    observer.observe(head);
+  }
+  window.addEventListener("resize",updateHeaderHeight,{passive:true});
+}
+
+
+/* Enterprise activity panels: all values are calculated from registered entries.
+   No demo numbers, fabricated growth or unsupported comparisons. */
+function renderActivityDesktopInsights() {
+  const host=document.getElementById("activityDesktopInsights");
+  if(!host) return;
+  const current=S.entries.filter(e=>e.year===S.year);
+  const calculated=current.filter(e=>e.res && Number.isFinite(Number(entryT(e,S.method))));
+  const sum=current.reduce((v,e)=>{
+    const amount=e.res?Number(entryT(e,S.method)):0;
+    return v+(Number.isFinite(amount)?amount:0);
+  },0);
+  const scopeValues={"1":0,"2":0,"3":0};
+  const scopeCounts={"1":0,"2":0,"3":0};
+  current.forEach(e=>{
+    const sc=String((CAT(e.cat)||{}).s||"");
+    if(Object.prototype.hasOwnProperty.call(scopeCounts,sc)){
+      scopeCounts[sc]++;
+      if(e.res){
+        const t=Number(entryT(e,S.method));
+        if(Number.isFinite(t))scopeValues[sc]+=t;
+      }
+    }
+  });
+  const activeScopes=Object.values(scopeCounts).filter(x=>x>0).length;
+  const evidence=current.filter(e=>String(e.evidence||"").trim()).length;
+  const samples=current.filter(e=>e.contoh).length;
+  const pct=amount=>sum>0 ? amount/sum*100:0;
+  const fPct=amount=>nf(pct(amount),1);
+  const dateText=(stamp)=>{
+    const date=new Date(stamp||"");
+    return !Number.isNaN(date.getTime()) ? date.toLocaleDateString("id-ID",{day:"2-digit",month:"short",year:"numeric"}) : "—";
+  };
+  const recent=current.slice().sort((a,b)=>String(b.at||"").localeCompare(String(a.at||""))).slice(0,5);
+  const row=entry=>{
+    const cat=CAT(entry.cat)||{s:"?",t:entry.cat||"Kategori belum diketahui"};
+    const scope=String(cat.s||"?");
+    const t=Number(entryT(entry,S.method));
+    const amount=entry.res && Number.isFinite(t) ? nf(t,2) : "—";
+    return '<tr><td><strong>'+esc(entry.desc||cat.t||"Aktivitas")+'</strong><small>'+esc(entry.unitKerja||"Unit tidak ditentukan")+'</small></td>'+
+      '<td><small>'+esc(dateText(entry.at))+'</small></td>'+
+      '<td class="num">'+amount+'</td>'+
+      '<td><span class="activity-scope-badge scope-'+esc(scope)+'">S'+esc(scope)+'</span></td>'+
+      '<td><div class="activity-table-actions"><button type="button" class="btn" data-summary-edit="'+esc(entry.id)+'" aria-label="Edit '+esc(entry.desc||cat.t||"aktivitas")+'">Edit</button>'+
+      (S.isAdmin?'<button type="button" class="btn danger" data-summary-delete="'+esc(entry.id)+'" aria-label="Hapus aktivitas">Hapus</button>':'')+'</div></td></tr>';
+  };
+  const totalDisplay=nf(sum,2);
+  host.innerHTML=
+    '<section class="activity-desktop-card" aria-label="Ringkasan aktivitas tahun '+esc(S.year)+'">'+
+      '<div class="activity-desktop-section-heading"><div><h3>Ringkasan Aktivitas '+esc(S.year)+'</h3>'+
+      '<p>Rekapitulasi berdasarkan data aktivitas yang terdaftar</p></div>'+
+      '<div class="activity-desktop-period">Periode Data<strong>1 Jan – 31 Des '+esc(S.year)+'</strong></div></div>'+
+      '<div class="activity-insight-metrics">'+
+        '<div class="activity-insight-kpi tone-green"><span>Total Aktivitas</span><strong>'+current.length+'</strong><small>Baris terdaftar pada periode ini</small></div>'+
+        '<div class="activity-insight-kpi tone-blue"><span>Emisi Terhitung</span><strong>'+totalDisplay+'</strong><small>tCO₂e · '+calculated.length+' hasil perhitungan</small></div>'+
+        '<div class="activity-insight-kpi tone-amber"><span>Referensi Bukti</span><strong>'+evidence+'/'+current.length+'</strong><small>Aktivitas memiliki rujukan bukti</small></div>'+
+        '<div class="activity-insight-kpi tone-purple"><span>Scope Tercatat</span><strong>'+activeScopes+' / 3</strong><small>Scope 1, 2, dan 3 operasional</small></div>'+
+      '</div>'+
+      (samples?'<p class="activity-data-caution"><strong>Perhatian:</strong> '+samples+' baris data contoh masih termasuk dalam angka. Belum layak untuk pelaporan resmi tanpa verifikasi.</p>':
+        '<p class="activity-data-caution">Angka mengikuti data dan faktor emisi yang tersimpan dalam sistem; tetap memerlukan validasi sebelum pelaporan.</p>')+
+    '</section>'+
+    '<section class="activity-desktop-card" aria-label="Daftar aktivitas terbaru">'+
+      '<div class="activity-desktop-section-heading"><div><h3>Daftar Aktivitas Terbaru</h3><p>'+Math.min(recent.length,5)+' aktivitas terakhir menurut waktu pencatatan</p></div>'+
+      '<button class="activity-view-all" type="button" id="btnViewAllActivity">Lihat Semua →</button></div>'+
+      (recent.length?
+        '<div class="activity-recent-table-wrap"><table class="activity-recent-table"><thead><tr><th>Keterangan / Unit</th><th>Tanggal</th><th>Emisi (tCO₂e)</th><th>Scope</th><th>Aksi</th></tr></thead>'+
+        '<tbody>'+recent.map(row).join("")+'</tbody></table></div>':
+        '<div class="activity-no-data">Belum ada aktivitas tercatat pada tahun '+esc(S.year)+'. Tambahkan aktivitas melalui formulir di sebelah kiri.</div>')+
+    '</section>'+
+    '<section class="activity-desktop-card" aria-label="Distribusi emisi Scope 1 hingga 3">'+
+      '<div class="activity-desktop-section-heading"><div><h3>Distribusi Emisi Berdasarkan Scope</h3>'+
+      '<p>Proporsi emisi dari aktivitas operasional yang tercatat</p></div>'+
+      '<div class="activity-desktop-period">Total Emisi<strong>'+totalDisplay+' tCO₂e</strong></div></div>'+
+      '<div class="activity-scope-track" role="img" aria-label="Proporsi Scope 1 '+fPct(scopeValues["1"])+' persen, Scope 2 '+fPct(scopeValues["2"])+' persen, Scope 3 '+fPct(scopeValues["3"])+' persen">'+
+        '<span class="s1" style="width:'+pct(scopeValues["1"]).toFixed(4)+'%"></span>'+
+        '<span class="s2" style="width:'+pct(scopeValues["2"]).toFixed(4)+'%"></span>'+
+        '<span class="s3" style="width:'+pct(scopeValues["3"]).toFixed(4)+'%"></span></div>'+
+      '<div class="activity-scope-breakdown">'+
+        ["1","2","3"].map((sc)=>'<div class="activity-scope-line"><small><span class="dot '+(sc==="1"?"":("s"+sc))+'"></span>Scope '+sc+' · '+scopeCounts[sc]+' aktivitas</small>'+
+          '<strong>'+nf(scopeValues[sc],2)+' <em>('+fPct(scopeValues[sc])+'%)</em></strong></div>').join("")+
+      '</div><p class="activity-insight-note">PCAF (Scope 3 Kategori 15) dikelola pada modul Investasi &amp; Pembiayaan dan tidak dihitung dua kali dalam ringkasan aktivitas ini.</p>'+
+    '</section>';
+  const viewAll=host.querySelector("#btnViewAllActivity");
+  if(viewAll)viewAll.onclick=()=>{
+    S.actView="table";
+    renderActList();
+    document.getElementById("activityDataList")?.scrollIntoView({behavior:"smooth",block:"start"});
+  };
+  host.querySelectorAll("[data-summary-edit]").forEach(btn=>{
+    btn.onclick=()=>loadAct(btn.dataset.summaryEdit);
+  });
+  host.querySelectorAll("[data-summary-delete]").forEach(btn=>{
+    btn.onclick=()=>{
+      if(!S.isAdmin)return;
+      confirmDlg("Hapus Data Aktivitas?","Data aktivitas ini akan dihapus permanen.","Hapus",()=>{
+        S.entries=S.entries.filter(e=>e.id!==btn.dataset.summaryDelete);
+        saveStateToStorage();
+        renderAll();
+        toast("Data aktivitas berhasil dihapus");
+      });
+    };
+  });
+}
+
 /* GC-CARBON-EXPERIENCE-v2: overview is derived exclusively from registered activity data */
 function renderCarbonActivityHero() {
   const host = $("#carbonActivityHero");
@@ -5543,6 +5683,7 @@ function renderCarbonActivityHero() {
 
 function renderActList() {
   renderCarbonActivityHero();
+  renderActivityDesktopInsights();
   const y = S.year;
   const sc = $("#fScope").value;
   const q = ($("#fSearch").value || "").trim().toLowerCase();
@@ -5647,8 +5788,8 @@ function renderActList() {
     '</tbody><tfoot><tr><td>Total (' + rows.length + ' Baris)</td><td></td><td class="r num"><b>' + nf(tot, 3) + '</b></td><td colspan="2"></td></tr></tfoot>';
 
   // Bind Actions
-  if (!S.isAdmin) $("[data-ed]").forEach(b => b.remove());
-  $("[data-ea]").forEach(b => b.onclick = () => loadAct(b.dataset.ea));
+  if (!S.isAdmin) $$("[data-ed]").forEach(b => b.remove());
+  $$("[data-ea]").forEach(b => b.onclick = () => loadAct(b.dataset.ea));
   $$("[data-ed]").forEach(b => b.onclick = () => {
     confirmDlg("Hapus Data Aktivitas?", "Data aktivitas ini akan dihapus permanen.", "Hapus", () => {
       S.entries = S.entries.filter(x => x.id !== b.dataset.ed);
@@ -6657,6 +6798,7 @@ function updateThemeIcon() {
 
 /* ---------- BOOTSTRAP EVENT BINDING ---------- */
 function bindEvents() {
+  initDesktopSidebar();
   // Navigation tabs
   $$("nav.desktop-nav button").forEach(b => {
     b.onclick = () => setTab(b.dataset.tab);
