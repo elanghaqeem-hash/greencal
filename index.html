@@ -2160,6 +2160,61 @@ dialog.modal-sheet .modal-foot { background:var(--surface); }
     }
     @media(prefers-reduced-motion:reduce){.carbon-activity-card,.carbon-scope-filters button{transition:none;}}
 
+
+/* GC mobile dashboard polish / 2026-10-18 */
+@media(max-width:620px){
+  header.app-header .header-inner{row-gap:7px;padding-top:9px;padding-bottom:8px;min-height:0}
+  header.app-header .brand-block{display:grid;grid-template-columns:clamp(82px,25vw,108px) minmax(0,1fr);gap:9px;min-width:0;overflow:visible;align-items:center}
+  header.app-header .brks-logo-wrap{grid-column:1;width:100%;height:38px;flex-basis:auto;padding:3px 5px;border-radius:9px}
+  header.app-header .brand-info{grid-column:2;min-width:0;overflow:visible}
+  header.app-header .brand-title{font-size:clamp(14px,3.9vw,17px);line-height:1.25;white-space:normal;overflow:visible;overflow-wrap:normal}
+  header.app-header .brand-sub{font-size:clamp(10.5px,2.7vw,11.5px);line-height:1.35;margin-top:3px;white-space:normal;overflow:visible;text-overflow:clip;overflow-wrap:break-word;max-width:none}
+  header.app-header .year-select-wrap{min-height:36px;padding:5px 12px}
+  header.app-header .year-select-wrap svg{display:block}
+  header.app-header .icon-btn{min-width:40px;width:40px;height:40px}
+}
+.emission-panel{border-color:var(--line);box-shadow:0 6px 24px rgba(12,70,44,.04)}
+.emission-panel-header{padding-left:39px;margin-bottom:11px}
+.emission-panel-header::before{width:30px;height:30px;background-size:18px;border-radius:10px}
+.emission-panel-header h3{font-size:clamp(15px,2.6vw,18px);letter-spacing:-.03em}
+.emission-panel-header p{font-size:clamp(11px,2.2vw,12px);line-height:1.45}
+#scopeDonut .carbon-message{min-height:0;margin:0 0 13px;padding:11px 12px;gap:9px;border-radius:14px;box-shadow:none;background:linear-gradient(115deg,#0b5540,#087452)}
+#scopeDonut .carbon-message-icon{width:30px;height:30px;border-radius:9px;font-size:17px}
+#scopeDonut .carbon-message small{font-size:9px;letter-spacing:.045em}
+#scopeDonut .carbon-message strong{font-size:clamp(11.5px,2.7vw,13px);line-height:1.38}
+#scopeDonut .carbon-ring-svg{filter:none}
+#scopeDonut .carbon-ring-center{gap:1px;padding:0}
+#scopeDonut .carbon-ring-kicker,#scopeDonut .carbon-ring-year{display:none}
+#scopeDonut .carbon-ring-center strong{font-family:var(--font-main);font-weight:800;letter-spacing:-.06em;font-size:clamp(16px,3.4vw,24px);line-height:1.2;white-space:nowrap}
+#scopeDonut .carbon-ring-unit{font-size:clamp(9px,2.4vw,12px);font-weight:750}
+#scopeDonut .carbon-main{margin-bottom:13px}
+#scopeDonut .carbon-insight{border:1px solid var(--line-subtle);box-shadow:none;padding:12px;background:var(--surface);border-radius:14px}
+#scopeDonut .carbon-insight-tag{font-size:9px;text-transform:uppercase;letter-spacing:.035em}
+#scopeDonut .carbon-insight-pct{font-family:var(--font-main);font-size:clamp(19px,3.2vw,26px);letter-spacing:-.05em;font-variant-numeric:tabular-nums;line-height:1.14;overflow-wrap:anywhere}
+#scopeDonut .carbon-insight h4{font-size:clamp(11px,2.4vw,14px);line-height:1.37}
+#scopeDonut .carbon-insight p{font-size:10.5px;line-height:1.45}
+#scopeDonut .carbon-breakdown-title{margin:8px 0;line-height:1.4}
+#scopeDonut .carbon-breakdown-title small{text-align:right}
+#scopeDonut .carbon-source-side strong{font-family:var(--font-main);font-variant-numeric:tabular-nums;letter-spacing:-.025em}
+@container (min-width:290px) and (max-width:569px){
+ #scopeDonut .carbon-main{grid-template-columns:minmax(0,43%) minmax(0,1fr);gap:12px;align-items:center}
+ #scopeDonut .carbon-ring{width:100%;max-width:166px}
+ #scopeDonut .carbon-ring-center strong{font-size:clamp(16px,4.3vw,20px)}
+ #scopeDonut .carbon-insight{padding:10px}
+ #scopeDonut .carbon-insight-pct{font-size:clamp(18px,5vw,23px)}
+ #scopeDonut .carbon-insight h4{font-size:clamp(11px,3vw,13px)}
+ #scopeDonut .carbon-insight p{font-size:10px;line-height:1.4}
+}
+@container (max-width:335px){
+ #scopeDonut .carbon-main{grid-template-columns:1fr;gap:9px}
+ #scopeDonut .carbon-ring{width:152px;max-width:100%}
+ #scopeDonut .carbon-insight{padding:12px}
+ #scopeDonut .carbon-insight-top{flex-direction:row;align-items:center;justify-content:space-between}
+ #scopeDonut .carbon-insight-pct{font-size:20px}
+ #scopeDonut .carbon-breakdown-title small{display:none}
+}
+[data-theme="dark"] #scopeDonut .carbon-insight{background:var(--surface-elevated);border-color:var(--line)}
+
   </style>
 </head>
 <body>
@@ -4010,7 +4065,9 @@ function renderDonutChart(el, items) {
   if (!el) return;
   const tot = items.reduce((a,b) => a + Math.max(0, Number(b.val) || 0), 0);
   if (tot <= 0) {
-    el.innerHTML = '<div class="empty-state"><p>Belum ada data emisi untuk diagram komposisi pada tahun ' + esc(String(S.year)) + '.</p></div>';
+    const mainSource = items[topIndex];
+  const mainPercentage = nf(pct(mainSource.val),1);
+  el.innerHTML = '<div class="empty-state"><p>Belum ada data emisi untuk diagram komposisi pada tahun ' + esc(String(S.year)) + '.</p></div>';
     el.onclick = null;
     return;
   }
@@ -4020,7 +4077,7 @@ function renderDonutChart(el, items) {
   const active = selected >= 0 && selected < items.length ? selected : topIndex;
   const chosen = items[active];
   const isTop = active === topIndex;
-  const radius = 82, width = 34, circ = 2 * Math.PI * radius;
+  const radius = 82, width = 22, circ = 2 * Math.PI * radius;
   let drawn = 0;
   const slices = items.map((it,i) => {
     const value = Math.max(0, Number(it.val) || 0);
@@ -4049,6 +4106,7 @@ function renderDonutChart(el, items) {
       '<span class="carbon-chevron" aria-hidden="true">›</span></button>';
   }).join('');
   el.innerHTML =
+    '<div class="carbon-message"><span class="carbon-message-icon" aria-hidden="true">♻</span><span class="carbon-message-content"><small>JEJAK KARBON · ' + esc(String(S.year)) + '</small><strong>' + mainPercentage + '% emisi ' + (topIndex===3 ? 'berasal dari pembiayaan (PCAF)' : 'berasal dari ' + esc(mainSource.label)) + '</strong></span></div>' +
     '<div class="carbon-main">' +
       '<div class="carbon-ring-shell"><div class="carbon-ring" role="img" aria-label="Total emisi ' + nf(tot,1) + ' tCO₂e, tahun ' + esc(String(S.year)) + '">' +
         '<svg class="carbon-ring-svg" viewBox="0 0 240 240" aria-hidden="true">' +
@@ -4057,10 +4115,9 @@ function renderDonutChart(el, items) {
         '</svg><div class="carbon-ring-center"><span class="carbon-ring-kicker">TOTAL EMISI</span><strong>' + nf(tot,1) + '</strong><span class="carbon-ring-unit">tCO₂e</span><span class="carbon-ring-year">' + esc(String(S.year)) + '</span></div>' +
       '</div></div>' +
       '<div class="carbon-insight" aria-live="polite">' +
-        '<div class="carbon-insight-top"><span class="carbon-insight-tag">' + (isTop ? 'Insight utama' : 'Rincian scope') + '</span><strong class="carbon-insight-pct">' + nf(pct(chosen.val),1) + '%</strong></div>' +
-        '<h4>' + (isTop ? 'Emisi terbesar berasal dari ' : 'Kontribusi emisi dari ') + esc(chosen.label) + '</h4>' +
-        '<p>Berjumlah <strong>' + nf(Math.max(0,Number(chosen.val)||0),2) + ' tCO₂e</strong> atau ' + nf(pct(chosen.val),1) + '% dari total emisi tahun ' + esc(String(S.year)) + '. ' +
-        (isTop ? 'Fokuskan penelusuran sumber emisi dan kualitas data pada kategori ini.' : 'Bandingkan kontribusinya dengan scope lain untuk memahami profil emisi.') + '</p>' +
+        '<div class="carbon-insight-top"><span class="carbon-insight-tag">' + (isTop ? 'Sumber terbesar' : 'Rincian scope') + '</span><strong class="carbon-insight-pct">' + nf(Math.max(0,Number(chosen.val)||0),2) + '</strong></div>' +
+        '<h4>' + esc(chosen.label) + '</h4>' +
+        '<p><strong>tCO₂e.</strong> ' + (isTop && active===3 ? 'Prioritas: kualitas data dan emisi pembiayaan.' : isTop ? 'Prioritaskan penelusuran sumber emisi ini.' : 'Bandingkan kontribusinya dengan scope lain.') + '</p>' +
       '</div>' +
     '</div>' +
     '<div class="carbon-breakdown-title"><span>Rincian sumber emisi</span><small>Ketuk untuk melihat insight</small></div>' +
