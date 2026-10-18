@@ -31,7 +31,8 @@
       const obj=JSON.parse(raw);
       if(!obj||typeof obj!=="object"||Array.isArray(obj))return null;
       return {entries:Array.isArray(obj.entries)?obj.entries:[],exposures:Array.isArray(obj.exposures)?obj.exposures:[],
-        offsets:Array.isArray(obj.offsets)?obj.offsets:[]};
+        offsets:Array.isArray(obj.offsets)?obj.offsets:[],
+        narrativeDrafts:obj.narrativeDrafts&&typeof obj.narrativeDrafts==="object"&&!Array.isArray(obj.narrativeDrafts)?obj.narrativeDrafts:{}};
     }catch(e){return null;}
   }
   async function save(snapshot){
@@ -48,7 +49,8 @@
 
     try{
       const p=snapshot();
-      const clean={entries:p.entries,exposures:p.exposures,offsets:p.offsets,updatedAt:new Date().toISOString()};
+      const clean={entries:p.entries,exposures:p.exposures,offsets:p.offsets,
+        narrativeDrafts:p.narrativeDrafts&&typeof p.narrativeDrafts==="object"?p.narrativeDrafts:{},updatedAt:new Date().toISOString()};
       if(!scopeReady || !scopedStore)throw Error("IP scope not verified");
       localStorage.setItem(scopedStore,JSON.stringify(clean));
       const status=get("gcSyncStatus");if(status){status.hidden=true;status.textContent="";}
