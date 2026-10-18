@@ -2843,6 +2843,20 @@ dialog.modal-sheet .modal-foot { background:var(--surface); }
  #gcAuthGate .gc-auth-input-wrap>input,#gcAuthGate .gc-auth-otp,#gcAuthGate .gc-auth-card form button[type="submit"] {transition:none!important}
 }
 
+
+/* GreenCal — device verification onboarding; capability is informational, not MFA proof */
+#gcAuthGate .gc-device-verification{display:flex;gap:12px;align-items:flex-start;border:1px solid #cfe8da;border-radius:14px;padding:12px 13px;background:linear-gradient(145deg,#f2faf5,#eaf7f0);color:#10513c}
+#gcAuthGate .gc-device-verification-icon{width:38px;height:38px;flex:none;display:grid;place-items:center;border-radius:11px;background:#ddf3e6}
+#gcAuthGate .gc-device-verification-icon svg{width:24px;height:24px;stroke:#118657}
+#gcAuthGate .gc-device-verification>div:last-child{display:flex;flex-direction:column;min-width:0;gap:3px}
+#gcAuthGate .gc-device-verification strong{font-size:12px;font-weight:850;color:#07523b}
+#gcAuthGate .gc-device-verification span{font-size:10.5px;line-height:1.5;color:#3d755b}
+#gcAuthGate .gc-device-verification small{font-size:10px;line-height:1.45;color:#376d56}
+.gc-device-profile-note{margin-top:18px;background:#f1faf3;border:1px solid #cae9d3;border-radius:13px;padding:14px;color:#20563f}
+.gc-device-profile-note strong{font-size:13px;color:#0e6044}
+.gc-device-profile-note p{font-size:12px;line-height:1.6;color:#537563;margin:6px 0 10px}
+.gc-device-profile-note a{font-size:12px;color:#087753;font-weight:800;text-decoration:underline;text-underline-offset:3px}
+
 </style>
 </head>
 <body>
@@ -2920,9 +2934,19 @@ dialog.modal-sheet .modal-foot { background:var(--surface); }
           <button type="button" id="gcForgotPassword" class="gc-auth-forgot">Lupa password?</button>
           <div id="gcForgotHelp" class="gc-auth-help" hidden role="status">Untuk reset password GreenCal, hubungi Admin melalui kanal resmi. Biometrik perangkat tidak secara otomatis mereset password aplikasi.</div>
           <button class="gc-auth-submit" type="submit"><span>Masuk ke GreenCal</span><span aria-hidden="true">→</span></button>
-          <div class="gc-auth-divider"><span>keamanan biometrik</span></div>
-          <a id="gcEnrollBiometrics" class="gc-auth-otp" href="https://green-heart-e2b0.cloudflareaccess.com/AddMfaDevice" target="_blank" rel="noopener noreferrer" aria-label="Daftarkan sidik jari atau wajah pada Cloudflare Access"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M5 9a7 7 0 0 1 14 0M3 12c0 5 3 9 9 9m9-9c0 5-3 9-9 9M9 9a3 3 0 0 1 6 0m-6 3c0 3 1 5 3 6m3-6c0 3-1 5-3 6"/></svg> Daftarkan Biometrik Perangkat <span aria-hidden="true">↗</span></a>
-          <p class="gc-auth-helper">Untuk penggunaan sidik jari / pengenalan wajah, pilih <b>Biometrics → Register biometrics</b> pada Cloudflare Access. Pendaftaran dilakukan sekali per perangkat. Aktivasi dan penerapan wajib biometrik dilakukan secara bertahap.</p>
+          <div class="gc-auth-divider"><span>biometrik atau PIN perangkat</span></div>
+          <div class="gc-device-verification" aria-label="Kesiapan verifikasi perangkat">
+            <div class="gc-device-verification-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M6 10a6 6 0 0 1 12 0M3.5 10a8.5 8.5 0 0 1 17 0M9 10a3 3 0 0 1 6 0M5 14c.5 4.5 3 7 7 8m7-8c-.5 4.5-3 7-7 8m-3-9c0 3 1 5 3 6m3-6c0 3-1 5-3 6"/></svg>
+            </div>
+            <div>
+              <strong>Keamanan bawaan perangkat</strong>
+              <span>Face ID · Touch ID · Windows Hello · PIN perangkat</span>
+              <small id="gcDeviceAuthenticatorStatus" role="status" aria-live="polite">Memeriksa kompatibilitas perangkat…</small>
+            </div>
+          </div>
+          <a id="gcEnrollBiometrics" class="gc-auth-otp" href="https://green-heart-e2b0.cloudflareaccess.com/AddMfaDevice" target="_blank" rel="noopener noreferrer" aria-label="Daftarkan sidik jari atau wajah pada Cloudflare Access"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M5 9a7 7 0 0 1 14 0M3 12c0 5 3 9 9 9m9-9c0 5-3 9-9 9M9 9a3 3 0 0 1 6 0m-6 3c0 3 1 5 3 6m3-6c0 3-1 5-3 6"/></svg> Daftarkan Biometrik / PIN Perangkat <span aria-hidden="true">↗</span></a>
+          <p class="gc-auth-helper">Daftarkan autentikator bawaan HP atau laptop melalui Cloudflare Access. Pendaftaran tidak berarti MFA sudah aktif; akses wajib biometrik diterapkan setelah akun Admin dan Maker berhasil diuji. Tidak diperlukan aplikasi OTP/TOTP atau SMS sebagai MFA GreenCal.</p>
         </form>
 
         <form id="gcActivationForm" hidden autocomplete="off">
@@ -3794,6 +3818,11 @@ dialog.modal-sheet .modal-foot { background:var(--surface); }
           <button class="btn primary" type="submit">Ubah Password Akun</button>
         </form>
         <p id="gcPasswordFeedback" role="status" style="font-size:12px;color:var(--ink-muted)"></p>
+          <div class="gc-device-profile-note">
+            <strong>Verifikasi dengan perangkat</strong>
+            <p>Daftarkan pengenal wajah, sidik jari atau PIN perangkat di Cloudflare Access. Pendaftaran dilakukan oleh masing-masing pemilik akun.</p>
+            <a href="https://green-heart-e2b0.cloudflareaccess.com/AddMfaDevice" target="_blank" rel="noopener noreferrer">Kelola biometrik / PIN perangkat <span aria-hidden="true">↗</span></a>
+          </div>
         <div class="gc-biometric-profile" style="margin-top:16px;padding:15px;border-radius:14px;background:var(--primary-soft);border:1px solid var(--primary-border)">
           <strong style="display:block;font-size:13px;color:var(--primary);margin-bottom:6px">Biometrik Perangkat</strong>
           <p style="font-size:12px;line-height:1.6;color:var(--ink-muted);margin:0 0 12px">Daftarkan sidik jari atau wajah pada Cloudflare Access melalui perangkat pribadi. Tidak ada foto wajah atau data sidik jari yang disimpan GreenCal.</p>
