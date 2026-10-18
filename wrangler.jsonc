@@ -3,7 +3,7 @@
   "main": "worker/index.js",
   "compatibility_date": "2026-10-18",
   "assets": {
-    "directory": "./public",
+    "directory": "./dist",
     "binding": "ASSETS",
     "run_worker_first": [
       "/api/*"
@@ -13,7 +13,7 @@
     {
       "binding": "DB",
       "database_name": "greencal-db",
-      "database_id": "REPLACE_WITH_GREENCAL_D1_UUID"
+      "database_id": "f9169067-32bc-425c-bef8-1cb86a4d5fcd"
     }
   ],
   "vars": {
