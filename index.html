@@ -2965,6 +2965,13 @@ dialog.modal-sheet .modal-foot { background:var(--surface); }
  .gc-business-travel-wizard .gc-travel-factor-catalog{padding:11px 12px}
 }
 
+
+.gc-ai-narrative {display:grid;gap:16px;max-height:650px;overflow-y:auto;padding:clamp(15px,2vw,24px);background:var(--surface);border:1px solid var(--line);border-radius:16px;overflow-wrap:anywhere;}
+.gc-ai-narrative-section{border-bottom:1px solid var(--line-subtle);padding-bottom:15px;}
+.gc-ai-narrative-section:last-child{border:0;padding-bottom:0;}
+.gc-ai-narrative-section h4{margin:0 0 8px;color:var(--primary);font-weight:850;font-size:12px;line-height:1.4;letter-spacing:.025em;}
+.gc-ai-narrative-section p{margin:0;font-size:clamp(12.5px,1.1vw,14px);line-height:1.8;color:var(--ink);}
+@media(max-width:620px){.gc-ai-narrative{padding:14px;gap:13px;max-height:570px}.gc-ai-narrative-section p{font-size:12.5px;line-height:1.72}}
 </style>
 </head>
 <body>
@@ -7928,6 +7935,16 @@ function gcNarrativeDraft(data,year,assessment,initiatives=[],potential=null) {
   return gcNarrativePlain(sections.join("\n\n"));
 }
 
+function gcNarrativeHtml(raw) {
+  return gcNarrativePlain(raw).split(/\n{2,}/).filter(Boolean).map(block=>{
+    const lines=block.split("\n").map(s=>s.trim()).filter(Boolean);
+    const first=lines[0]||"";
+    const heading=lines.length>1&&first.length<100&&first===first.toLocaleUpperCase("id-ID")&&!/[.!?]$/.test(first);
+    return '<section class="gc-ai-narrative-section">'+(heading?'<h4>'+esc(lines.shift())+'</h4>':'')+
+      '<p>'+esc(lines.join(" "))+'</p></section>';
+  }).join("");
+}
+
 /* Tier 1: Local OJK Regulatory & Heuristic Rule Engine */
 function runAiTier1(summaryData, year) {
   const s = summaryData;
@@ -8315,9 +8332,7 @@ function displayAiResult(res) {
           '<p>Draf AI memerlukan validasi angka, referensi dan persetujuan manusia sebelum digunakan dalam laporan resmi.</p>' +
         '</div>' +
       '</div>' +
-      '<div class="result-box" style="background:var(--surface);font-family:var(--font-main);font-size:13.5px;line-height:1.7;white-space:pre-wrap;max-height:450px;overflow-y:auto">' +
-        esc(res.narrative) +
-      '</div>' +
+      '<div class="gc-ai-narrative" aria-label="Narasi analitis">' + gcNarrativeHtml(res.narrative) + '</div>' +
     '</div>';
 
   box.innerHTML = html;
