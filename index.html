@@ -2624,26 +2624,27 @@ dialog.modal-sheet .modal-foot { background:var(--surface); }
       <div id="carbonActivityHero" aria-live="polite"></div>
       <div class="grid-form-list">
         <form class="panel form-stack" id="actForm" autocomplete="off">
-          <div style="display:flex;align-items:center;justify-content:space-between">
-            <h3 id="actFormTitle" style="margin:0">Tambah Data Aktivitas</h3>
-          </div>
+          <div class="activity-form-heading"><span class="activity-form-heading-icon" aria-hidden="true">＋</span><div>
+            <h3 id="actFormTitle">Tambah Data Aktivitas</h3>
+            <p>Catat aktivitas operasional untuk menghitung emisi GRK sesuai cakupan Scope 1–3.</p>
+          </div></div><div id="actDraftNotice" class="activity-draft-notice" role="status" hidden></div>
 
           <div class="calc-step-badge">1 · Periode &amp; Lokasi</div>
           <div class="input-row-2">
             <label class="field-group">
-              <span class="field-label">Periode</span>
-              <select id="aYear"></select>
+              <span class="field-label">Periode *</span>
+              <select id="aYear" required aria-label="Periode aktivitas"></select>
             </label>
             <label class="field-group">
-              <span class="field-label">Unit Kerja / Cabang</span>
-              <select id="aUnit"></select>
+              <span class="field-label">Unit Kerja / Cabang *</span>
+              <select id="aUnit" required aria-label="Pilih unit kerja atau cabang"></select>
             </label>
           </div>
 
           <div class="calc-step-badge">2 · Kategori Emisi</div>
           <label class="field-group">
-            <span class="field-label">Kategori (Buku 3)</span>
-            <select id="aCat"></select>
+            <span class="field-label">Kategori Emisi (Buku 3) *</span>
+            <select id="aCat" required aria-label="Kategori emisi Buku 3"></select>
           </label>
           <div class="data-card-desc" id="aCatInfo" style="font-size:12px"></div>
 
@@ -2661,29 +2662,61 @@ dialog.modal-sheet .modal-foot { background:var(--surface); }
 
           <div class="result-box" id="aResult" aria-live="polite"></div>
 
-          <div style="display:flex;gap:10px;margin-top:6px">
-            <button class="btn primary" type="submit" id="aSave" style="flex:1">Simpan Data</button>
-            <button class="btn" type="button" id="aCancel" hidden>Batal</button>
+          <div class="activity-form-actions">
+            <button class="btn" type="button" id="btnSaveActivityDraft" title="Simpan sementara di browser">Simpan Draft</button>
+            <button class="btn primary" type="submit" id="aSave">Tambah Aktivitas</button>
+            <button class="btn" type="button" id="aCancel" hidden>Batal Edit</button>
           </div>
+          <p class="activity-form-footnote">Draft hanya tersimpan di browser perangkat ini, belum menjadi angka pelaporan.</p>
         </form>
 
         <div style="min-width:0">
-          <div class="filter-bar">
-            <div class="search-input-wrap">
-              <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-              <input type="text" id="fSearch" placeholder="Cari unit, kategori, bukti...">
+          <div class="activity-toolbar" aria-label="Pengaturan daftar aktivitas">
+            <div class="activity-search-row">
+              <div class="search-input-wrap activity-search">
+                <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                <input type="search" id="fSearch" aria-label="Cari aktivitas" placeholder="Cari unit, kategori, bukti, deskripsi...">
+              </div>
+              <button class="btn sm activity-clear-search" type="button" id="btnClearActivitySearch" hidden aria-label="Bersihkan pencarian">×</button>
             </div>
-            <select id="fScope" style="width:auto;min-width:115px;min-height:40px;border-radius:var(--radius-pill);padding:0 12px">
-              <option value="">Semua Scope</option>
-              <option value="1">Scope 1</option>
-              <option value="2">Scope 2</option>
-              <option value="3">Scope 3</option>
+            <div class="activity-controls-row">
+              <div class="btn-group activity-view-toggle" id="actViewToggle" role="group" aria-label="Tampilan daftar aktivitas">
+                <button type="button" data-v="card" aria-pressed="true">▦ Kartu</button>
+                <button type="button" data-v="table" aria-pressed="false">☷ Tabel</button>
+              </div>
+              <details class="activity-filter-details" id="actFilterDetails">
+                <summary>⚲ Filter</summary>
+                <div class="activity-filter-popover">
+                  <label class="field-group" for="fQuality"><span class="field-label">Status data</span>
+                    <select id="fQuality">
+                      <option value="all">Semua status</option>
+                      <option value="real">Bukan data contoh</option>
+                      <option value="sample">Data contoh</option>
+                      <option value="missing">Tanpa referensi bukti</option>
+                      <option value="stale">Perlu hitung ulang</option>
+                    </select>
+                  </label>
+                  <button class="btn sm" id="btnResetActivityFilters" type="button">Reset filter</button>
+                </div>
+              </details>
+              <label class="activity-sort-label" for="fActSort"><span aria-hidden="true">↕</span>
+                <select id="fActSort" aria-label="Urutkan aktivitas">
+                  <option value="category">Kategori</option>
+                  <option value="latest">Terbaru</option>
+                  <option value="highest">Emisi terbesar</option>
+                  <option value="lowest">Emisi terkecil</option>
+                  <option value="unit">Nama unit A–Z</option>
+                </select>
+              </label>
+            </div>
+            <div class="activity-list-meta">
+              <span id="actResultsCount" role="status" aria-live="polite"></span>
+              <button class="btn sm" type="button" id="btnRecalc" hidden></button>
+            </div>
+            <select id="fScope" hidden aria-label="Filter berdasarkan scope">
+              <option value="">Semua Scope</option><option value="1">Scope 1</option>
+              <option value="2">Scope 2</option><option value="3">Scope 3</option>
             </select>
-            <div class="btn-group" id="actViewToggle">
-              <button data-v="card" aria-pressed="true" title="Tampilan Kartu (Mobile)">Kartu</button>
-              <button data-v="table" aria-pressed="false" title="Tampilan Tabel (Desktop)">Tabel</button>
-            </div>
-            <button class="btn sm" id="btnRecalc" hidden></button>
           </div>
 
           <div class="data-cards-list" id="actCardsList"></div>
