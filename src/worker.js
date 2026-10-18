@@ -1,3 +1,4 @@
+import { handleAiApi } from "./ai-worker.js";
 // GreenCal — D1-backed authentication, two-role RBAC, shared state.
 // All security decisions are enforced by the Worker; the browser role is advisory only.
 const H = {"content-type":"application/json; charset=utf-8","cache-control":"no-store","x-content-type-options":"nosniff"};
@@ -96,6 +97,7 @@ async function router(req,env) {
   const user=await identity(req,db);
   if(!user)return err("Silakan masuk ke akun GreenCal",401);
   if(path==="/api/auth/me"&&method==="GET")return C({user:{id:user.id,email:user.email,role:user.role}});
+  if(path.startsWith("/api/ai/")) return handleAiApi(req,env,user);
   if(path==="/api/auth/password"&&method==="POST"){
     const body=await readBody(req);
     if(!validPassword(body.newPassword))return err("Password baru minimal 12 karakter");
