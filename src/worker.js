@@ -24,68 +24,97 @@ const readBody=async request=>{
   const text=await request.text();if(text.length>2200000)throw Error("Payload terlalu besar");
   try{return JSON.parse(text)}catch{throw Error("JSON tidak valid")};
 };
-// Login is verified by Cloudflare Access; D1 stores role-specific app records, not passwords.
+// The Cloudflare Access JWT authenticates the email address. D1 password adds
+// a second verification step and MUST be rotated before application API access.
 async function identity(req,db,actor){
-  if(!actor || !actor.email || !["Admin","Maker"].includes(actor.role))return null;
-  const email=actor.email.toLowerCase(), role=actor.role==="Admin"?"admin":"maker";
-  let user=await db.prepare("SELECT id,email,role,active FROM gc_users WHERE email=?").bind(email).first();
-  if(user){
-    if(!user.active)return null;
-    if(user.role!==role){
-      await db.prepare("UPDATE gc_users SET role=? WHERE id=?").bind(role,user.id).run();
-      await audit(db,user.id,"access.role_sync",role);
-      user.role=role;
-    }
-    return user;
-  }
-  // Opaque unusable password hash: authentication must occur with Cloudflare Access.
-  const id=rand(16);
-  try{
-    await db.prepare("INSERT INTO gc_users(id,email,role,salt,password_hash,active,created_at) VALUES(?,?,?,?,?,1,?)")
-      .bind(id,email,role,rand(16),rand(32),Date.now()).run();
-    await audit(db,id,"access.provision",role);
-  }catch(e){
-    // Simultaneous first requests may race; recover the newly created row below.
-  }
-  user=await db.prepare("SELECT id,email,role,active FROM gc_users WHERE email=?").bind(email).first();
-  if(!user||!user.active)return null;
-  if(user.role!==role){
-    await db.prepare("UPDATE gc_users SET role=? WHERE id=?").bind(role,user.id).run();
-    user.role=role;
-  }
+  if(!actor||!actor.email||!["Admin","Maker"].includes(actor.role))return null;
+  const user=await db.prepare("SELECT id,email,role,active,salt,password_hash,must_change_password FROM gc_users WHERE email=?")
+    .bind(actor.email.toLowerCase()).first();
+  if(!user||!user.active||user.role!==(actor.role==="Admin"?"admin":"maker"))return null;
   return user;
 }
-// The App's Cloudflare Access session is authoritative. No local password sessions.
+function currentUser(u){return {id:u.id,email:u.email,role:u.role,mustChangePassword:!!u.must_change_password};}
+async function sessionUser(req,db,accessActor){
+  const token=getCookie(req);if(!token)return null;
+  const row=await db.prepare("SELECT s.user_id,s.expires_at,u.id,u.email,u.role,u.active,u.must_change_password,u.salt,u.password_hash FROM gc_sessions s JOIN gc_users u ON u.id=s.user_id WHERE s.token_hash=?")
+    .bind(await sha(token)).first();
+  if(!row||row.expires_at<=Date.now()||!row.active||row.email.toLowerCase()!==accessActor.email.toLowerCase()||
+      row.role!==(accessActor.role==="Admin"?"admin":"maker"))return null;
+  return row;
+}
+async function login(req,db,actor){
+  const body=await readBody(req),addr=email(body.email),pwd=body.password;
+  if(!validEmail(addr)||typeof pwd!=="string"||pwd.length>128||addr!==actor.email.toLowerCase())
+    return err("Email atau password tidak valid",401);
+  const now=Date.now();
+  const limit=await db.prepare("SELECT attempts,first_at,blocked_until FROM gc_login_limits WHERE email=?").bind(addr).first();
+  if(limit?.blocked_until>now)return err("Terlalu banyak percobaan. Coba lagi setelah 15 menit.",429);
+  const user=await identity(req,db,actor);
+  let matches=false;
+  if(user){matches=equal(await passHash(pwd,user.salt),user.password_hash);}
+  if(!matches){
+    const reset=!limit||limit.first_at<now-900000;
+    const attempts=reset?1:limit.attempts+1;
+    const blocked=attempts>=5?now+900000:0;
+    await db.prepare("INSERT INTO gc_login_limits(email,attempts,first_at,blocked_until) VALUES(?,?,?,?) ON CONFLICT(email) DO UPDATE SET attempts=excluded.attempts, first_at=excluded.first_at, blocked_until=excluded.blocked_until")
+      .bind(addr,attempts,reset?now:limit.first_at,blocked).run();
+    return err("Email atau password tidak valid",401);
+  }
+  await db.prepare("DELETE FROM gc_login_limits WHERE email=?").bind(addr).run();
+  await db.prepare("DELETE FROM gc_sessions WHERE expires_at<?").bind(now).run();
+  const token=rand(32);
+  await db.prepare("INSERT INTO gc_sessions(token_hash,user_id,expires_at) VALUES(?,?,?)")
+    .bind(await sha(token),user.id,now+12*3600000).run();
+  await audit(db,user.id,"auth.login",user.role);
+  return C({ok:true,user:currentUser(user)},200,{"set-cookie":cookie(token,43200)});
+}
+async function updatePassword(req,db,user){
+  const body=await readBody(req),old=body.oldPassword,pass=body.newPassword;
+  if(typeof old!=="string"||!validPassword(pass)||pass.length<12||pass===old)
+    return err("Isi password lama dan password baru yang berbeda (12–128 karakter).",400);
+  if(!/[A-Z]/.test(pass)||!/[a-z]/.test(pass)||!/[0-9]/.test(pass)||!/[^a-zA-Z0-9]/.test(pass))
+    return err("Password baru wajib mengandung huruf besar, huruf kecil, angka, dan simbol.",400);
+  if(!equal(await passHash(old,user.salt),user.password_hash))return err("Password lama tidak sesuai.",401);
+  const salt=rand(16),hash=await passHash(pass,salt);
+  await db.prepare("UPDATE gc_users SET salt=?,password_hash=?,must_change_password=0,password_updated_at=? WHERE id=?")
+    .bind(salt,hash,Date.now(),user.id).run();
+  await db.prepare("DELETE FROM gc_sessions WHERE user_id=?").bind(user.id).run();
+  await audit(db,user.id,"auth.password_changed","first_login_or_regular");
+  return C({ok:true,reauthRequired:true},200,{"set-cookie":cookie("",0)});
+}
 async function router(req,env) {
   const url=new URL(req.url),path=url.pathname,method=req.method,db=env.DB;
   if(!db)return err("Database autentikasi belum terhubung",503);
   const actor=await verifyAccessIdentity(req,env);
   if(actor.error)return actor.error;
-  // Session-changing requests require same-origin browser requests.
   if(!["GET","HEAD","OPTIONS"].includes(method)){
     const origin=req.headers.get("origin");
     if(!origin||origin!==url.origin)return err("Origin permintaan tidak valid",403);
     if(req.headers.get("content-type")?.split(";")[0].trim()!=="application/json")return err("Content-Type harus application/json",415);
   }
-  if(path==="/api/auth/status"&&method==="GET")return C({hasAdmin:true,setupAvailable:false,loginMethod:"cloudflare-access"});
-  if((path==="/api/auth/bootstrap"||path==="/api/auth/login")&&method==="POST")
-    return err("Masuk melalui Cloudflare Access dengan email yang sudah disetujui.",403);
-  if(path==="/api/auth/logout"&&method==="POST")return C({ok:true,logoutUrl:"/cdn-cgi/access/logout"});
-  const user=await identity(req,db,actor);
-  if(!user)return err("Akun tidak aktif atau belum diizinkan.",403);
-  if(path==="/api/auth/me"&&method==="GET")return C({user:{id:user.id,email:user.email,role:user.role}});
-  if(path.startsWith("/api/ai/")) return handleAiApi(req,env,user);
-  if(path==="/api/auth/password"&&method==="POST")
-    return err("Password dikelola melalui Cloudflare Access; perubahan password lokal dinonaktifkan.",403);
+  if(path==="/api/auth/status"&&method==="GET")return C({loginMethod:"password-and-cloudflare-access",passwordPolicy:"must-change-first-login"});
+  if(path==="/api/auth/bootstrap"&&method==="POST")return err("Bootstrap publik ditutup.",403);
+  if(path==="/api/auth/login"&&method==="POST")return login(req,db,actor);
+  if(path==="/api/auth/logout"&&method==="POST"){
+    const token=getCookie(req);
+    if(token)await db.prepare("DELETE FROM gc_sessions WHERE token_hash=?").bind(await sha(token)).run();
+    return C({ok:true},200,{"set-cookie":cookie("",0)});
+  }
+  const user=await sessionUser(req,db,actor);
+  if(!user)return err("Sesi berakhir. Silakan masuk menggunakan email dan password.",401);
+  if(path==="/api/auth/me"&&method==="GET")return C({user:currentUser(user)});
+  if(path==="/api/auth/password"&&method==="POST")return updatePassword(req,db,user);
+  if(user.must_change_password)return err("Wajib mengganti password sementara sebelum mengakses GreenCal.",428);
+  if(path.startsWith("/api/ai/"))return handleAiApi(req,env,user);
   if(path==="/api/admin/users"&&method==="GET"){
-    if(user.role!=="admin")return err("Hanya Admin yang dapat mengelola pengguna",403);
-    const rows=await db.prepare("SELECT id,email,role,active,created_at FROM gc_users ORDER BY created_at DESC").all();
+    if(user.role!=="admin")return err("Hanya Superadmin yang dapat mengelola pengguna",403);
+    const rows=await db.prepare("SELECT id,email,role,active,created_at,must_change_password FROM gc_users ORDER BY created_at DESC").all();
     return C({users:rows.results||[]});
   }
-  // User provisioning is locked to Cloudflare Access's approved email policy.
+  // Password resets are deliberately not issued via unverified browser actions.
   if((path==="/api/admin/users"&&method==="POST") ||
      (/^\/api\/admin\/users\/[a-f0-9]{32}$/.test(path)&&method==="PATCH"))
-    return err("Kelola daftar Admin/Maker melalui Cloudflare Access. API pengguna lokal dinonaktifkan.",403);
+    return err("Penambahan/reset pengguna hanya melalui proses undangan terverifikasi.",403);
   if(path==="/api/state"&&method==="GET"){
     const row=await db.prepare("SELECT revision, payload FROM gc_state WHERE id=1").first();
     return C({revision:row?.revision||0,data:row?JSON.parse(row.payload):null});
