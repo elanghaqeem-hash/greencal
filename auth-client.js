@@ -24,7 +24,7 @@
    emailField.textContent=access.email;
    role.textContent=access.role==="admin"?"Admin":access.role==="maker"?"Maker":"Akses terbatas";
    const loginEmail=by("gcLoginEmail");
-   if(loginEmail){loginEmail.value=access.email;loginEmail.readOnly=true;loginEmail.title="Email telah diverifikasi. Untuk mengganti akun, gunakan tombol Verifikasi ulang OTP Email.";}
+   if(loginEmail){loginEmail.value=access.email;loginEmail.readOnly=true;loginEmail.title="Email telah diverifikasi oleh Cloudflare Access. Untuk mengganti akun, keluar dahulu dari sesi Access.";}
  };
 
  const showGate=async(message="")=>{
@@ -92,6 +92,20 @@
    const b=await request("/api/auth/login","POST",body);
    state.user=b.user;
    await postAuth();
+ }
+ // Informational only: browser support never proves a passkey is registered or MFA completed.
+ async function detectPlatformAuthenticator(){
+   const label=by("gcDeviceAuthenticatorStatus");if(!label)return;
+   try{
+     const available=typeof window.PublicKeyCredential==="function" &&
+       typeof window.PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable==="function" &&
+       await window.PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable();
+     label.textContent=available
+       ?"Perangkat kompatibel. Daftarkan perangkat ke Cloudflare Access sebelum MFA diwajibkan."
+       :"Autentikator belum terdeteksi. Periksa pengaturan biometrik/PIN perangkat dan gunakan browser terbaru.";
+   }catch(_){
+     label.textContent="Kompatibilitas tidak dapat diperiksa. Lakukan pendaftaran melalui Cloudflare Access.";
+   }
  }
  function setupForms(){
    const toggle=by("gcTogglePassword"),forgot=by("gcForgotPassword");
@@ -205,6 +219,7 @@
    async start(init){
      state.init=init;
      setupForms();
+     void detectPlatformAuthenticator();
      try{const r=await request("/api/auth/me");state.user=r.user;updateVerifiedIdentity(r.user);await postAuth();}
      catch(e){
        state.user=null;
