@@ -2940,6 +2940,7 @@ dialog.modal-sheet .modal-foot { background:var(--surface); }
 .gc-sec-ppp input{width:19px;height:19px;min-height:19px!important;flex-shrink:0;accent-color:var(--primary);margin:1px 0 0;}
 .gc-sec-actions{display:flex;flex-wrap:wrap;gap:10px;}
 .gc-sec-actions .btn{min-height:44px;}
+#wzS_secOtherWrap[hidden],#wzS_pppWrap[hidden]{display:none!important;}
 @media(max-width:620px){.gc-sec-actions{flex-direction:column;}.gc-sec-actions .btn{width:100%;}}
 </style>
 </head>
@@ -3243,7 +3244,7 @@ dialog.modal-sheet .modal-foot { background:var(--surface); }
           <h3 class="wizard-card-title">Emisi Debitur (PCAF)</h3>
           <p class="wizard-card-desc">Kalkulasi attribution factor &amp; emisi terbiayai pembiayaan debitur.</p>
         </div>
-        <div class="wizard-card" data-wz="surat-berharga">
+        <div class="wizard-card" data-wz="surat-berharga" role="button" tabindex="0" aria-label="Buka Kalkulator Surat Berharga">
           <div class="wizard-icon-box">📈</div>
           <h3 class="wizard-card-title">Surat Berharga (PCAF)</h3>
           <p class="wizard-card-desc">SBN, SBSN, sukuk, saham, obligasi, green bond dan instrumen pasar modal.</p>
@@ -5178,6 +5179,7 @@ function renderWizard() {
       S.wz = c.dataset.wz;
       renderWizard();
     };
+    c.onkeydown = event => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); c.click(); } };
   });
 
   const p = $("#wizardFormPanel");
@@ -5900,6 +5902,7 @@ function renderWzSecurities(box){
    setTab("pembiayaan");
  };
  if(e("wzS_type").value==="sbn")e("wzS_issuer").value="Republik Indonesia";
+ e("wzS_basis").value="belum"; // Do not claim externally verified emissions by default.
  update();
 }
 function gcFillSecurityWizard(x){
