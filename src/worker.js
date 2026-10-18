@@ -1,4 +1,5 @@
 import { handleAiApi, verifyAccessIdentity } from "./ai-worker.js";
+import { permissionsForRole, writableKeysForRole, preservesExistingRecords } from "./roles.js";
 // GreenCal — D1-backed authentication, two-role RBAC, shared state.
 // All security decisions are enforced by the Worker; the browser role is advisory only.
 const H = {"content-type":"application/json; charset=utf-8","cache-control":"no-store","x-content-type-options":"nosniff"};
@@ -33,7 +34,7 @@ async function identity(req,db,actor){
   if(!user||!user.active||user.role!==(actor.role==="Admin"?"admin":"maker"))return null;
   return user;
 }
-function currentUser(u){return {id:u.id,email:u.email,role:u.role,mustChangePassword:!!u.must_change_password};}
+function currentUser(u){return {id:u.id,email:u.email,role:u.role,mustChangePassword:!!u.must_change_password,permissions:permissionsForRole(u.role)};}
 async function sessionUser(req,db,accessActor){
   const token=getCookie(req);if(!token)return null;
   const row=await db.prepare("SELECT s.user_id,s.expires_at,u.id,u.email,u.role,u.active,u.must_change_password,u.salt,u.password_hash FROM gc_sessions s JOIN gc_users u ON u.id=s.user_id WHERE s.token_hash=?")
@@ -148,7 +149,7 @@ async function router(req,env) {
     const rev=row?.revision||0;
     if(body.revision!==rev)return err("Data diperbarui pengguna lain. Muat ulang sebelum menyimpan.",409);
     const stored=row?JSON.parse(row.payload):{};
-    const permitted=user.role==="admin"?["entries","exposures","offsets","settings","tables","classes"]:["entries","exposures","offsets"];
+    const permitted=writableKeysForRole(user.role);
     const forbidden=Object.keys(body.data).filter(k=>!permitted.includes(k));
     if(forbidden.length)return err("Role "+user.role+" tidak diizinkan mengubah: "+forbidden.join(", "),403);
     const next={...stored};
@@ -160,8 +161,8 @@ async function router(req,env) {
       if(Array.isArray(value)&&(value.length>50000||value.some(v=>!v||typeof v!=="object"||Array.isArray(v))))return err("Data "+k+" tidak valid");
       if(user.role==="maker"&&Array.isArray(value)) {
         const before=Array.isArray(stored[k])?stored[k]:[];
-        const ids=new Set(value.map(x=>String(x.id||"")));
-        if(before.some(x=>!ids.has(String(x.id||""))))return err("Maker tidak diizinkan menghapus data",403);
+        if(!preservesExistingRecords(before,value))
+          return err("Maker tidak diizinkan menghapus data atau memakai ID aktivitas yang duplikat/tidak valid",403);
       }
       next[k]=value;
     }

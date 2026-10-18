@@ -50,20 +50,19 @@
  };
 
  const applyRole=()=>{
-   const admin=state.user?.role==="admin";
+   const admin=state.user?.role==="admin" && state.user?.permissions?.viewUsers===true;
    document.querySelectorAll('[data-admin-only]').forEach(el=>{el.hidden=!admin;});
    document.querySelectorAll('nav.desktop-nav [data-tab="parameter"]').forEach(el=>{el.hidden=!admin;});
-   const chip=by("gcCurrentRole");if(chip)chip.textContent=admin?"Superadmin":"Maker";
-   const profile=by("gcProfileRole");if(profile)profile.textContent=admin?"Superadmin":"Maker";
+   const chip=by("gcCurrentRole");if(chip)chip.textContent=admin?"Admin":"Maker";
+   const profile=by("gcProfileRole");if(profile)profile.textContent=admin?"Admin":"Maker";
    const email=by("gcCurrentUser");if(email)email.textContent=state.user?.email||"";
    document.querySelectorAll('[data-ed],[data-xd],[data-od]').forEach(el=>{if(!admin)el.remove();});
    // Identities and assigned roles are managed through signed Cloudflare Access policies.
    const usersMenu=by("gcUsersMenu");if(usersMenu)usersMenu.hidden=!admin;
    document.querySelectorAll('[data-tab="users"]').forEach(el=>{el.hidden=!admin;});
-   const create=by('gcUserCreate');if(create)create.hidden=true;
    const passwordForm=by("gcPasswordForm");if(passwordForm)passwordForm.hidden=false;
-   const cfg=by("btnConfigureAi");if(cfg)cfg.hidden=!admin;
-   const clear=by("btnClearSamples");if(clear)clear.hidden=!admin;
+   const cfg=by("btnConfigureAi");if(cfg)cfg.hidden=state.user?.permissions?.manageAiKeys!==true;
+   const clear=by("btnClearSamples");if(clear)clear.hidden=state.user?.permissions?.deleteActivity!==true;
  };
  const postAuth=async()=>{
    if(state.user?.mustChangePassword){forcePasswordChange();return;}
@@ -141,32 +140,6 @@
        state.user=null;state.revision=0;await showGate("Password berhasil diubah. Silakan login ulang.");
      }catch(err){by("gcPasswordFeedback").textContent=err.message;}finally{button.disabled=false;}
    };
-   by("gcUserCreate").onsubmit=async e=>{
-     e.preventDefault();const form=e.currentTarget,btn=form.querySelector('button[type="submit"]');
-     btn.disabled=true;
-     try{
-       await request("/api/admin/users","POST",{
-         email:by("gcNewEmail").value,password:by("gcNewPassword").value,role:by("gcNewRole").value});
-       form.reset();by("gcUserFeedback").textContent="Pengguna berhasil dibuat.";
-       await window.GC_AUTH.renderUsers();
-     }catch(err){by("gcUserFeedback").textContent=err.message;}finally{btn.disabled=false;}
-   };
-   by("gcUsersTable").onclick=async e=>{
-     const b=e.target.closest("[data-user-action]");if(!b)return;
-     const id=b.dataset.userId,role=b.dataset.role,active=b.dataset.active==="1",action=b.dataset.userAction;
-     let values={};
-     if(action==="toggle")values={active:!active};
-     else if(action==="role")values={role:role==="admin"?"maker":"admin"};
-     else if(action==="reset"){
-       const pw=prompt("Password baru (minimal 12 karakter) untuk akun ini:");
-       if(pw===null)return;
-       values={password:pw};
-     }
-     if(action!=="reset"&&!confirm("Simpan perubahan akses pengguna ini?"))return;
-     b.disabled=true;
-     try{await request("/api/admin/users/"+id,"PATCH",values);by("gcUserFeedback").textContent="Pengguna berhasil diperbarui.";await window.GC_AUTH.renderUsers();}
-     catch(err){by("gcUserFeedback").textContent=err.message;}finally{b.disabled=false;}
-   };
    by("gcImportLocal").onclick=async()=>{
      if(state.user?.role!=="admin")return;
      const raw=localStorage.getItem("green_calc_storage_v1");
@@ -207,7 +180,7 @@
  }
  window.GC_AUTH={
    get user(){return state.user;},
-   get isAdmin(){return state.user?.role==="admin";},
+   get isAdmin(){return state.user?.role==="admin" && state.user?.permissions?.viewUsers===true;},
    async start(init){
      state.init=init;
      setupForms();
@@ -222,7 +195,7 @@
        await showGate();
      }
    },
-   can(tab){return !!state.user&&(tab!=="parameter"&&tab!=="users"||state.user.role==="admin");},
+   can(tab){if(!state.user)return false;const p=state.user.permissions||{};if(tab==="parameter")return p.manageParameters===true;if(tab==="users")return p.viewUsers===true;return p.viewDashboard===true;},
    applyRole,
    queue(snapshot){
      if(!state.user)return;
@@ -234,16 +207,14 @@
      if(!this.isAdmin)return;
      const tbody=by("gcUsersTable");
      try{
-       const r=await request("/api/admin/users");
-       tbody.innerHTML=(r.users||[]).map(u=>
-         '<tr><td><b>'+safe(u.email)+'</b></td><td><span class="gc-role-tag">'+safe(u.role==="admin"?"Admin":"Maker")+'</span></td>'+
-         '<td>'+ (u.active?(u.must_change_password?"Wajib Ganti Password":"Aktif"):"Nonaktif") + '</td><td><div class="gc-user-actions">'+
-         (u.id===state.user.id?'<small>Akun sendiri</small>':
-           '<button class="btn sm" data-user-action="role" data-user-id="'+safe(u.id)+'" data-role="'+safe(u.role)+'">Ubah Role</button>'+
-           '<button class="btn sm" data-user-action="toggle" data-user-id="'+safe(u.id)+'" data-active="'+u.active+'">'+(u.active?"Nonaktifkan":"Aktifkan")+'</button>'+
-           '<button class="btn sm" data-user-action="reset" data-user-id="'+safe(u.id)+'">Reset Password</button>')+
-         '</div></td></tr>').join("");
+       const result=await request("/api/admin/users");
+       tbody.innerHTML=(result.users||[]).map(u=>
+         '<tr><td><b>'+safe(u.email)+'</b></td><td><span class="gc-role-tag">'+
+         safe(u.role==="admin"?"Admin":"Maker")+'</span></td>'+
+         '<td>'+(u.active?(u.must_change_password?"Belum aktivasi password":"Aktif &amp; teraktivasi"):"Nonaktif")+'</td></tr>'
+       ).join("");
      }catch(e){by("gcUserFeedback").textContent=e.message;}
+
    }
  };
 })();

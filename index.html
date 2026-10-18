@@ -3452,31 +3452,36 @@ dialog.modal-sheet .modal-foot { background:var(--surface); }
       <div class="panel" id="guide"></div>
     </section>
 
-    <!-- ADMIN ONLY: USER MANAGEMENT -->
+    <!-- ADMIN ONLY: VERIFIED ROLE DIRECTORY -->
     <section class="view" id="view-users" hidden data-admin-only>
       <div class="view-header"><div class="view-title-group">
-        <h2>Manajemen Pengguna</h2>
-        <p>Kelola dua role GreenCal: Admin dan Maker. Semua perubahan akses diperiksa oleh server.</p>
+        <h2>Pengguna &amp; Hak Akses</h2>
+        <p>Dua akun terdaftar dengan role Admin dan Maker yang diverifikasi oleh Cloudflare Access dan database GreenCal.</p>
       </div></div>
       <div class="gc-users-layout">
-        <div class="panel">
-          <h3>Tambah Pengguna</h3>
-          <form id="gcUserCreate" class="form-stack" autocomplete="off">
-            <label class="field-group"><span class="field-label">Email Pengguna</span><input id="gcNewEmail" type="email" required autocomplete="off"></label>
-            <label class="field-group"><span class="field-label">Role Pengguna</span>
-              <select id="gcNewRole"><option value="maker">Maker — Input &amp; Edit Emisi</option><option value="admin">Admin — Kelola Sistem</option></select>
-            </label>
-            <label class="field-group"><span class="field-label">Password Awal (minimal 12 karakter)</span><input id="gcNewPassword" type="password" minlength="12" required autocomplete="new-password"></label>
-            <button type="submit" class="btn primary">Buat Pengguna</button>
-          </form>
+        <div class="panel form-stack">
+          <h3 style="margin:0">Matriks Hak Akses</h3>
+          <p style="font-size:12.5px;line-height:1.6;color:var(--ink-muted);margin:0">Admin dapat mengelola parameter, konfigurasi AI, impor, dan penghapusan data. Maker dapat menginput serta mengedit aktivitas tanpa menghapus data atau mengubah parameter sistem.</p>
+          <div class="table-responsive">
+            <table><thead><tr><th>Fitur</th><th>Admin</th><th>Maker</th></tr></thead><tbody>
+              <tr><td>Dashboard &amp; kalkulator</td><td>✓</td><td>✓</td></tr>
+              <tr><td>Input &amp; edit emisi</td><td>✓</td><td>✓</td></tr>
+              <tr><td>Hapus aktivitas</td><td>✓</td><td>—</td></tr>
+              <tr><td>Parameter &amp; faktor</td><td>✓</td><td>—</td></tr>
+              <tr><td>Konfigurasi AI API Key</td><td>✓</td><td>—</td></tr>
+              <tr><td>Daftar pengguna &amp; audit</td><td>✓</td><td>—</td></tr>
+            </tbody></table>
+          </div>
+          <p style="font-size:12px;line-height:1.6;color:var(--ink-muted);margin:0">Perubahan identitas dan role harus dilakukan melalui prosedur administratif terverifikasi pada Cloudflare Access dan database. Penambahan akun, perubahan role, serta reset password pihak lain tidak diizinkan dari browser.</p>
           <p class="gc-user-feedback" id="gcUserFeedback" role="status"></p>
-          <div class="gc-local-note"><b>Data browser lama</b><br>Impor hanya dilakukan atas persetujuan Admin, bukan otomatis. Periksa sumber terlebih dahulu.<br>
+          <div class="gc-local-note"><b>Impor data browser lama (Admin)</b><br>Impor hanya dilakukan setelah verifikasi sumber dan persetujuan Admin.<br>
             <button id="gcImportLocal" class="btn sm" type="button">Impor data browser ke database</button>
           </div>
         </div>
         <div class="panel" style="min-width:0">
-          <div class="view-title-row"><h3 style="margin:0">Daftar Akun</h3><button id="gcRefreshUsers" type="button" class="btn sm">Muat Ulang</button></div>
-          <div class="table-responsive" style="margin-top:12px"><table><thead><tr><th>Email</th><th>Role</th><th>Status</th><th>Tindakan</th></tr></thead><tbody id="gcUsersTable"></tbody></table></div>
+          <div class="view-title-row"><h3 style="margin:0">Dua Akun Terdaftar</h3><button id="gcRefreshUsers" type="button" class="btn sm">Muat Ulang</button></div>
+          <div class="table-responsive" style="margin-top:12px"><table><thead><tr><th>Email</th><th>Role</th><th>Status Aktivasi</th></tr></thead><tbody id="gcUsersTable"></tbody></table></div>
+          <p style="font-size:12px;color:var(--ink-muted);margin-top:12px;line-height:1.6">Login melalui kode satu kali ke email terdaftar (Cloudflare Access). Saat pertama kali masuk, masing-masing pengguna membuat password pribadi. Admin tidak boleh meminta atau menyimpan password pengguna.</p>
         </div>
       </div>
     </section>
@@ -3492,7 +3497,7 @@ dialog.modal-sheet .modal-foot { background:var(--surface); }
 
       <div class="data-cards-list" style="margin-bottom:20px">
         <div data-admin-only id="gcUsersMenu" class="data-card" role="button" tabindex="0" style="cursor:pointer">
-          <div class="data-card-head"><div><h3 class="data-card-title">👥 Manajemen Pengguna</h3><span style="font-size:12px;color:var(--ink-muted)">Admin: buat, ubah role, dan nonaktifkan akun Maker</span></div><strong>→</strong></div>
+          <div class="data-card-head"><div><h3 class="data-card-title">👥 Manajemen Pengguna</h3><span style="font-size:12px;color:var(--ink-muted)">Lihat akun, role, dan status aktivasi yang diverifikasi server</span></div><strong>→</strong></div>
         </div>
         <div class="data-card" onclick="setTab('ai')" style="cursor:pointer">
           <div class="data-card-head">

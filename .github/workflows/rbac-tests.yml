@@ -1,0 +1,24 @@
+name: GreenCal RBAC regression checks
+on:
+  push:
+    branches: [main]
+    paths: ['src/roles.js','src/worker.js','auth-client.js','tests/**','.github/workflows/rbac-tests.yml']
+  pull_request:
+    paths: ['src/roles.js','src/worker.js','auth-client.js','tests/**','.github/workflows/rbac-tests.yml']
+permissions:
+  contents: read
+jobs:
+  rbac-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify Admin/Maker permissions
+        run: node --test tests/rbac.test.mjs
+      - name: Verify client and Worker syntax
+        run: |
+          node --check auth-client.js
+          node --check src/worker.js
+          node --check src/roles.js
