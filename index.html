@@ -7750,6 +7750,30 @@ function bindEvents() {
   $("#btnBackupJson").onclick = backupJson;
   $("#btnClearPublicData").onclick = () => confirmDlg("Hapus data perangkat?", "Semua aktivitas, pembiayaan, dan offset yang disimpan di browser ini akan dihapus. Unduh cadangan JSON terlebih dahulu bila diperlukan.", "Hapus Data Lokal", () => { S.entries=[]; S.exposures=[]; S.offsets=[]; S.audit=[]; saveStateToStorage(); LAST_AI_RESULT=null; renderAll(); toast("Data lokal perangkat berhasil dikosongkan."); });
   $("#fileRestoreJson").onchange = restoreJson;
+  // Per-user browser working copy, isolated by the IP verified by Cloudflare.
+  const scopeResetBtn=document.createElement("button");
+  scopeResetBtn.type="button";
+  scopeResetBtn.className="btn sm danger";
+  scopeResetBtn.id="btnResetNetworkData";
+  scopeResetBtn.textContent="Reset Data Saya";
+  scopeResetBtn.setAttribute("aria-label","Hapus seluruh data aktivitas, pembiayaan, dan offset pada jaringan ini");
+  const backupPanel=document.querySelector("#btnResetData")?.parentElement;
+  if(backupPanel)backupPanel.appendChild(scopeResetBtn);
+  scopeResetBtn.onclick=()=>confirmDlg(
+    "Reset seluruh input pada IP ini?",
+    "Aktivitas, data pembiayaan dan offset pada browser dan jaringan saat ini akan dihapus. Tindakan ini tidak dapat dibatalkan. Cadangkan terlebih dahulu bila diperlukan.",
+    "Ya, Hapus Data Saya",
+    ()=>{
+      try{
+        GC_AUTH.resetCurrentScope();
+        S.entries=[];S.exposures=[];S.offsets=[];S.audit=[];
+        S.editActId=null;S.editFinId=null;
+        LAST_AI_RESULT=null;
+        renderAll();setTab("ringkasan");
+        toast("Data pada jaringan ini berhasil dikosongkan.");
+      }catch(error){toast(error.message);}
+    }
+  );
   $("#btnResetData").onclick = () => {
     if (!GC_AUTH.isAdmin) { toast("Hanya Admin yang dapat mereset data."); return; }
     confirmDlg("Reset Aktivitas?", "Semua aktivitas, eksposur dan offset bersama akan dikosongkan.", "Reset Data", () => { S.entries=[]; S.exposures=[]; S.offsets=[]; saveStateToStorage(); renderAll(); toast("Menyimpan perubahan."); });

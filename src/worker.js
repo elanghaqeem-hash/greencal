@@ -189,6 +189,17 @@ async function router(req,env) {
 export default {
   async fetch(req,env){
     const path=new URL(req.url).pathname;
+    if(path==="/api/client-scope" && req.method==="GET"){
+      // Never trust a browser-supplied IP. Cloudflare supplies the observed IP.
+      const ip=req.headers.get("CF-Connecting-IP");
+      if(!ip || !env.IP_SCOPE_SECRET || env.IP_SCOPE_SECRET.length<32)
+        return err("Identitas jaringan tidak tersedia. Penyimpanan dinonaktifkan.",503);
+      const key=await crypto.subtle.importKey("raw",new TextEncoder().encode(env.IP_SCOPE_SECRET),
+        {name:"HMAC",hash:"SHA-256"},false,["sign"]);
+      const signed=await crypto.subtle.sign("HMAC",key,new TextEncoder().encode("greencal:v1:"+ip));
+      const scope=Array.from(new Uint8Array(signed),v=>v.toString(16).padStart(2,"0")).join("");
+      return C({scope}); 
+    }
     if(path.startsWith("/api/")){
       try{return await router(req,env)}catch(e){console.error("GreenCal API exception",e);return err("Permintaan gagal diproses",500);}
     }
