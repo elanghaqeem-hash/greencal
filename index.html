@@ -3297,6 +3297,102 @@ dialog.modal-sheet .modal-foot { background:var(--surface); }
   #wizardFormPanel .gc-security-sector-control{transition:none}
 }
 
+
+/* GREENCAL MOBILE NAV PARITY: use the existing nine desktop destinations in an accessible drawer. */
+.gc-mobile-sidebar-backdrop,.gc-mobile-sidebar-close{display:none}
+@media (max-width:859px){
+  header.app-header .gc-sidebar-toggle{
+    display:inline-flex!important;align-items:center;justify-content:center;
+    width:40px;height:40px;min-width:40px;min-height:40px;flex-shrink:0;
+    border-radius:11px;touch-action:manipulation;
+  }
+  header.app-header .header-inner{gap:8px}
+  header.app-header .brand-block{flex:1 1 auto;min-width:0;margin-right:auto}
+  header.app-header .header-actions{flex:0 0 auto;min-width:0}
+  .gc-mobile-sidebar-backdrop{
+    display:block;position:fixed;inset:0;z-index:305;
+    background:rgba(7,26,20,.5);opacity:0;visibility:hidden;
+    pointer-events:none;transition:opacity .2s ease,visibility .2s ease;
+  }
+  body.gc-mobile-menu-open .gc-mobile-sidebar-backdrop{
+    opacity:1;visibility:visible;pointer-events:auto;
+  }
+  #gcSidebar{
+    display:block!important;position:fixed;left:0;top:0;bottom:0;
+    height:100dvh;width:min(336px,calc(100vw - 48px));max-width:100%;
+    z-index:306;overflow-x:hidden;overflow-y:auto;overscroll-behavior:contain;
+    background:var(--surface);border-right:1px solid var(--line);
+    box-shadow:14px 0 36px rgba(0,0,0,.16);
+    transform:translateX(-110%);visibility:hidden;pointer-events:none;
+    transition:transform .22s ease,visibility .22s ease;
+    padding-bottom:var(--safe-bottom);
+  }
+  body.gc-mobile-menu-open #gcSidebar{
+    transform:translateX(0);visibility:visible;pointer-events:auto;
+  }
+  body.gc-mobile-menu-open{overflow:hidden;touch-action:auto}
+  #gcSidebar .gc-sidebar-inner{
+    display:flex;flex-direction:column;min-height:100%;
+    padding:calc(14px + var(--safe-top)) 13px 18px;gap:13px;
+  }
+  #gcSidebar .gc-sidebar-heading{
+    display:flex;align-items:center;gap:10px;padding:7px 5px 15px;
+    border-bottom:1px solid var(--line-subtle);color:var(--ink);
+  }
+  #gcSidebar .gc-sidebar-heading-icon{
+    display:grid;place-items:center;flex:0 0 42px;width:42px;height:42px;
+    border-radius:13px;background:var(--primary-soft);color:var(--primary);font-size:24px;
+  }
+  #gcSidebar .gc-sidebar-heading > div{min-width:0;flex:1}
+  #gcSidebar .gc-sidebar-heading strong{display:block;font-size:16px;font-weight:800}
+  #gcSidebar .gc-sidebar-heading small{
+    display:block;font-size:11px;color:var(--ink-muted);line-height:1.4;margin-top:3px;
+  }
+  #gcSidebar .gc-mobile-sidebar-close{
+    display:inline-flex;align-items:center;justify-content:center;
+    flex:0 0 36px;width:36px;height:36px;min-height:36px;
+    border:1px solid var(--line);background:var(--surface-2);color:var(--ink);
+    border-radius:10px;cursor:pointer;font-size:24px;line-height:1;
+  }
+  #gcSidebar nav.desktop-nav{
+    display:flex!important;flex-direction:column;align-items:stretch;
+    gap:5px;border-top:0;padding:0;overflow:visible;min-width:0;
+  }
+  #gcSidebar nav.desktop-nav button{
+    display:flex;align-items:center;justify-content:flex-start;
+    gap:12px;width:100%;min-width:0;min-height:46px;max-width:100%;
+    padding:11px 12px;white-space:normal;text-align:left;
+    font-size:13px;font-weight:700;line-height:1.35;
+    border:1px solid transparent;border-radius:12px;
+    background:transparent;color:var(--ink-muted);box-shadow:none;
+    touch-action:manipulation;
+  }
+  #gcSidebar nav.desktop-nav button svg{width:19px;height:19px;flex:0 0 19px}
+  #gcSidebar nav.desktop-nav button:hover{background:var(--primary-soft);color:var(--primary)}
+  #gcSidebar nav.desktop-nav button[aria-selected="true"]{
+    background:linear-gradient(110deg,#075d43,#087855);color:#fff;
+    border-color:rgba(7,82,60,.14);box-shadow:0 5px 14px rgba(6,91,64,.13);
+  }
+  #gcSidebar nav.desktop-nav button:focus-visible,
+  #gcSidebar .gc-mobile-sidebar-close:focus-visible{
+    outline:3px solid var(--primary);outline-offset:2px;
+  }
+  #gcSidebar .gc-sidebar-footer{
+    margin-top:auto;display:flex;gap:8px;align-items:center;
+    border-top:1px solid var(--line-subtle);padding:14px 10px 2px;
+    color:var(--ink-subtle);font-size:11px;
+  }
+  #gcSidebar .gc-sidebar-status-dot{
+    display:block;width:7px;height:7px;border-radius:50%;background:#29ba7d;
+  }
+}
+@media (min-width:860px){
+  .gc-mobile-sidebar-backdrop,.gc-mobile-sidebar-close{display:none!important}
+}
+@media (prefers-reduced-motion:reduce){
+  .gc-mobile-sidebar-backdrop,#gcSidebar{transition:none!important}
+}
+
 </style>
   <script src="/assets/guide-learning.js"></script>
 </head>
@@ -3308,7 +3404,7 @@ dialog.modal-sheet .modal-foot { background:var(--surface); }
   <header class="app-header">
     <div class="container">
       <div class="header-inner">
-        <button type="button" id="gcSidebarToggle" class="gc-sidebar-toggle" aria-controls="gcSidebar" aria-expanded="true" title="Sembunyikan sidebar" aria-label="Sembunyikan sidebar">
+        <button type="button" id="gcSidebarToggle" class="gc-sidebar-toggle" aria-controls="gcSidebar" aria-expanded="false" title="Buka menu lengkap" aria-label="Buka menu lengkap">
           <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <rect x="3" y="4" width="18" height="16" rx="2"/><path d="M9 4v16"/><path class="gc-sidebar-arrow" d="m15 9-3 3 3 3"/>
           </svg>
@@ -3345,12 +3441,14 @@ dialog.modal-sheet .modal-foot { background:var(--surface); }
     </div>
   </header>
 
-  <!-- Collapsible desktop sidebar (mobile uses unchanged bottom navigation) -->
+  <!-- Shared desktop sidebar and mobile full-menu drawer -->
+  <div id="gcMobileMenuBackdrop" class="gc-mobile-sidebar-backdrop" aria-hidden="true"></div>
   <aside id="gcSidebar" class="gc-sidebar" aria-label="Menu utama GreenCal">
     <div class="gc-sidebar-inner">
       <div class="gc-sidebar-heading">
         <span class="gc-sidebar-heading-icon" aria-hidden="true">☘</span>
         <div><strong>Menu Utama</strong><small>Carbon &amp; Climate Management</small></div>
+        <button type="button" class="gc-mobile-sidebar-close" id="gcMobileMenuClose" aria-label="Tutup menu lengkap" title="Tutup menu lengkap">&times;</button>
       </div>
       <nav class="desktop-nav gc-sidebar-nav" role="tablist" aria-label="Navigasi Utama">
         <button role="tab" data-tab="ringkasan" aria-selected="true">
@@ -6720,41 +6818,86 @@ function clearActivityFilters() {
 }
 
 
-/* GreenCal desktop sidebar – persisted preference, mobile navigation unchanged */
+/* Shared desktop sidebar and smartphone navigation drawer (one source of tab destinations). */
 const GC_SIDEBAR_PREF = "greencal_desktop_sidebar_collapsed";
 function initDesktopSidebar() {
   const btn=document.getElementById("gcSidebarToggle");
   const sidebar=document.getElementById("gcSidebar");
   const head=document.querySelector("header.app-header");
-  if (!btn || !sidebar || !head) return;
-  let collapsed=false;
-  try {collapsed=localStorage.getItem(GC_SIDEBAR_PREF)==="1";} catch(e){}
-  const setCollapsed=(state,persist)=>{
-    collapsed=!!state;
-    document.body.classList.toggle("gc-sidebar-collapsed",collapsed);
-    btn.setAttribute("aria-expanded",String(!collapsed));
-    btn.setAttribute("aria-label",collapsed?"Tampilkan sidebar":"Sembunyikan sidebar");
-    btn.setAttribute("title",collapsed?"Tampilkan menu samping":"Sembunyikan menu samping");
-    sidebar.setAttribute("aria-hidden",String(collapsed));
-    sidebar.inert=collapsed;
+  const backdrop=document.getElementById("gcMobileMenuBackdrop");
+  const closeBtn=document.getElementById("gcMobileMenuClose");
+  if(!btn||!sidebar||!head||!backdrop||!closeBtn)return;
+  let collapsed=false, mobileOpen=false;
+  try{collapsed=localStorage.getItem(GC_SIDEBAR_PREF)==="1";}catch(e){}
+  const isMobile=()=>window.matchMedia("(max-width: 859px)").matches;
+  const sync=()=>{
+    const mobile=isMobile();
+    if(!mobile)mobileOpen=false;
+    document.body.classList.toggle("gc-mobile-menu-open",mobile&&mobileOpen);
+    document.body.classList.toggle("gc-sidebar-collapsed",!mobile&&collapsed);
+    const visible=mobile?mobileOpen:!collapsed;
+    sidebar.inert=!visible;
+    sidebar.setAttribute("aria-hidden",String(!visible));
+    if(mobile&&mobileOpen){
+      sidebar.setAttribute("role","dialog");
+      sidebar.setAttribute("aria-modal","true");
+    }else{
+      sidebar.setAttribute("role","complementary");
+      sidebar.removeAttribute("aria-modal");
+    }
+    btn.setAttribute("aria-expanded",String(visible));
+    const label=mobile?(mobileOpen?"Tutup menu lengkap":"Buka menu lengkap"):
+      (collapsed?"Tampilkan sidebar":"Sembunyikan sidebar");
+    btn.setAttribute("aria-label",label);
+    btn.title=label;
     const chevron=btn.querySelector("path.gc-sidebar-arrow");
-    if(chevron)chevron.setAttribute("d",collapsed?"m12 9 3 3-3 3":"m15 9-3 3 3 3");
-    if(persist){try{localStorage.setItem(GC_SIDEBAR_PREF,collapsed?"1":"0");}catch(e){}}
+    if(chevron)chevron.setAttribute("d",mobile?"m15 9-3 3 3 3":
+      (collapsed?"m12 9 3 3-3 3":"m15 9-3 3 3 3"));
   };
+  const closeMobile=(returnFocus=false)=>{
+    if(!mobileOpen)return;
+    mobileOpen=false;
+    sync();
+    if(returnFocus)btn.focus();
+  };
+  btn.onclick=()=>{
+    if(isMobile()){
+      mobileOpen=!mobileOpen;sync();
+      if(mobileOpen)closeBtn.focus();
+    }else{
+      collapsed=!collapsed;
+      try{localStorage.setItem(GC_SIDEBAR_PREF,collapsed?"1":"0");}catch(e){}
+      sync();
+    }
+  };
+  closeBtn.onclick=()=>closeMobile(true);
+  backdrop.onclick=()=>closeMobile(true);
+  sidebar.querySelectorAll("nav.desktop-nav button").forEach(item=>{
+    item.addEventListener("click",()=>{if(isMobile())closeMobile(false);});
+  });
+  document.addEventListener("keydown",e=>{
+    if(!isMobile()||!mobileOpen)return;
+    if(e.key==="Escape"){e.preventDefault();closeMobile(true);return;}
+    if(e.key!=="Tab")return;
+    const focusable=Array.from(sidebar.querySelectorAll('button:not([disabled]),a[href]'))
+      .filter(el=>el.getClientRects().length>0&&!el.closest('[hidden]'));
+    if(!focusable.length)return;
+    const first=focusable[0],last=focusable[focusable.length-1];
+    if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus();}
+    else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus();}
+  });
   const updateHeaderHeight=()=>{
-    const height=Math.ceil(head.getBoundingClientRect().height);
-    document.documentElement.style.setProperty("--gc-sidebar-top",height+"px");
+    document.documentElement.style.setProperty("--gc-sidebar-top",
+      Math.ceil(head.getBoundingClientRect().height)+"px");
   };
-  btn.onclick=()=>setCollapsed(!collapsed,true);
-  setCollapsed(collapsed,false);
+  sync();
   updateHeaderHeight();
   if(typeof ResizeObserver==="function"){
     const observer=new ResizeObserver(updateHeaderHeight);
     observer.observe(head);
   }
-  window.addEventListener("resize",updateHeaderHeight,{passive:true});
+  window.addEventListener("resize",()=>{sync();updateHeaderHeight();},{passive:true});
 }
-
 
 /* Enterprise activity panels: all values are calculated from registered entries.
    No demo numbers, fabricated growth or unsupported comparisons. */
