@@ -167,3 +167,34 @@ export async function handleAiApi(request,env,actor){
  if(url.pathname==="/api/ai/analyze"&&request.method==="POST")return analyze(request,env);
  return error(404,"NOT_FOUND","Endpoint AI tidak tersedia.");
 }
+
+/* Public analysis uses server-side model keys, never exposes AI settings or secrets.
+ * Atomic daily quota bounds spend per anonymous device; quotas are not anti-abuse
+ * by themselves and edge rate limiting remains recommended.
+ */
+export async function publicAiRequest(request,env,scope) {
+ const url=new URL(request.url);
+ if(!env.AI_CONFIG||!env.DB)return error(503,"AI_NOT_READY","Layanan AI belum siap.");
+ if(url.pathname==="/api/ai/status"&&request.method==="GET"){
+   const cfg=await loadConfig(env);
+   return asJson({ok:true,role:"public",config:publicConfig(cfg,env)});
+ }
+ if(url.pathname!=="/api/ai/analyze"||request.method!=="POST")
+   return error(404,"NOT_FOUND","API tidak tersedia.");
+ if(request.headers.get("origin")!==url.origin)return error(403,"ORIGIN","Origin tidak diizinkan.");
+ if(request.headers.get("content-type")?.split(";")[0].trim()!=="application/json")
+   return error(415,"CONTENT_TYPE","Content-Type harus application/json.");
+ const cfg=await loadConfig(env);
+ if(!cfg.order.some(x=>x.enabled&&(x.sealedKey||env[keyVar[x.provider]])))
+   return error(503,"AI_NOT_CONFIGURED","Tidak ada model AI aktif dengan API key.");
+ // Validate before charging a request against the daily budget.
+ let body;
+ try{body=validate(await request.clone().json());}catch(e){return error(400,"INVALID_INPUT",e.message);}
+ if(Number(request.headers.get("content-length")||0)>8192)return error(413,"INPUT_TOO_LARGE","Data terlalu besar.");
+ const day=new Date().toISOString().slice(0,10);
+ const quota=await env.DB.prepare(
+   "INSERT INTO gc_public_ai_limits(scope_id,day,requests) VALUES(?,?,1) ON CONFLICT(scope_id,day) DO UPDATE SET requests=requests+1 WHERE requests<5"
+ ).bind(scope,day).run();
+ if(quota.meta?.changes!==1)return error(429,"DAILY_LIMIT","Batas analisis AI perangkat ini tercapai (5 per hari).");
+ return analyze(new Request(request.url,{method:"POST",headers:request.headers,body:JSON.stringify(body)}),env);
+}
