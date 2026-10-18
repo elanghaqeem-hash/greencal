@@ -2678,6 +2678,171 @@ dialog.modal-sheet .modal-foot { background:var(--surface); }
  #view-aktivitas .carbon-scope-filters {grid-template-columns:repeat(2,minmax(0,1fr))}
 }
 
+
+/* === GC GREEN FINANCE SIGN-IN v3 | desktop + mobile | 2026-10-18 === */
+#gcAuthGate.gc-auth-gate {
+  --gcforest:#064b39;--gcdeep:#093d32;--gcmint:#e8f5ec;--gcbright:#178b59;
+  background:radial-gradient(circle at 7% 10%,#e0f9ea 0,transparent 34%),linear-gradient(145deg,#f3f9f4,#e7f0ea);
+  padding:clamp(18px,3.5vh,36px);align-items:center;overscroll-behavior:contain;
+  color:#0b3026;font-family:var(--font-main),sans-serif;
+}
+#gcAuthGate[hidden],#gcLoginForm[hidden],#gcActivationForm[hidden],#gcForcePasswordForm[hidden],
+#gcBootstrapForm[hidden],#gcIdentityInfo[hidden],#gcForgotHelp[hidden],#gcAuthError[hidden] {display:none!important}
+#gcAuthGate .gc-auth-layout {
+  display:grid;grid-template-columns:minmax(0,.98fr) minmax(0,1.02fr);
+  width:min(100%,1080px);min-height:635px;border-radius:28px;overflow:hidden;background:#fff;
+  box-shadow:0 32px 85px rgba(9,73,48,.12),0 4px 14px rgba(11,50,35,.05);
+  isolation:isolate;
+}
+#gcAuthGate .gc-auth-aside {
+  position:relative;display:flex;flex-direction:column;justify-content:space-between;
+  overflow:hidden;padding:clamp(28px,3.4vw,43px);
+  background:linear-gradient(150deg,#f3fbf6 0%,#e2f4e8 48%,#c9ebda 100%);
+  color:var(--gcdeep);min-height:600px;
+}
+#gcAuthGate .gc-auth-aside::after {
+  content:"";position:absolute;inset:auto -14% -70px -14%;height:160px;border-radius:50% 50% 0 0;
+  background:#0f7154;opacity:.16;pointer-events:none;
+}
+#gcAuthGate .gc-auth-bank {position:relative;z-index:2;display:flex;align-items:center;gap:12px;color:var(--gcdeep)}
+#gcAuthGate .gc-auth-logo {display:grid;place-items:center;flex:none;width:45px;height:45px;border-radius:15px;background:#e0f7e8;box-shadow:0 1px 0 #fff inset}
+#gcAuthGate .gc-auth-logo svg {width:39px;height:39px}
+#gcAuthGate .gc-auth-bank>div {display:flex;flex-direction:column;gap:2px;min-width:0}
+#gcAuthGate .gc-auth-bank strong {font-size:30px;line-height:1.08;letter-spacing:-.06em;font-weight:850;color:#063e2f}
+#gcAuthGate .gc-auth-bank strong span,#gcAuthGate .gc-mobile-brand-text b span {color:#119561}
+#gcAuthGate .gc-auth-bank small {color:#315f50;font-weight:650;font-size:10px;line-height:1.4;letter-spacing:0}
+#gcAuthGate .gc-auth-hero {position:relative;z-index:2;margin:0;padding:34px 0 8px;max-width:430px}
+#gcAuthGate .gc-auth-kicker {display:inline-flex;gap:7px;align-items:center;color:#137552;font-size:10px;font-weight:800;letter-spacing:.11em;margin-bottom:17px}
+#gcAuthGate .gc-auth-kicker>span {font-size:19px;line-height:1}
+#gcAuthGate .gc-auth-hero h2 {color:#0c4233;font-size:clamp(30px,3.4vw,46px);font-weight:850;letter-spacing:-.055em;line-height:1.17;margin:0 0 16px}
+#gcAuthGate .gc-auth-hero h2 em {color:#168857;font-style:normal}
+#gcAuthGate .gc-auth-hero p {color:#45685b;font-size:clamp(12px,1.35vw,14px);line-height:1.8;margin:0;max-width:340px}
+#gcAuthGate .gc-auth-landscape {position:relative;z-index:1;display:flex;align-items:end;justify-content:center;margin:-8px -22px -10px;min-height:165px;pointer-events:none}
+#gcAuthGate .gc-auth-landscape svg {display:block;width:min(100%,560px);height:auto;filter:drop-shadow(0 12px 15px rgba(6,82,53,.09))}
+#gcAuthGate .gc-auth-aside-foot {position:relative;z-index:2;display:flex;align-items:center;flex-wrap:wrap;gap:8px}
+#gcAuthGate .gc-auth-aside-foot span {display:inline-flex;align-items:center;gap:5px;padding:7px 9px;border:1px solid #afd8bf;border-radius:9px;background:rgba(255,255,255,.7);color:#1d7150;font-size:10px;font-weight:800}
+#gcAuthGate .gc-auth-card {
+  position:relative;display:flex;flex-direction:column;justify-content:center;min-width:0;
+  border:0!important;border-radius:0!important;background:#fff;color:#153a2e;
+  padding:clamp(30px,4.2vw,58px)!important;box-shadow:none!important;max-height:none!important;overflow:visible!important;width:100%;
+}
+#gcAuthGate .gc-auth-mobilebrand {display:none}
+#gcAuthGate .gc-auth-card-head {margin-bottom:23px}
+#gcAuthGate .gc-auth-eyebrow {display:inline-flex;align-items:center;gap:8px;color:#1b855b;font-size:10px;font-weight:850;letter-spacing:.11em;margin:0 0 12px}
+#gcAuthGate .gc-auth-verified-dot {width:7px;height:7px;border-radius:50%;background:#28a775;box-shadow:0 0 0 4px #e6f8ed}
+#gcAuthGate .gc-auth-card h2 {font-size:clamp(27px,2.6vw,35px)!important;line-height:1.19;letter-spacing:-.045em;color:#103d30;margin:0 0 9px;font-weight:850}
+#gcAuthGate .gc-auth-card-head>p {font-size:13px;line-height:1.65;max-width:380px;color:#647c6f;margin:0!important}
+#gcAuthGate .gc-auth-identity {display:flex;align-items:center;gap:9px;margin:0 0 21px;padding:11px 13px;border:1px solid #cfe9d9;border-radius:12px;background:#eef9f1;color:#0e704e;font-size:11px;min-width:0}
+#gcAuthGate .gc-auth-identity>svg {flex:none}
+#gcAuthGate .gc-auth-identity>div {display:flex;flex-direction:column;gap:2px;min-width:0;flex:1}
+#gcAuthGate .gc-auth-identity strong {font-weight:850;font-size:10px;letter-spacing:.01em}
+#gcAuthGate .gc-auth-identity>div span {font-size:11px;overflow-wrap:anywhere;color:#3f6a54}
+#gcAuthGate .gc-auth-role {padding:5px 7px;font-size:10px;font-weight:800;background:#d5eddd;border-radius:7px;color:#125e44}
+#gcAuthGate .gc-auth-card form {display:flex;flex-direction:column;gap:13px}
+#gcAuthGate .gc-auth-card .gc-auth-label {display:flex;flex-direction:column;gap:7px;font-weight:750;font-size:12px;color:#123f30}
+#gcAuthGate .gc-auth-input-wrap {display:flex;position:relative;align-items:center;width:100%;min-width:0}
+#gcAuthGate .gc-auth-input-wrap>svg {position:absolute;left:14px;width:19px;height:19px;stroke:#7c9b8c;fill:none;stroke-width:1.85;stroke-linecap:round;stroke-linejoin:round;pointer-events:none;z-index:1}
+#gcAuthGate .gc-auth-input-wrap>input {
+  display:block;min-width:0;width:100%;height:52px;background:#fff;border:1px solid #d4e2d8;border-radius:13px;
+  padding:0 46px 0 46px;font:600 13px/1.3 var(--font-main),sans-serif;letter-spacing:0;color:#164332;
+  transition:border-color .15s,box-shadow .15s;box-shadow:0 1px 3px rgba(8,70,46,.04);
+}
+#gcAuthGate .gc-auth-input-wrap>input::placeholder {color:#a0aea6;font-weight:450}
+#gcAuthGate .gc-auth-input-wrap>input:focus {outline:none;border-color:#21a16d;box-shadow:0 0 0 4px #d9f4e5}
+#gcAuthGate #gcTogglePassword.gc-password-toggle {
+  position:absolute;right:6px;top:50%;transform:translateY(-50%);display:grid;place-items:center;
+  width:41px;height:41px;min-height:41px;margin:0!important;padding:0;border:0;border-radius:10px;background:transparent;
+  box-shadow:none;color:#708a7c;cursor:pointer;z-index:1;
+}
+#gcAuthGate #gcTogglePassword.gc-password-toggle svg {width:21px;height:21px;stroke:currentColor;fill:none;stroke-width:1.9;stroke-linejoin:round}
+#gcAuthGate #gcTogglePassword.gc-password-toggle:hover {color:#0f7b53;background:#eaf8ef}
+#gcAuthGate #gcForgotPassword.gc-auth-forgot {
+  min-height:27px;height:auto;border:0;background:transparent;box-shadow:none;color:#0d7852;font:750 12px var(--font-main),sans-serif;
+  margin:-4px 0 -2px!important;padding:3px 0;align-self:end;cursor:pointer;
+}
+#gcAuthGate #gcForgotPassword.gc-auth-forgot:hover {text-decoration:underline}
+#gcAuthGate .gc-auth-help {padding:11px 12px;margin-top:-7px;border-radius:10px;background:#fff5e5;border:1px solid #f6d8a3;color:#745025;font-size:11px;line-height:1.65}
+#gcAuthGate .gc-auth-card form button[type="submit"],#gcAuthGate #gcLoginForm .gc-auth-submit {
+  width:100%;min-height:52px;border:0;border-radius:13px;padding:11px 17px;background:linear-gradient(110deg,#065943,#0e875a);
+  color:#fff;font-size:13px;line-height:1.3;font-weight:850;margin:5px 0 0!important;box-shadow:0 10px 22px rgba(11,111,73,.17);
+  display:flex;justify-content:center;align-items:center;gap:12px;cursor:pointer;transition:transform .15s,filter .15s;
+}
+#gcAuthGate #gcLoginForm .gc-auth-submit>span:last-child {font-size:23px;font-weight:450;line-height:1}
+#gcAuthGate .gc-auth-card form button[type="submit"]:hover {filter:brightness(1.07)}
+#gcAuthGate .gc-auth-card form button[type="submit"]:disabled {cursor:wait;opacity:.65}
+#gcAuthGate .gc-auth-divider {display:flex;align-items:center;gap:13px;margin:2px 0 -2px;color:#84978a;font-size:11px;white-space:nowrap}
+#gcAuthGate .gc-auth-divider::before,#gcAuthGate .gc-auth-divider::after {content:"";height:1px;background:#dce6df;flex:1}
+#gcAuthGate .gc-auth-otp {
+  display:flex;align-items:center;justify-content:center;gap:10px;width:100%;min-height:49px;
+  border:1.5px solid #208760;border-radius:13px;color:#116348;background:#fff;
+  font-size:12px;font-weight:850;text-decoration:none;line-height:1.3;padding:10px 12px;
+  transition:background .15s,border-color .15s;
+}
+#gcAuthGate .gc-auth-otp svg {width:19px;height:19px;flex:none}
+#gcAuthGate .gc-auth-otp>span {font-size:17px}
+#gcAuthGate .gc-auth-otp:hover {background:#edf8f1;border-color:#095638}
+#gcAuthGate .gc-auth-helper {font-size:11px!important;line-height:1.55!important;color:#7a9082!important;margin:-1px 0 0!important;text-align:center}
+#gcAuthGate .gc-auth-changeinfo {border:1px solid #c9e6d5;background:#f1fbf3;padding:12px 13px;color:#2a6e50;font-size:12px;line-height:1.65;border-radius:12px}
+#gcAuthGate .gc-auth-card form:not(#gcLoginForm)>label {color:#153e2d;font-size:12px;font-weight:750}
+#gcAuthGate .gc-auth-card form:not(#gcLoginForm)>label input {min-height:51px;border-radius:12px;border:1px solid #d0e0d5;font-size:14px;font-weight:600}
+#gcAuthGate .gc-auth-access {display:flex;align-items:center;justify-content:center;gap:7px;background:#eff8f2;border-radius:10px;color:#236e50;padding:12px 8px;font-size:11px;margin-top:21px;line-height:1.45;text-align:center}
+#gcAuthGate .gc-auth-access strong {font-weight:850}
+#gcAuthGate .gc-auth-access svg {flex:none}
+#gcAuthGate .gc-auth-foot {display:flex;align-items:center;justify-content:center;gap:9px;border-top:1px solid #e3ece6;padding-top:17px;margin-top:20px;color:#537667!important;font-size:11px!important;line-height:1.5!important;text-align:left}
+#gcAuthGate .gc-auth-foot svg {flex:none;width:23px;height:23px;stroke:#198859}
+#gcAuthGate .gc-auth-foot span {display:flex;flex-direction:column;gap:0}
+#gcAuthGate .gc-auth-foot strong {font-size:11px;font-weight:850;color:#205f46}
+#gcAuthGate .gc-auth-foot small {font-size:10px;color:#8b9d91}
+#gcAuthGate #gcAuthError.gc-auth-error {border:1px solid #edbcae;border-radius:12px;background:#fff2ec;color:#a03d29;font-size:12px;line-height:1.55;padding:12px 13px;margin:12px 0 0!important}
+#gcAuthGate :is(input,button,a):focus-visible {outline:3px solid #5bd09a;outline-offset:3px}
+@media (max-width:820px) {
+ #gcAuthGate.gc-auth-gate {display:block;align-items:initial;padding:0;background:#eaf5ed}
+ #gcAuthGate .gc-auth-layout {display:flex;flex-direction:column;min-height:100dvh;max-width:560px;width:100%;margin:0 auto;overflow:visible;border-radius:0;box-shadow:none;background:#eaf5ed}
+ #gcAuthGate .gc-auth-aside {display:block;flex:none;min-height:0;height:260px;padding:26px 24px 35px;border-radius:0;background:linear-gradient(155deg,#eaf9f2 0,#d7f0e2 68%,#a6ddc1 100%)}
+ #gcAuthGate .gc-auth-aside::after {display:none}
+ #gcAuthGate .gc-auth-bank,#gcAuthGate .gc-auth-aside-foot {display:none}
+ #gcAuthGate .gc-auth-hero {padding:0;max-width:315px}
+ #gcAuthGate .gc-auth-kicker {margin-bottom:8px;font-size:9px}
+ #gcAuthGate .gc-auth-hero h2 {font-size:clamp(25px,6.3vw,31px);margin-bottom:8px;line-height:1.14;max-width:300px}
+ #gcAuthGate .gc-auth-hero p {font-size:11px;line-height:1.65;max-width:245px;color:#3f6655}
+ #gcAuthGate .gc-auth-landscape {position:absolute;bottom:0;right:-35px;width:72%;height:auto;margin:0;opacity:.77}
+ #gcAuthGate .gc-auth-landscape svg {max-height:177px;width:100%}
+ #gcAuthGate .gc-auth-card {z-index:2;display:flex;flex-direction:column;justify-content:flex-start;min-height:calc(100dvh - 219px);width:100%;border-radius:28px 28px 0 0!important;margin:-42px auto 0;padding:24px 24px calc(25px + env(safe-area-inset-bottom,0px))!important}
+ #gcAuthGate .gc-auth-mobilebrand {display:flex;align-items:center;gap:8px;margin:0 0 24px}
+ #gcAuthGate .gc-auth-mobilebrand .gc-auth-logo {width:32px;height:32px;border-radius:9px}
+ #gcAuthGate .gc-auth-mobilebrand .gc-auth-logo svg {width:29px;height:29px}
+ #gcAuthGate .gc-mobile-brand-text {display:flex;flex-direction:column;gap:1px;min-width:0;flex:1}
+ #gcAuthGate .gc-mobile-brand-text b {font-size:17px;letter-spacing:-.065em;line-height:1.18;color:#0c523c}
+ #gcAuthGate .gc-mobile-brand-text small {font-size:8px;line-height:1.3;color:#648277}
+ #gcAuthGate .gc-auth-mobilebrand>img {flex:none;width:85px;height:39px;max-width:85px;object-fit:contain;border-radius:6px;background:#fff}
+ #gcAuthGate .gc-auth-card-head {margin-bottom:17px}
+ #gcAuthGate .gc-auth-card h2 {font-size:clamp(22px,5.6vw,28px)!important;margin-bottom:6px}
+ #gcAuthGate .gc-auth-card-head>p {font-size:12px;line-height:1.6}
+ #gcAuthGate .gc-auth-eyebrow {font-size:9px;margin-bottom:8px}
+ #gcAuthGate .gc-auth-card form {gap:12px}
+ #gcAuthGate .gc-auth-card .gc-auth-label {font-size:12px}
+ #gcAuthGate .gc-auth-access {margin-top:17px}
+ #gcAuthGate .gc-auth-foot {margin-top:15px;padding-top:15px}
+}
+@media (max-width:365px) {
+ #gcAuthGate .gc-auth-aside {height:235px;padding:19px 18px 29px}
+ #gcAuthGate .gc-auth-landscape {width:74%;right:-55px}
+ #gcAuthGate .gc-auth-hero h2 {font-size:24px;max-width:240px}
+ #gcAuthGate .gc-auth-hero p {max-width:215px}
+ #gcAuthGate .gc-auth-card {margin-top:-32px;padding:21px 17px 26px!important;border-radius:22px 22px 0 0!important}
+ #gcAuthGate .gc-auth-mobilebrand {margin-bottom:20px}
+ #gcAuthGate .gc-auth-mobilebrand>img {max-width:71px;width:71px}
+ #gcAuthGate .gc-mobile-brand-text small {font-size:7px}
+}
+@media (max-height:650px) and (min-width:821px) {
+ #gcAuthGate.gc-auth-gate {align-items:flex-start;padding-block:18px}
+ #gcAuthGate .gc-auth-layout {min-height:580px}
+ #gcAuthGate .gc-auth-aside {min-height:580px}
+}
+@media (prefers-reduced-motion:reduce) {
+ #gcAuthGate .gc-auth-input-wrap>input,#gcAuthGate .gc-auth-otp,#gcAuthGate .gc-auth-card form button[type="submit"] {transition:none!important}
+}
+
 </style>
 </head>
 <body>
