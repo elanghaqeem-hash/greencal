@@ -1,6 +1,6 @@
 import { handleAiApi, verifyAccessIdentity } from "./ai-worker.js";
 import { permissionsForRole, writableKeysForRole, preservesExistingRecords } from "./roles.js";
-// GreenCal — D1-backed authentication, two-role RBAC, shared state.
+// GreenCal — D1-backed Maker authentication and shared state.
 // All security decisions are enforced by the Worker; the browser role is advisory only.
 const H = {"content-type":"application/json; charset=utf-8","cache-control":"no-store","x-content-type-options":"nosniff"};
 const C = (data,status=200,more={}) => new Response(JSON.stringify(data),{status,headers:{...H,...more}});
@@ -25,13 +25,12 @@ const readBody=async request=>{
   const text=await request.text();if(text.length>2200000)throw Error("Payload terlalu besar");
   try{return JSON.parse(text)}catch{throw Error("JSON tidak valid")};
 };
-// The Cloudflare Access JWT authenticates the email address. D1 password adds
-// a second verification step and MUST be rotated before application API access.
+// Cloudflare Access verifies identity; only an active Maker account can reach the D1 application APIs.
 async function identity(req,db,actor){
-  if(!actor||!actor.email||!["Admin","Maker"].includes(actor.role))return null;
+  if(!actor||!actor.email||actor.role!=="Maker")return null;
   const user=await db.prepare("SELECT id,email,role,active,salt,password_hash,must_change_password,password_updated_at FROM gc_users WHERE email=?")
     .bind(actor.email.toLowerCase()).first();
-  if(!user||!user.active||user.role!==(actor.role==="Admin"?"admin":"maker"))return null;
+  if(!user||!user.active||user.role!=="maker")return null;
   return user;
 }
 function currentUser(u){return {id:u.id,email:u.email,role:u.role,mustChangePassword:!!u.must_change_password,permissions:permissionsForRole(u.role)};}
@@ -40,7 +39,7 @@ async function sessionUser(req,db,accessActor){
   const row=await db.prepare("SELECT s.user_id,s.expires_at,u.id,u.email,u.role,u.active,u.must_change_password,u.salt,u.password_hash FROM gc_sessions s JOIN gc_users u ON u.id=s.user_id WHERE s.token_hash=?")
     .bind(await sha(token)).first();
   if(!row||row.expires_at<=Date.now()||!row.active||row.email.toLowerCase()!==accessActor.email.toLowerCase()||
-      row.role!==(accessActor.role==="Admin"?"admin":"maker"))return null;
+      row.role!=="maker"||accessActor.role!=="Maker")return null;
   return row;
 }
 async function activateFirstPassword(req,db,actor){
@@ -111,7 +110,7 @@ async function router(req,env) {
   }
   if(path==="/api/auth/status"&&method==="GET"){
     const account=await identity(req,db,actor);
-    return C({loginMethod:"cloudflare-access-plus-password",deviceMfaEnrollment:"cloudflare-access-biometrics",email:actor.email,
+    return C({loginMethod:"cloudflare-access-plus-password",email:actor.email,
       activationRequired:!!account&&account.password_updated_at==null,
       accountEnabled:!!account,role:account?.role||null});
   }
