@@ -4998,6 +4998,7 @@ function renderAll() {
 
 function setTab(tab) {
   if (!window.GC_AUTH || !GC_AUTH.can(tab)) { toast('Akses menu ini hanya untuk Admin.'); return; }
+  if(S.tab==="ai"&&tab!=="ai"&&typeof gcAiEnsureSaved==="function"&&!gcAiEnsureSaved())return;
   S.tab = tab;
 
   // Update desktop navigation
@@ -8743,8 +8744,11 @@ window.runAiTier3 = runAiTier3;
 
 /* ---------- ANALISA AI VIEW RENDERING ---------- */
 let LAST_AI_RESULT = null;
+let LAST_AI_FINGERPRINT = null;
 
 function renderAiView() {
+  if(!gcAiEnsureSaved())return;
+  if(LAST_AI_RESULT && LAST_AI_FINGERPRINT!==gcAiFingerprint(S.year)) LAST_AI_RESULT=null;
   const cfg = getAiConfig();
   const tierLabels = {
     tier1: "Tier 1 · Pengecekan data lokal (bukan audit)",
@@ -8763,6 +8767,7 @@ function renderAiView() {
 }
 
 async function runAiAnalysisUi() {
+  if(!gcAiEnsureSaved())return;
   const box = $("#aiContentBox");
   box.innerHTML = 
     '<div class="empty-state" style="padding:48px 20px">' +
@@ -8774,6 +8779,7 @@ async function runAiAnalysisUi() {
   try {
     const res = await executeAiAnalysis();
     LAST_AI_RESULT = res;
+    LAST_AI_FINGERPRINT = gcAiFingerprint(S.year);
     displayAiResult(res);
   } catch(err) {
     box.innerHTML = 
