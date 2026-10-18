@@ -5265,7 +5265,7 @@ function renderCarbonActivityHero() {
         options.map(o => '<button type="button" data-carbon-scope="' + o[0] + '" aria-pressed="' + String(filter === o[0]) + '">' + o[1] + ' · ' + o[2] + '</button>').join("") +
       '</div>' +
     '</section>';
-  $("#carbonScopeFilters button").forEach(b => b.onclick = () => {
+  $$("#carbonScopeFilters button").forEach(b => b.onclick = () => {
     $("#fScope").value = b.dataset.carbonScope;
     renderActList();
   });
