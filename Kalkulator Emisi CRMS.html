@@ -1840,6 +1840,82 @@ dialog.modal-sheet .modal-foot { background:var(--surface); }
   #aiContentBox .ai-result-actions .btn { flex:1 1 125px; }
 }
 
+  
+    /* GreenCal Carbon Profile UI — improved visual hierarchy, light/dark, mobile-first */
+    .emission-panel {
+      position:relative; isolation:isolate; overflow:hidden; min-width:0;
+      container-type:inline-size;
+      background:linear-gradient(145deg, color-mix(in srgb, var(--primary-soft) 36%, var(--surface)),var(--surface) 50%);
+      border:1px solid var(--primary-border);
+      box-shadow:0 12px 34px rgba(8,77,54,.075);
+    }
+    .emission-panel::before {
+      content:""; position:absolute; width:210px;height:210px;right:-85px;top:-100px;
+      border-radius:50%; background:radial-gradient(circle,color-mix(in srgb,var(--primary) 14%,transparent),transparent 72%);
+      pointer-events:none; z-index:-1;
+    }
+    .emission-panel-header {padding-left:43px;position:relative; margin-bottom:12px}
+    .emission-panel-header::before {
+      content:"";position:absolute;top:0;left:0;width:34px;height:34px;border-radius:12px;
+      background:var(--primary-soft) center/21px no-repeat;
+      background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%230e7556' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 4c-9 1-15 3-15 11a5 5 0 0 0 5 5c8 0 10-6 10-16Z'/%3E%3Cpath d='M4 21c1-5 5-9 11-12'/%3E%3C/svg%3E");
+    }
+    .emission-panel-header h3 {font-size:clamp(16px,2.2vw,19px);letter-spacing:-.025em;color:var(--ink)}
+    .emission-panel-header p {max-width:420px;line-height:1.5}
+    #scopeDonut.donut-wrap {display:block;padding:0;margin:0;min-width:0}
+    #scopeDonut .carbon-main {display:grid;grid-template-columns:minmax(0,1fr);align-items:center;gap:14px;margin:4px 0 14px}
+    #scopeDonut .carbon-ring-shell {min-width:0;display:flex;align-items:center;justify-content:center;padding:7px 0}
+    #scopeDonut .carbon-ring {width:clamp(192px,58vw,226px);aspect-ratio:1;position:relative;max-width:100%;flex-shrink:0}
+    #scopeDonut .carbon-ring-svg {width:100%;height:100%;display:block;transform:rotate(-90deg);filter:drop-shadow(0 9px 14px rgba(102,65,191,.11))}
+    #scopeDonut .carbon-ring-svg circle {transition:opacity .22s,stroke-width .22s}
+    #scopeDonut .carbon-ring-center {position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;text-align:center;pointer-events:none}
+    #scopeDonut .carbon-ring-kicker {font-size:9px;letter-spacing:.12em;font-weight:800;color:var(--ink-muted)}
+    #scopeDonut .carbon-ring-center strong {font-family:var(--font-num);font-weight:800;letter-spacing:-.065em;font-size:clamp(21px,5.1vw,29px);line-height:1.12;color:var(--ink);font-variant-numeric:tabular-nums}
+    #scopeDonut .carbon-ring-unit {font-size:12px;font-weight:700;color:var(--ink-muted)}
+    #scopeDonut .carbon-ring-year {font-size:10px;color:var(--primary);font-weight:700;padding:2px 9px;border-radius:999px;background:var(--primary-soft);margin-top:5px}
+    #scopeDonut .carbon-insight {min-width:0;background:linear-gradient(145deg,var(--primary-soft),color-mix(in srgb,var(--surface) 85%,var(--primary-soft)));border:1px solid var(--primary-border);border-radius:17px;padding:15px 16px}
+    #scopeDonut .carbon-insight-top {display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:9px}
+    #scopeDonut .carbon-insight-tag {font-size:11px;font-weight:800;letter-spacing:.01em;color:var(--primary);display:inline-flex;align-items:center;gap:6px}
+    #scopeDonut .carbon-insight-tag::before {content:"";width:8px;height:8px;border-radius:50%;background:var(--primary);box-shadow:0 0 0 4px color-mix(in srgb,var(--primary) 14%,transparent)}
+    #scopeDonut .carbon-insight-pct {font-size:21px;line-height:1;font-family:var(--font-num);font-weight:800;color:var(--primary)}
+    #scopeDonut .carbon-insight h4 {font-size:clamp(14px,3.7vw,16px);line-height:1.4;margin:0 0 7px;font-weight:800;color:var(--ink);overflow-wrap:anywhere}
+    #scopeDonut .carbon-insight p {font-size:12px;line-height:1.6;color:var(--ink-muted);margin:0}
+    #scopeDonut .carbon-breakdown-title {display:flex;align-items:center;justify-content:space-between;gap:10px;margin:13px 0 9px;font-size:11px;font-weight:800;letter-spacing:.055em;text-transform:uppercase;color:var(--ink-muted)}
+    #scopeDonut .carbon-breakdown-title small {font-size:10px;letter-spacing:0;text-transform:none;font-weight:600;color:var(--ink-subtle)}
+    #scopeDonut .carbon-breakdown {display:grid;grid-template-columns:minmax(0,1fr);gap:9px;min-width:0}
+    #scopeDonut .carbon-source {appearance:none;width:100%;border:1px solid var(--line-subtle);background:var(--surface);border-radius:14px;padding:12px;display:grid;grid-template-columns:39px minmax(0,1fr) minmax(63px,85px) 12px;gap:9px;align-items:center;text-align:left;cursor:pointer;min-width:0;transition:border-color .2s,background .2s,box-shadow .2s,transform .2s}
+    #scopeDonut .carbon-source:hover {border-color:var(--primary-border);transform:translateY(-1px)}
+    #scopeDonut .carbon-source:focus-visible {outline:3px solid var(--primary);outline-offset:2px}
+    #scopeDonut .carbon-source.is-dominant {background:color-mix(in srgb,var(--fin-soft) 43%,var(--surface));border-color:color-mix(in srgb,var(--fin) 44%,var(--line))}
+    #scopeDonut .carbon-source.is-selected {box-shadow:0 0 0 2px var(--primary-border)}
+    #scopeDonut .carbon-source-icon {display:grid;place-items:center;width:39px;height:39px;border-radius:12px;background:var(--scope-soft);color:var(--scope-color);flex-shrink:0}
+    #scopeDonut .carbon-source-icon svg {width:21px;height:21px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+    #scopeDonut .carbon-source-text {display:flex;flex-direction:column;gap:3px;min-width:0}
+    #scopeDonut .carbon-source-text b {font-size:12px;line-height:1.3;color:var(--ink);overflow-wrap:anywhere}
+    #scopeDonut .carbon-source-text small {font:600 11px/1.5 var(--font-num);color:var(--ink-muted);overflow-wrap:anywhere}
+    #scopeDonut .carbon-source-side {display:flex;flex-direction:column;align-items:flex-end;gap:7px;min-width:0}
+    #scopeDonut .carbon-source-side strong {font:800 15px/1.1 var(--font-num);color:var(--scope-color);white-space:nowrap}
+    #scopeDonut .carbon-track {display:block;height:6px;width:100%;border-radius:999px;background:var(--surface-3);overflow:hidden}
+    #scopeDonut .carbon-track i {display:block;height:100%;border-radius:999px;background:var(--scope-color);min-width:0}
+    #scopeDonut .carbon-chevron {font-size:20px;color:var(--ink-subtle);line-height:1;text-align:right}
+    #scopeDonut .carbon-footnote {margin:13px 0 0;font-size:10.5px;line-height:1.55;color:var(--ink-muted)}
+    @container (min-width:550px) {
+      #scopeDonut .carbon-main {grid-template-columns:minmax(0,225px) minmax(0,1fr);gap:18px}
+      #scopeDonut .carbon-breakdown {grid-template-columns:repeat(2,minmax(0,1fr))}
+    }
+    @container (max-width:355px) {
+      #scopeDonut .carbon-source {grid-template-columns:32px minmax(0,1fr) 70px;gap:7px;padding:10px}
+      #scopeDonut .carbon-source-icon {width:32px;height:32px}
+      #scopeDonut .carbon-source-icon svg {width:18px;height:18px}
+      #scopeDonut .carbon-chevron {display:none}
+      #scopeDonut .carbon-source-text b {font-size:11px}
+      #scopeDonut .carbon-source-text small {font-size:10px}
+      #scopeDonut .carbon-source-side strong {font-size:13px}
+    }
+    [data-theme="dark"] .emission-panel {background:linear-gradient(145deg,#102a22,var(--surface) 46%);box-shadow:none}
+    [data-theme="dark"] #scopeDonut .carbon-ring-svg {filter:none}
+    @media(prefers-reduced-motion:reduce){#scopeDonut .carbon-source,#scopeDonut .carbon-ring-svg circle{transition:none}}
+
     /* Bank Riau Kepri Syariah official user-supplied wordmark; isolated on white for dark mode. */
     .brks-logo-wrap {
       display: flex;
@@ -1886,7 +1962,353 @@ dialog.modal-sheet .modal-foot { background:var(--surface); }
       .brand-sub { font-size: 10px; }
     }
 
-  </style>
+
+
+    /* GreenCal carbon composition v2 — compact mobile editorial dashboard */
+    .emission-panel {
+      background:
+        radial-gradient(ellipse at 100% 0%,color-mix(in srgb,var(--primary) 14%,transparent),transparent 47%),
+        linear-gradient(145deg,color-mix(in srgb,var(--primary-soft) 37%,var(--surface)),var(--surface) 58%);
+      border:1px solid var(--primary-border);
+    }
+    .emission-panel-header {margin-bottom:13px}
+    #scopeDonut .carbon-message {
+      display:flex; align-items:center; gap:11px; padding:12px 14px; border-radius:15px;
+      background:linear-gradient(112deg,#0b513d,#137458); color:#fff;
+      box-shadow:0 6px 18px rgba(5,81,57,.14); margin:0 0 14px; min-width:0;
+    }
+    #scopeDonut .carbon-message-icon {
+      display:grid;place-items:center;flex-shrink:0;width:35px;height:35px;border-radius:11px;
+      background:rgba(255,255,255,.13);font-size:20px;color:#b8f4d9
+    }
+    #scopeDonut .carbon-message-content {display:flex;flex-direction:column;gap:2px;min-width:0}
+    #scopeDonut .carbon-message small {font-size:9px;line-height:1.3;font-weight:800;letter-spacing:.1em;color:#c5f3df}
+    #scopeDonut .carbon-message strong {font-size:13px;line-height:1.42;font-weight:800;letter-spacing:-.01em;overflow-wrap:anywhere}
+    #scopeDonut .carbon-main {grid-template-columns:minmax(0,160px) minmax(0,1fr);gap:13px;margin:0 0 15px;align-items:center}
+    #scopeDonut .carbon-ring-shell {padding:0}
+    #scopeDonut .carbon-ring {width:min(100%,160px)}
+    #scopeDonut .carbon-ring-center strong {font-size:clamp(17px,3.4vw,24px);letter-spacing:-.075em}
+    #scopeDonut .carbon-ring-kicker {font-size:8px;letter-spacing:.06em}
+    #scopeDonut .carbon-ring-unit {font-size:11px}
+    #scopeDonut .carbon-ring-year {font-size:9px;margin-top:3px}
+    #scopeDonut .carbon-insight {
+      display:flex;flex-direction:column;justify-content:center;
+      min-height:144px;border:1px solid var(--primary-border);
+      background:linear-gradient(155deg,var(--primary-soft),color-mix(in srgb,var(--surface) 65%,var(--primary-soft)));
+      padding:13px;border-radius:15px;
+    }
+    #scopeDonut .carbon-insight-top {display:flex;flex-direction:column;align-items:flex-start;gap:7px;margin-bottom:6px}
+    #scopeDonut .carbon-insight-tag {font-size:10px}
+    #scopeDonut .carbon-insight-pct {font-size:clamp(23px,4vw,31px);color:var(--primary);letter-spacing:-.05em}
+    #scopeDonut .carbon-insight h4 {font-size:13px;line-height:1.4;letter-spacing:-.025em;margin:0 0 4px}
+    #scopeDonut .carbon-insight p {font-size:10.5px;line-height:1.45;overflow-wrap:anywhere}
+    #scopeDonut .carbon-breakdown-title {margin:10px 0 8px}
+    #scopeDonut .carbon-breakdown {gap:7px}
+    #scopeDonut .carbon-source {padding:10px;border-radius:13px;grid-template-columns:36px minmax(0,1fr) 76px 9px;gap:8px}
+    #scopeDonut .carbon-source-icon {height:36px;width:36px;border-radius:10px}
+    #scopeDonut .carbon-source-icon svg {width:19px;height:19px}
+    #scopeDonut .carbon-source-text b {font-size:11.5px}
+    #scopeDonut .carbon-source-text small {font-size:10.5px}
+    #scopeDonut .carbon-source-side strong {font-size:13.5px}
+    #scopeDonut .carbon-chevron {font-size:17px}
+    #scopeDonut .carbon-footnote {font-size:10px;margin-top:10px}
+    @container (min-width:570px) {
+      #scopeDonut .carbon-main {grid-template-columns:minmax(0,200px) minmax(0,1fr);gap:22px}
+      #scopeDonut .carbon-ring {width:195px}
+      #scopeDonut .carbon-insight {min-height:165px;padding:19px}
+      #scopeDonut .carbon-insight-top {flex-direction:row;align-items:center}
+      #scopeDonut .carbon-insight h4 {font-size:16px}
+      #scopeDonut .carbon-insight p {font-size:12px}
+    }
+    @container (min-width:290px) and (max-width:569px) {
+      #scopeDonut .carbon-main {grid-template-columns:minmax(0,42%) minmax(0,1fr);gap:10px;align-items:stretch}
+      #scopeDonut .carbon-ring {width:100%;max-width:170px}
+      #scopeDonut .carbon-insight {min-height:0;padding:11px 10px}
+      #scopeDonut .carbon-insight-top {gap:5px;margin-bottom:5px}
+      #scopeDonut .carbon-insight-tag {font-size:9px}
+      #scopeDonut .carbon-insight-pct {font-size:clamp(21px,5vw,28px)}
+      #scopeDonut .carbon-insight h4 {font-size:clamp(11px,3.1vw,13px)}
+      #scopeDonut .carbon-insight p {font-size:10px;line-height:1.35}
+      #scopeDonut .carbon-ring-center strong {font-size:clamp(15px,4.1vw,21px)}
+      #scopeDonut .carbon-ring-kicker {font-size:7px}
+      #scopeDonut .carbon-ring-unit {font-size:10px}
+      #scopeDonut .carbon-source {grid-template-columns:33px minmax(0,1fr) 70px;gap:8px;padding:9px}
+      #scopeDonut .carbon-source-icon {width:33px;height:33px}
+      #scopeDonut .carbon-chevron {display:none}
+    }
+    @container (max-width:289px) {
+      #scopeDonut .carbon-main {grid-template-columns:1fr;gap:10px}
+      #scopeDonut .carbon-ring {width:154px}
+      #scopeDonut .carbon-insight {min-height:0}
+      #scopeDonut .carbon-source {grid-template-columns:31px minmax(0,1fr) 61px;gap:6px;padding:8px}
+      #scopeDonut .carbon-source-icon {width:31px;height:31px}
+      #scopeDonut .carbon-chevron {display:none}
+      #scopeDonut .carbon-source-text b {font-size:10.5px}
+      #scopeDonut .carbon-source-side strong {font-size:12px}
+      #scopeDonut .carbon-message {padding:10px}
+      #scopeDonut .carbon-message strong {font-size:11px}
+    }
+    [data-theme="dark"] #scopeDonut .carbon-message {background:linear-gradient(112deg,#124c39,#146547)}
+
+
+    /* GC-CARBON-EXPERIENCE-v2 — green banking carbon awareness redesign */
+    :root { --carbon-deep:#064934; --carbon-green:#0b7050; --carbon-mint:#dff5e8; }
+    body { background:radial-gradient(ellipse at 88% 0%,rgba(161,221,184,.17),transparent 32%),var(--bg); }
+    .brand-title {font-weight:800;letter-spacing:-.035em;}
+    .brand-logo {border-radius:14px;background:linear-gradient(145deg,#064934,#15906b);box-shadow:0 6px 15px rgba(9,97,64,.2);}
+    .year-select-wrap {background:var(--primary-soft);border-color:var(--primary-border);}
+    #view-aktivitas .view-title-group h2,#view-wizard .view-title-group h2 {letter-spacing:-.035em;font-weight:800;}
+    #view-aktivitas .view-title-group p,#view-wizard .view-title-group p {line-height:1.55;}
+    .carbon-hero {position:relative;overflow:hidden;color:white;background:linear-gradient(112deg,#074834 0%,#0e6b4e 58%,#168365 100%);border:1px solid rgba(4,93,63,.18);border-radius:24px;padding:25px 26px 22px;margin:2px 0 24px;box-shadow:0 16px 35px rgba(9,89,59,.14);isolation:isolate;}
+    .carbon-hero:before {content:"";position:absolute;width:260px;height:260px;right:-85px;top:-120px;border-radius:50%;border:38px solid rgba(192,244,206,.11);z-index:-1;}
+    .carbon-hero:after {content:"";position:absolute;width:180px;height:180px;right:12%;bottom:-155px;border-radius:50%;background:rgba(162,241,198,.1);z-index:-1;}
+    .carbon-hero-top {display:flex;align-items:center;gap:8px;font-size:12px;font-weight:750;letter-spacing:.06em;text-transform:uppercase;color:#d4f5e4;}
+    .carbon-hero-top svg {width:19px;height:19px;flex-shrink:0;}
+    .carbon-hero-main {display:flex;justify-content:space-between;align-items:center;gap:16px;margin:13px 0 8px;}
+    .carbon-total {font-size:clamp(30px,4.5vw,48px);line-height:1.12;letter-spacing:-.055em;font-weight:800;font-variant-numeric:tabular-nums;overflow-wrap:anywhere;}
+    .carbon-total span {font-size:.37em;font-weight:700;letter-spacing:0;white-space:nowrap;color:#d7f4e5;}
+    .carbon-hero-illustration {display:grid;place-items:center;flex-shrink:0;width:89px;height:89px;border-radius:28px;background:rgba(255,255,255,.11);border:1px solid rgba(255,255,255,.15);}
+    .carbon-hero-illustration svg {width:53px;height:53px;color:#cbefdb;}
+    .carbon-hero-note {color:#d1ebdf;font-size:12.5px;line-height:1.6;margin:0;max-width:58ch;}
+    .carbon-hero-foot {display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:14px;}
+    .carbon-mini-pill {display:inline-flex;gap:6px;align-items:center;border:1px solid rgba(255,255,255,.24);border-radius:50px;padding:5px 10px;font-size:11px;font-weight:700;color:#f1fff7;background:rgba(255,255,255,.08);}
+    .carbon-hero-warning {color:#fff2d7;border-color:rgba(255,215,159,.4);}
+    .carbon-scope-filters {display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;padding:0 0 5px;margin-top:16px;}
+    .carbon-scope-filters::-webkit-scrollbar {display:none;}
+    .carbon-scope-filters button {border:1px solid rgba(255,255,255,.32);color:#e5f7ed;background:rgba(255,255,255,.07);border-radius:99px;padding:8px 14px;white-space:nowrap;min-height:39px;cursor:pointer;font-size:12px;font-weight:800;transition:background .15s,transform .15s;}
+    .carbon-scope-filters button[aria-pressed="true"] {background:#fff;color:#06553b;box-shadow:0 4px 12px rgba(0,0,0,.1);border-color:#fff;}
+    .carbon-scope-filters button:focus-visible {outline:3px solid #a5f2c7;outline-offset:3px;}
+    #view-aktivitas .grid-form-list {gap:20px;}
+    #view-aktivitas .grid-form-list > * {min-width:0;}
+    #view-aktivitas #actForm {border:1px solid var(--line);border-radius:22px;box-shadow:var(--shadow-md);padding:22px;}
+    #view-aktivitas #actFormTitle {font-size:19px;font-weight:800;letter-spacing:-.03em;}
+    #view-aktivitas .calc-step-badge {font-size:12px;letter-spacing:.035em;padding:10px 12px;border-radius:12px;background:var(--primary-soft);color:var(--primary);width:100%;border-left:3px solid var(--primary);margin:6px 0 1px;}
+    #view-aktivitas #aCatInfo {background:var(--primary-soft);border:1px solid var(--primary-border);padding:14px;border-radius:14px;color:var(--ink-muted);line-height:1.6;}
+    #view-aktivitas #aCatInfo b {color:var(--primary);}
+    #view-aktivitas select,#view-aktivitas input,#wizardFormPanel select,#wizardFormPanel input {min-height:48px;font-size:15px;border-radius:13px;max-width:100%;min-width:0;}
+    #view-aktivitas .field-label,#wizardFormPanel .field-label {font-weight:750;color:var(--ink-muted);font-size:12.5px;}
+    #view-aktivitas .field-group {min-width:0;}
+    #view-aktivitas #aSave {min-height:48px;border-radius:14px;box-shadow:0 5px 14px rgba(9,99,70,.18);}
+    #view-aktivitas .filter-bar {gap:8px;margin-bottom:14px;}
+    #view-aktivitas #fScope {display:none;}
+    .carbon-activity-card {border-radius:19px;padding:18px 19px;gap:13px;box-shadow:0 3px 12px rgba(19,75,49,.045);transition:transform .18s,box-shadow .18s,border-color .18s;border-color:var(--line-subtle);}
+    .carbon-activity-card:hover {transform:translateY(-2px);border-color:var(--primary-border);box-shadow:0 9px 22px rgba(14,90,55,.09);}
+    .carbon-activity-card .carbon-activity-top {display:flex;align-items:start;justify-content:space-between;gap:12px;min-width:0;}
+    .carbon-activity-card .data-card-title {font-size:14.5px;font-weight:800;letter-spacing:-.023em;}
+    .carbon-activity-card .data-card-meta {gap:5px;margin-top:7px;line-height:1.7;}
+    .carbon-activity-card .chip {font-size:10px;font-weight:800;border-radius:99px;padding:3px 8px;}
+    .carbon-activity-body {display:flex;align-items:center;gap:12px;min-width:0;}
+    .carbon-activity-icon {width:42px;height:42px;min-width:42px;display:grid;place-items:center;font-size:21px;border-radius:13px;background:var(--s1-soft);color:var(--s1-ink);}
+    .scope-2 .carbon-activity-icon {background:var(--s2-soft);color:var(--s2-ink);}
+    .scope-3 .carbon-activity-icon {background:var(--s3-soft);color:var(--s3-ink);}
+    .carbon-activity-desc {min-width:0;flex:1;font-size:13px;line-height:1.46;}
+    .carbon-activity-desc strong {display:block;color:var(--ink);font-weight:750;}
+    .carbon-activity-desc small {display:block;color:var(--ink-muted);font-size:11.5px;margin-top:4px;overflow-wrap:anywhere;}
+    .carbon-activity-measure {padding:12px 15px;border-radius:14px;background:linear-gradient(110deg,var(--primary-soft),var(--surface-2));display:flex;align-items:baseline;justify-content:space-between;gap:10px;flex-wrap:wrap;}
+    .carbon-activity-measure > span {font-size:11px;color:var(--ink-muted);font-weight:700;}
+    .carbon-activity-measure strong {font-size:clamp(20px,2.3vw,26px);letter-spacing:-.045em;line-height:1.2;font-weight:800;color:var(--primary);font-variant-numeric:tabular-nums;overflow-wrap:anywhere;}
+    .carbon-activity-measure strong small {font-size:11px;letter-spacing:0;font-weight:750;}
+    .carbon-activity-evidence {display:flex;gap:6px;align-items:flex-start;color:var(--ink-muted);font-size:11.5px;line-height:1.5;overflow-wrap:anywhere;}
+    .carbon-activity-evidence svg {width:15px;height:15px;flex-shrink:0;margin-top:1px;}
+    .carbon-activity-card .data-card-actions {margin-top:0;gap:7px;padding-top:10px;}
+    .carbon-activity-card .data-card-actions .btn {min-height:36px;padding:6px 12px;border-radius:10px;font-size:12px;}
+    #wizardFormPanel {border-radius:22px;padding:23px;border-color:var(--line);box-shadow:var(--shadow-md);}
+    #wizardFormPanel h3 {letter-spacing:-.025em;font-size:19px;}
+    #wizardFormPanel .result-box {background:linear-gradient(135deg,var(--primary-soft),var(--surface-2));border-radius:17px;border:1px solid var(--primary-border);}
+    #wizardFormPanel .result-box .result-val {font-family:var(--font-main);letter-spacing:-.045em;font-size:clamp(23px,4vw,32px);font-weight:800;overflow-wrap:anywhere;}
+    #wizardFormPanel .result-box .result-formula {font-family:var(--font-main);font-size:12px;word-break:normal;overflow-wrap:anywhere;}
+    .carbon-factor-note {background:var(--primary-soft);border-radius:13px;padding:11px 13px;color:var(--ink-muted);font-size:11.5px;line-height:1.55;border:1px solid var(--primary-border);}
+    .carbon-calc-label {font-weight:800;font-size:12px;letter-spacing:.02em;color:var(--primary);margin:4px 0 -5px;}
+    #wizardFormPanel [id$="_save"] {min-height:46px;border-radius:13px;}
+    .gc-choice-sheet {position:fixed;inset:auto 0 0;width:min(100%,620px);margin:0 auto;max-height:min(85dvh,780px);padding:0;border:0;border-radius:25px 25px 0 0;color:var(--ink);background:var(--surface);box-shadow:0 -16px 60px rgba(0,0,0,.22);overflow:hidden;}
+    .gc-choice-sheet::backdrop {background:rgba(5,24,17,.6);backdrop-filter:blur(3px);}
+    .gc-sheet-head {padding:19px 18px 13px;border-bottom:1px solid var(--line-subtle);display:flex;justify-content:space-between;gap:12px;align-items:center;}
+    .gc-sheet-head strong {font-size:16px;letter-spacing:-.025em;line-height:1.3;}
+    .gc-sheet-close {background:var(--surface-2);color:var(--ink);border:0;border-radius:50%;min-width:34px;height:34px;font-size:20px;cursor:pointer;}
+    .gc-sheet-search {display:block;width:calc(100% - 36px);margin:12px 18px;padding:12px 14px;min-height:45px;border-radius:13px;border:1px solid var(--line);background:var(--surface-2);color:var(--ink);font-size:16px;}
+    .gc-choice-options {overflow-y:auto;overscroll-behavior:contain;max-height:calc(min(85dvh,780px) - 132px);padding:0 10px calc(12px + var(--safe-bottom));}
+    .gc-choice-group {color:var(--primary);font-size:11px;font-weight:800;letter-spacing:.05em;padding:15px 11px 5px;text-transform:uppercase;}
+    .gc-choice-option {text-align:left;width:100%;display:flex;align-items:center;justify-content:space-between;gap:13px;color:var(--ink);font-size:14px;font-weight:600;background:transparent;border:0;border-bottom:1px solid var(--line-subtle);min-height:51px;padding:11px 12px;border-radius:9px;cursor:pointer;overflow-wrap:anywhere;}
+    .gc-choice-option[aria-selected="true"] {background:var(--primary-soft);color:var(--primary);font-weight:800;}
+    .gc-choice-radio {display:inline-block;width:20px;height:20px;flex-shrink:0;border-radius:50%;border:2px solid var(--ink-subtle);}
+    .gc-choice-option[aria-selected="true"] .gc-choice-radio {border:6px solid var(--primary);}
+    .gc-choice-empty {padding:20px;color:var(--ink-muted);font-size:13px;}
+    [data-theme="dark"] .carbon-hero {background:linear-gradient(115deg,#063927,#0e563d);}
+    @media (max-width:959px) {#view-aktivitas .grid-form-list {display:flex;flex-direction:column;}#view-aktivitas .grid-form-list > form {order:2;width:100%;}#view-aktivitas .grid-form-list > div {order:1;width:100%;}}
+    @media (max-width:620px) {
+      .carbon-hero {border-radius:19px;padding:21px 18px 19px;margin-bottom:17px;}
+      .carbon-hero-illustration {width:58px;height:58px;border-radius:18px;}
+      .carbon-hero-illustration svg {width:35px;height:35px;}
+      .carbon-total {font-size:clamp(27px,8vw,37px);}
+      .carbon-hero-note {font-size:11.5px;}
+      .carbon-scope-filters {gap:7px;margin-top:14px;}
+      .carbon-scope-filters button {font-size:11.5px;padding:8px 12px;}
+      #view-aktivitas #actForm,#wizardFormPanel {padding:17px;border-radius:19px;}
+      #view-aktivitas .input-row-2,#wizardFormPanel .input-row-2 {grid-template-columns:minmax(0,1fr);}
+      #view-aktivitas select,#view-aktivitas input,#wizardFormPanel select,#wizardFormPanel input {font-size:16px;}
+      #view-aktivitas .search-input-wrap {min-width:0;flex-basis:100%;}
+      .carbon-activity-card {padding:16px;}
+      .carbon-activity-measure strong {font-size:22px;}
+      .carbon-activity-desc {font-size:12.5px;}
+      .carbon-activity-body {align-items:flex-start;}
+      .brand-block {gap:9px;}
+      .brand-title {font-size:14.5px;line-height:1.2;}
+      .brand-sub {font-size:10.5px;}
+      .brand-logo {width:37px;height:37px;flex-shrink:0;}
+      .year-select-wrap {padding:3px 6px;}
+      .year-select-wrap span {display:none;}
+    }
+    @media(prefers-reduced-motion:reduce){.carbon-activity-card,.carbon-scope-filters button{transition:none;}}
+
+
+/* GC mobile dashboard polish / 2026-10-18 */
+@media(max-width:620px){
+  header.app-header .header-inner{row-gap:7px;padding-top:9px;padding-bottom:8px;min-height:0}
+  header.app-header .brand-block{display:grid;grid-template-columns:clamp(82px,25vw,108px) minmax(0,1fr);gap:9px;min-width:0;overflow:visible;align-items:center}
+  header.app-header .brks-logo-wrap{grid-column:1;width:100%;height:38px;flex-basis:auto;padding:3px 5px;border-radius:9px}
+  header.app-header .brand-info{grid-column:2;min-width:0;overflow:visible}
+  header.app-header .brand-title{font-size:clamp(14px,3.9vw,17px);line-height:1.25;white-space:normal;overflow:visible;overflow-wrap:normal}
+  header.app-header .brand-sub{font-size:clamp(10.5px,2.7vw,11.5px);line-height:1.35;margin-top:3px;white-space:normal;overflow:visible;text-overflow:clip;overflow-wrap:break-word;max-width:none}
+  header.app-header .year-select-wrap{min-height:36px;padding:5px 12px}
+  header.app-header .year-select-wrap svg{display:block}
+  header.app-header .icon-btn{min-width:40px;width:40px;height:40px}
+}
+.emission-panel{border-color:var(--line);box-shadow:0 6px 24px rgba(12,70,44,.04)}
+.emission-panel-header{padding-left:39px;margin-bottom:11px}
+.emission-panel-header::before{width:30px;height:30px;background-size:18px;border-radius:10px}
+.emission-panel-header h3{font-size:clamp(15px,2.6vw,18px);letter-spacing:-.03em}
+.emission-panel-header p{font-size:clamp(11px,2.2vw,12px);line-height:1.45}
+#scopeDonut .carbon-message{min-height:0;margin:0 0 13px;padding:11px 12px;gap:9px;border-radius:14px;box-shadow:none;background:linear-gradient(115deg,#0b5540,#087452)}
+#scopeDonut .carbon-message-icon{width:30px;height:30px;border-radius:9px;font-size:17px}
+#scopeDonut .carbon-message small{font-size:9px;letter-spacing:.045em}
+#scopeDonut .carbon-message strong{font-size:clamp(11.5px,2.7vw,13px);line-height:1.38}
+#scopeDonut .carbon-ring-svg{filter:none}
+#scopeDonut .carbon-ring-center{gap:1px;padding:0}
+#scopeDonut .carbon-ring-kicker,#scopeDonut .carbon-ring-year{display:none}
+#scopeDonut .carbon-ring-center strong{font-family:var(--font-main);font-weight:800;letter-spacing:-.06em;font-size:clamp(16px,3.4vw,24px);line-height:1.2;white-space:nowrap}
+#scopeDonut .carbon-ring-unit{font-size:clamp(9px,2.4vw,12px);font-weight:750}
+#scopeDonut .carbon-main{margin-bottom:13px}
+#scopeDonut .carbon-insight{border:1px solid var(--line-subtle);box-shadow:none;padding:12px;background:var(--surface);border-radius:14px}
+#scopeDonut .carbon-insight-tag{font-size:9px;text-transform:uppercase;letter-spacing:.035em}
+#scopeDonut .carbon-insight-pct{font-family:var(--font-main);font-size:clamp(19px,3.2vw,26px);letter-spacing:-.05em;font-variant-numeric:tabular-nums;line-height:1.14;overflow-wrap:anywhere}
+#scopeDonut .carbon-insight h4{font-size:clamp(11px,2.4vw,14px);line-height:1.37}
+#scopeDonut .carbon-insight p{font-size:10.5px;line-height:1.45}
+#scopeDonut .carbon-breakdown-title{margin:8px 0;line-height:1.4}
+#scopeDonut .carbon-breakdown-title small{text-align:right}
+#scopeDonut .carbon-source-side strong{font-family:var(--font-main);font-variant-numeric:tabular-nums;letter-spacing:-.025em}
+@container (min-width:290px) and (max-width:569px){
+ #scopeDonut .carbon-main{grid-template-columns:minmax(0,43%) minmax(0,1fr);gap:12px;align-items:center}
+ #scopeDonut .carbon-ring{width:100%;max-width:166px}
+ #scopeDonut .carbon-ring-center strong{font-size:clamp(16px,4.3vw,20px)}
+ #scopeDonut .carbon-insight{padding:10px}
+ #scopeDonut .carbon-insight-pct{font-size:clamp(18px,5vw,23px)}
+ #scopeDonut .carbon-insight h4{font-size:clamp(11px,3vw,13px)}
+ #scopeDonut .carbon-insight p{font-size:10px;line-height:1.4}
+}
+@container (max-width:335px){
+ #scopeDonut .carbon-main{grid-template-columns:1fr;gap:9px}
+ #scopeDonut .carbon-ring{width:152px;max-width:100%}
+ #scopeDonut .carbon-insight{padding:12px}
+ #scopeDonut .carbon-insight-top{flex-direction:row;align-items:center;justify-content:space-between}
+ #scopeDonut .carbon-insight-pct{font-size:20px}
+ #scopeDonut .carbon-breakdown-title small{display:none}
+}
+[data-theme="dark"] #scopeDonut .carbon-insight{background:var(--surface-elevated);border-color:var(--line)}
+
+  
+    /* GreenCal fuel catalog: searchable selection, source evidence and adaptive consumption unit */
+    .gc-fuel-form{gap:15px;}
+    .gc-fuel-helper{margin:0;color:var(--ink-muted);font-size:12px;line-height:1.6;}
+    .gc-fuel-form #wzB_fuel{min-width:0;width:100%;min-height:46px;white-space:nowrap;text-overflow:ellipsis;}
+    .gc-fuel-count{display:block;margin-top:6px;font-size:11px;color:var(--primary);font-weight:700;}
+    .gc-fuel-source{margin:0;padding:10px 12px;border-left:3px solid var(--primary);border-radius:0 10px 10px 0;background:var(--primary-soft);font-size:11px;line-height:1.5;color:var(--ink-muted);}
+    .gc-fuel-form #wzB_qtyu{max-width:140px;min-width:95px;}
+    .gc-fuel-form #wzB_vol{width:100%;min-width:0;}
+    .gc-fuel-form #wzB_save:disabled{opacity:.45;cursor:not-allowed;box-shadow:none;}
+    @media(max-width:620px){
+      .gc-fuel-form .input-row-2{grid-template-columns:minmax(0,1fr);gap:12px;}
+      .gc-fuel-form #wzB_fuel,.gc-fuel-form #wzB_type{font-size:14px;}
+      .gc-fuel-form .field-group{min-width:0;}
+    }
+
+  
+/* GreenCal PCAF sector selection: full, searchable industry catalog */
+#wzX_sec{width:100%;min-width:0;min-height:46px;text-overflow:ellipsis;font-size:14px;}
+.gc-pcaf-sector-note{margin:4px 0 0;font-size:11px;line-height:1.5;color:var(--ink-muted);}
+#wzX_secOtherWrap{margin-top:10px;gap:7px;}
+#wzX_secOtherWrap[hidden]{display:none!important;}
+#wzX_secOther{width:100%;min-width:0;min-height:46px;}
+@media(max-width:620px){#wzX_sec{font-size:14px;}#wzX_secOther{font-size:16px;}}
+
+
+/* GreenCal v4: mobile-first reporting, compact and informative */
+.breakdown-panel {border-radius:22px;box-shadow:0 14px 36px rgba(9,65,42,.055);}
+.breakdown-heading {align-items:center;}
+.breakdown-eyebrow {display:block;color:var(--primary);font-size:10px;font-weight:800;letter-spacing:.10em;}
+.breakdown-heading h3 {font-size:clamp(18px,2vw,22px);letter-spacing:-.025em;margin:3px 0 4px;}
+.breakdown-heading p {line-height:1.6;}
+.breakdown-unit {font-size:11px;color:var(--primary);font-weight:800;background:var(--primary-soft);border-radius:99px;border:1px solid var(--primary-border);padding:6px 10px;}
+#sumTable thead th {padding:14px;background:var(--surface-2);font-size:11px;}
+#sumTable tbody td {padding:12px 14px;font-size:12.5px;line-height:1.5;}
+#sumTable tr.grp td {background:var(--surface-2);color:var(--primary);}
+#sumTable tr.tot td {background:var(--primary-soft);}
+#sumTable tbody tr:not(.grp):not(.tot):hover td {background:var(--surface-2);}
+#sumTable td.num {white-space:nowrap;font-variant-numeric:tabular-nums;}
+.mobile-breakdown,.breakdown-table-toggle {display:none;}
+@media(max-width:620px){
+  .breakdown-panel {padding:17px 14px;border-radius:20px;}
+  .breakdown-heading {align-items:flex-start;gap:8px;margin-bottom:16px;}
+  .breakdown-heading h3 {font-size:20px;}
+  .breakdown-heading p {font-size:11.5px;}
+  .breakdown-unit {font-size:10px;padding:5px 8px;}
+  .mobile-breakdown {display:grid;gap:13px;}
+  .breakdown-scope {--tone:var(--s1);--tint:var(--s1-soft);background:var(--surface);border:1px solid var(--line);border-radius:17px;overflow:hidden;box-shadow:0 4px 16px rgba(0,0,0,.025);}
+  .breakdown-scope.scope-2 {--tone:var(--s2);--tint:var(--s2-soft);}
+  .breakdown-scope.scope-3 {--tone:var(--fin);--tint:var(--fin-soft);}
+  .breakdown-scope.scope-4 {--tone:var(--ink-muted);--tint:var(--surface-2);}
+  .breakdown-scope-head {display:flex;gap:9px;align-items:center;justify-content:space-between;padding:13px 12px;background:linear-gradient(115deg,var(--tint),var(--surface) 95%);border-bottom:1px solid var(--line-subtle);}
+  .breakdown-scope-heading {min-width:0;}
+  .breakdown-scope-pill {font-size:10px;font-weight:800;color:var(--tone);background:var(--surface);border:1px solid var(--line-subtle);padding:4px 9px;border-radius:99px;}
+  .breakdown-scope-heading h4 {margin:8px 0 0;font-size:11.5px;color:var(--ink-muted);font-weight:700;line-height:1.4;}
+  .breakdown-scope-total {display:flex;flex-direction:column;align-items:flex-end;max-width:49%;flex-shrink:0;}
+  .breakdown-scope-total strong {font-size:clamp(18px,4.8vw,23px);font-weight:800;letter-spacing:-.045em;font-variant-numeric:tabular-nums;overflow-wrap:anywhere;text-align:right;line-height:1.25;}
+  .breakdown-scope-total small {font-size:10px;color:var(--ink-muted);}
+  .breakdown-scope-body {padding:5px 11px 9px;}
+  .breakdown-item {min-width:0;padding:12px 2px;border-bottom:1px solid var(--line-subtle);}
+  .breakdown-item-top {display:flex;gap:10px;justify-content:space-between;align-items:flex-start;}
+  .breakdown-item-name {min-width:0;max-width:63%;font-size:12px;line-height:1.45;font-weight:650;overflow-wrap:anywhere;}
+  .breakdown-item-value {text-align:right;font-size:14px;font-weight:800;line-height:1.3;letter-spacing:-.035em;font-variant-numeric:tabular-nums;overflow-wrap:anywhere;}
+  .breakdown-item-value small {display:block;font-size:9px;letter-spacing:0;font-weight:500;color:var(--ink-muted);}
+  .breakdown-meter {height:5px;border-radius:99px;background:var(--surface-2);overflow:hidden;margin-top:8px;}
+  .breakdown-meter span {height:100%;display:block;background:var(--tone);border-radius:99px;}
+  .breakdown-item.featured {margin:6px 0;border-radius:12px;padding:12px;border:1px solid color-mix(in srgb,var(--tone) 25%,var(--line));background:color-mix(in srgb,var(--tint) 70%,var(--surface));}
+  .breakdown-item.featured .breakdown-item-name {font-weight:800;}
+  .breakdown-item.featured .breakdown-item-value {color:var(--tone);}
+  .breakdown-note {font-size:10px;color:var(--ink-muted);font-weight:650;margin-top:6px;}
+  .breakdown-empty {color:var(--ink-muted);font-size:12px;line-height:1.55;margin:9px 0;}
+  .breakdown-zero-groups summary {display:flex;justify-content:space-between;align-items:center;cursor:pointer;list-style:none;min-height:44px;padding:9px 4px;color:var(--ink-muted);font-size:11px;font-weight:700;}
+  .breakdown-zero-groups summary::-webkit-details-marker {display:none;}
+  .breakdown-zero-groups[open] summary span {transform:rotate(180deg);}
+  .breakdown-zero-items {border-top:1px solid var(--line-subtle);}
+  .breakdown-item.zero .breakdown-item-name,.breakdown-item.zero .breakdown-item-value {font-size:11.5px;font-weight:500;color:var(--ink-muted);}
+  .breakdown-table-toggle {display:flex;align-items:center;gap:10px;justify-content:space-between;text-align:left;background:var(--surface-2);color:var(--ink);border:1px solid var(--line);border-radius:13px;width:100%;min-height:45px;padding:11px 12px;margin-top:14px;font-size:11.5px;font-weight:750;cursor:pointer;}
+  .breakdown-table-toggle .toggle-label {flex:1;}
+  .breakdown-table-toggle .toggle-arrow {font-size:20px;transition:transform .2s;}
+  .breakdown-table-toggle[aria-expanded="true"] .toggle-arrow {transform:rotate(180deg);}
+  #breakdownTableWrap {display:none;margin-top:10px;}
+  #breakdownTableWrap.is-expanded {display:block;}
+  #breakdownTableWrap table {min-width:620px;}
+  /* Shorten the tall brand header without harming logo legibility. */
+  .app-header {box-shadow:0 4px 16px rgba(8,40,30,.045);}
+  .header-inner {min-height:0;row-gap:5px;padding-top:8px;padding-bottom:8px;}
+  .brks-logo-wrap {height:40px;width:clamp(105px,34vw,139px);flex-basis:clamp(105px,34vw,139px);}
+  .brand-title {font-size:clamp(13px,3.8vw,15px);}
+  .brand-sub {font-size:10px;}
+  .year-select-wrap {min-height:34px;padding:4px 10px;}
+}
+@media(prefers-reduced-motion:reduce){.breakdown-table-toggle .toggle-arrow{transition:none;}}
+
+</style>
 </head>
 <body>
 
@@ -2029,8 +2451,8 @@ dialog.modal-sheet .modal-foot { background:var(--surface); }
 
       <!-- VISUAL DONUT & BREAKDOWN -->
       <div class="grid-2">
-        <div class="panel">
-          <div class="panel-header">
+        <div class="panel emission-panel">
+          <div class="panel-header emission-panel-header">
             <div>
               <h3>Komposisi Emisi per Scope</h3>
               <p>Proporsi emisi bruto operasional &amp; terbiayai (tCO₂e)</p>
@@ -2085,16 +2507,23 @@ dialog.modal-sheet .modal-foot { background:var(--surface); }
         <ul class="alert-list" id="planList" style="margin-top:14px"></ul>
       </div>
 
-      <!-- SUMMARY TABLE -->
-      <div class="panel">
-        <div class="panel-header">
+      <!-- Buku 3: mobile insight cards + complete auditable table -->
+      <div class="panel breakdown-panel" id="emissionBreakdown">
+        <div class="panel-header breakdown-heading">
           <div>
-            <h3>Tabel Ringkasan Pelaporan Buku 3</h3>
-            <p>Emisi bruto, pengurangan offset, dan angka neto sebagai informasi</p>
+            <span class="breakdown-eyebrow">INVENTARISASI EMISI GRK</span>
+            <h3>Rincian Emisi per Kategori</h3>
+            <p>Temukan kontributor emisi utama dan telusuri semua kategori Scope 1–3.</p>
           </div>
+          <span class="breakdown-unit">tCO₂e</span>
         </div>
-        <div class="table-responsive">
-          <table id="sumTable"></table>
+        <div class="mobile-breakdown" id="mobileEmissionBreakdown" aria-label="Rincian kategori emisi menurut Scope"></div>
+        <button type="button" id="toggleFullBreakdown" class="breakdown-table-toggle" aria-expanded="false" aria-controls="breakdownTableWrap">
+          <span aria-hidden="true">▦</span><span class="toggle-label">Lihat tabel lengkap: bruto, offset &amp; neto</span>
+          <span class="toggle-arrow" aria-hidden="true">⌄</span>
+        </button>
+        <div class="table-responsive breakdown-table-wrap" id="breakdownTableWrap">
+          <table id="sumTable" aria-label="Tabel Buku 3 seluruh kategori emisi GRK"></table>
         </div>
       </div>
     </section>
@@ -2169,8 +2598,8 @@ dialog.modal-sheet .modal-foot { background:var(--surface); }
       <div class="view-header">
         <div class="view-title-row">
           <div class="view-title-group">
-            <h2>Data Aktivitas Emisi</h2>
-            <p>Pencatatan data primer aktivitas Scope 1, Scope 2, dan Scope 3 Kategori 1–14.</p>
+            <h2>Aktivitas &amp; Jejak Karbon</h2>
+            <p>Pantau kontribusi emisi setiap unit kerja, kelola bukti, dan telusuri sumber jejak karbon operasional.</p>
           </div>
           <div class="view-actions">
             <button class="btn primary sm" id="btnOpenActModal">+ Tambah Data</button>
@@ -2179,10 +2608,11 @@ dialog.modal-sheet .modal-foot { background:var(--surface); }
         </div>
       </div>
 
+      <div id="carbonActivityHero" aria-live="polite"></div>
       <div class="grid-form-list">
         <form class="panel form-stack" id="actForm" autocomplete="off">
           <div style="display:flex;align-items:center;justify-content:space-between">
-            <h3 id="actFormTitle" style="margin:0">Catat Aktivitas</h3>
+            <h3 id="actFormTitle" style="margin:0">Tambah Data Aktivitas</h3>
           </div>
 
           <div class="calc-step-badge">1 · Periode &amp; Lokasi</div>
@@ -3078,7 +3508,7 @@ const CATS = [
   {
     id: "s1_stat", s: "1", ref: "S1-Pembakaran Stasioner", t: "Pembakaran stasioner",
     d: "Genset, boiler, pemanas tidak bergerak milik/kendali bank. CO₂ biomassa dilaporkan terpisah.",
-    f: [SEL("fuel", "Bahan bakar", "stationary", { group: r => r.bio ? "Biomassa" : "Fosil" }), NUM("qty", "Jumlah dibakar", { units: stUnits })],
+    f: [SEL("fuel", "Bahan bakar", "stationary", { group: gcFuelGroup }), NUM("qty", "Jumlah dibakar", { units: stUnits })],
     calc(i, y) {
       const r = R("stationary", i.fuel, y), q = num(i.qty), u = i.qty_u || r.unit;
       let n = conv(q, u, r.unit, y), via = "";
@@ -3097,7 +3527,7 @@ const CATS = [
   {
     id: "s1_mob", s: "1", ref: "S1-Pembakaran Bergerak", t: "Pembakaran bergerak",
     d: "BBM kendaraan dan kapal operasional milik/kendali bank.",
-    f: [SEL("fuel", "Bahan bakar", "mobile"), NUM("qty", "BBM per kendaraan", { units: (i, y) => unitsFor("gallon", y) }), NUM("veh", "Jumlah kendaraan", { def: 1, unit: "unit" })],
+    f: [SEL("fuel", "Bahan bakar", "mobile", { group: gcFuelGroup }), NUM("qty", "BBM per kendaraan", { units: (i, y) => unitsFor("gallon", y) }), NUM("veh", "Jumlah kendaraan", { def: 1, unit: "unit" })],
     calc(i, y) {
       const r = R("mobile", i.fuel, y), q = num(i.qty), u = i.qty_u || "gallon", g = conv(q, u, "gallon", y), v = num(i.veh) ?? 1;
       if (g == null) throw new Error("Satuan tidak dapat dikonversi ke galon");
@@ -3728,51 +4158,143 @@ function renderDash() {
   h += '<tr class="grp"><td colspan="4">Dilaporkan Terpisah</td></tr>' +
        '<tr><td>CO₂ Biogenik (Biomassa)</td><td class="r num">' + nf(s.bio, 3) + '</td><td>–</td><td>–</td></tr></tbody>';
   $("#sumTable").innerHTML = h;
+  renderMobileEmissionBreakdown();
+}
+
+
+/* The mobile view reads the EXISTING table, so all values are consistent
+   with Buku 3 totals and no emission formula is duplicated. */
+function renderMobileEmissionBreakdown() {
+  const holder = document.getElementById("mobileEmissionBreakdown");
+  const table = document.getElementById("sumTable");
+  if (!holder || !table) return;
+  const value = str => {
+    const n = Number(String(str || "").replace(/\s/g,"").replace(/\./g,"").replace(",","."));
+    return Number.isFinite(n) ? n : 0;
+  };
+  const groups = [];
+  let group = null;
+  table.querySelectorAll("tbody tr").forEach(tr => {
+    const cells = Array.from(tr.cells);
+    if (tr.classList.contains("grp")) {
+      group = { title:cells[0].textContent.trim(), list:[], total:null };
+      groups.push(group);
+    } else if (group && tr.classList.contains("tot")) {
+      group.total = {display:cells[1].textContent.trim(),numeric:value(cells[1].textContent)};
+    } else if (group && cells.length >= 2) {
+      group.list.push({
+        title:cells[0].textContent.trim(),
+        display:cells[1].textContent.trim(),
+        numeric:value(cells[1].textContent)
+      });
+    }
+  });
+  const row = (item,total) => {
+    const ratio = total > 0 ? Math.min(100,item.numeric/total*100) : 0;
+    const featured = /Kat\. 15\b|PCAF/i.test(item.title);
+    return '<div class="breakdown-item' + (featured?' featured':'') + (item.numeric===0?' zero':'') + '">' +
+      '<div class="breakdown-item-top"><span class="breakdown-item-name">' + esc(item.title) + '</span>' +
+      '<span class="breakdown-item-value">' + esc(item.display) + '<small>tCO₂e</small></span></div>' +
+      (item.numeric>0?'<div class="breakdown-meter" aria-hidden="true"><span style="width:'+Math.max(2,ratio).toFixed(2)+'%"></span></div>':'') +
+      (featured&&item.numeric>0?'<div class="breakdown-note">Pembiayaan PCAF · '+nf(ratio,1)+'% dalam Scope ini</div>':'') +
+      '</div>';
+  };
+  holder.innerHTML = groups.map((g,index) => {
+    const total = g.total?.numeric ?? g.list.reduce((n,r)=>n+r.numeric,0);
+    const displayed = g.total?.display ?? nf(total,3);
+    const relevant=g.list.filter(r=>r.numeric>0).sort((a,b)=>b.numeric-a.numeric);
+    const empty=g.list.filter(r=>r.numeric===0);
+    const label = index===3?'Biogenik':'Scope '+(index+1);
+    return '<section class="breakdown-scope scope-'+(index+1)+'" aria-label="'+esc(g.title)+'">' +
+      '<div class="breakdown-scope-head"><div class="breakdown-scope-heading">' +
+      '<span class="breakdown-scope-pill">'+esc(label)+'</span><h4>'+esc(g.title)+'</h4></div>' +
+      '<div class="breakdown-scope-total"><strong>'+esc(displayed)+'</strong><small>tCO₂e</small></div></div>' +
+      '<div class="breakdown-scope-body">' +
+      (relevant.length?relevant.map(r=>row(r,total)).join(''):'<p class="breakdown-empty">Belum ada emisi tercatat pada Scope ini.</p>') +
+      (empty.length?'<details class="breakdown-zero-groups"><summary>'+empty.length+' kategori dengan emisi 0 <span aria-hidden="true">⌄</span></summary><div class="breakdown-zero-items">'+empty.map(r=>row(r,total)).join('')+'</div></details>':'') +
+      '</div></section>';
+  }).join("");
+  const trigger=document.getElementById("toggleFullBreakdown");
+  const wrap=document.getElementById("breakdownTableWrap");
+  if(trigger&&wrap)trigger.onclick=()=>{
+    const expanded=wrap.classList.toggle("is-expanded");
+    trigger.setAttribute("aria-expanded",String(expanded));
+    trigger.querySelector(".toggle-label").textContent=expanded?"Sembunyikan tabel lengkap":"Lihat tabel lengkap: bruto, offset & neto";
+  };
 }
 
 /* SVG Donut Chart Renderer */
 function renderDonutChart(el, items) {
-  const tot = items.reduce((a, b) => a + Math.max(0, b.val || 0), 0);
+  if (!el) return;
+  const tot = items.reduce((a,b) => a + Math.max(0, Number(b.val) || 0), 0);
   if (tot <= 0) {
-    el.innerHTML = '<div class="empty-state"><p>Belum ada data emisi untuk diagram komposisi.</p></div>';
+    el.innerHTML = '<div class="empty-state"><p>Belum ada data emisi untuk diagram komposisi pada tahun ' + esc(String(S.year)) + '.</p></div>';
+    el.onclick = null;
     return;
   }
-
-  let acc = 0;
-  const radius = 60;
-  const strokeWidth = 24;
-  const circ = 2 * Math.PI * radius;
-
-  const circles = items.map(it => {
-    const v = Math.max(0, it.val || 0);
-    const dash = (v / tot) * circ;
-    const offset = -acc;
-    acc += dash;
-    return '<circle cx="85" cy="85" r="' + radius + '" fill="transparent" stroke="' + it.color + '" stroke-width="' + strokeWidth + '" stroke-dasharray="' + dash.toFixed(2) + ' ' + (circ - dash).toFixed(2) + '" stroke-dashoffset="' + offset.toFixed(2) + '"/>';
-  }).join("");
-
-  const legend = items.map(it => {
-    const v = Math.max(0, it.val || 0);
-    const p = tot > 0 ? ((v / tot) * 100).toFixed(1) + "%" : "0%";
-    return '<div class="legend-item">' +
-      '<span class="legend-dot" style="background:' + it.color + '"></span>' +
-      '<span style="font-weight:600">' + esc(it.label) + ':</span>' +
-      '<span class="num">' + nf(v, 2) + ' t (' + p + ')</span>' +
-    '</div>';
-  }).join("");
-
+  const pct = v => Math.max(0, Number(v) || 0) / tot * 100;
+  const topIndex = items.reduce((best, it, i) => (Math.max(0,Number(it.val)||0) > Math.max(0,Number(items[best].val)||0) ? i : best), 0);
+  const selected = el.dataset.carbonSelection !== undefined && el.dataset.carbonSelection !== '' ? Number(el.dataset.carbonSelection) : topIndex;
+  const active = selected >= 0 && selected < items.length ? selected : topIndex;
+  const chosen = items[active];
+  const isTop = active === topIndex;
+  const mainSource = items[topIndex];
+  const mainPercentage = nf(pct(mainSource.val), 1);
+  const radius = 82, width = 22, circ = 2 * Math.PI * radius;
+  let drawn = 0;
+  const slices = items.map((it,i) => {
+    const value = Math.max(0, Number(it.val) || 0);
+    const segment = value / tot * circ;
+    const offset = -drawn;
+    drawn += segment;
+    if (!segment) return '';
+    const stroke = i === topIndex && topIndex === 3 ? 'url(#greencal-carbon-finance-gradient)' : it.color;
+    return '<circle cx="120" cy="120" r="' + radius + '" fill="none" stroke="' + stroke + '" stroke-width="' + width + '" stroke-dasharray="' + segment.toFixed(4) + ' ' + (circ-segment).toFixed(4) + '" stroke-dashoffset="' + offset.toFixed(4) + '" opacity="' + (i === active || el.dataset.carbonSelection === '' || el.dataset.carbonSelection === undefined ? 1 : .42) + '"><title>' + esc(it.label) + ': ' + nf(value,2) + ' tCO₂e (' + nf(pct(value),1) + '%)</title></circle>';
+  }).join('');
+  const icons = [
+    '<path d="M3 21V10l6 3V7l6 3V3h5v18H3Z"/><path d="M7 17h1m4 0h1m4 0h1"/>',
+    '<path d="m13 2-9 12h8l-1 8 9-12h-8l1-8Z"/>',
+    '<rect x="4" y="3" width="16" height="18" rx="2"/><path d="M9 8h1m4 0h1M9 12h1m4 0h1M9 17h6"/>',
+    '<path d="M12 21v-8m0 3c-5 0-7-3-7-7 4 0 7 2 7 7Zm0-3c0-5 3-8 8-8 0 5-3 8-8 8Z"/>'
+  ];
+  const softs = ['var(--s1-soft)','var(--s2-soft)','var(--s3-soft)','var(--fin-soft)'];
+  const rows = items.map((it,i) => {
+    const value = Math.max(0, Number(it.val) || 0);
+    const p = pct(value);
+    const cssColor = it.color;
+    return '<button class="carbon-source' + (i === topIndex ? ' is-dominant' : '') + (el.dataset.carbonSelection === String(i) ? ' is-selected' : '') + '" type="button" data-carbon-scope="' + i + '" aria-pressed="' + (el.dataset.carbonSelection === String(i) ? 'true' : 'false') + '" style="--scope-color:' + cssColor + ';--scope-soft:' + softs[i] + '" aria-label="Lihat rincian ' + esc(it.label) + ': ' + nf(value,2) + ' ton CO₂ ekuivalen, ' + nf(p,1) + ' persen">' +
+      '<span class="carbon-source-icon" aria-hidden="true"><svg viewBox="0 0 24 24">' + (icons[i]||icons[2]) + '</svg></span>' +
+      '<span class="carbon-source-text"><b>' + esc(it.label) + '</b><small>' + nf(value,2) + ' tCO₂e</small></span>' +
+      '<span class="carbon-source-side"><strong>' + nf(p,1) + '%</strong><span class="carbon-track"><i style="width:' + p.toFixed(3) + '%"></i></span></span>' +
+      '<span class="carbon-chevron" aria-hidden="true">›</span></button>';
+  }).join('');
   el.innerHTML =
-    '<div style="position:relative;width:170px;height:170px">' +
-      '<svg class="donut-svg" viewBox="0 0 170 170">' +
-        '<circle cx="85" cy="85" r="' + radius + '" fill="transparent" stroke="var(--surface-2)" stroke-width="' + strokeWidth + '"/>' +
-        circles +
-      '</svg>' +
-      '<div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none">' +
-        '<span style="font-family:var(--font-num);font-weight:800;font-size:20px;line-height:1">' + nf(tot, 1) + '</span>' +
-        '<span style="font-size:11px;color:var(--ink-muted);font-weight:600;margin-top:2px">tCO₂e</span>' +
+    '<div class="carbon-message"><span class="carbon-message-icon" aria-hidden="true">♻</span><span class="carbon-message-content"><small>JEJAK KARBON · ' + esc(String(S.year)) + '</small><strong>' + mainPercentage + '% emisi ' + (topIndex===3 ? 'berasal dari pembiayaan (PCAF)' : 'berasal dari ' + esc(mainSource.label)) + '</strong></span></div>' +
+    '<div class="carbon-main">' +
+      '<div class="carbon-ring-shell"><div class="carbon-ring" role="img" aria-label="Total emisi ' + nf(tot,1) + ' tCO₂e, tahun ' + esc(String(S.year)) + '">' +
+        '<svg class="carbon-ring-svg" viewBox="0 0 240 240" aria-hidden="true">' +
+          '<defs><linearGradient id="greencal-carbon-finance-gradient" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#7235D9"/><stop offset="100%" stop-color="#9960F1"/></linearGradient></defs>' +
+          '<circle cx="120" cy="120" r="' + radius + '" fill="none" stroke="var(--surface-3)" stroke-width="' + width + '"/>' + slices +
+        '</svg><div class="carbon-ring-center"><span class="carbon-ring-kicker">TOTAL EMISI</span><strong>' + nf(tot,1) + '</strong><span class="carbon-ring-unit">tCO₂e</span><span class="carbon-ring-year">' + esc(String(S.year)) + '</span></div>' +
+      '</div></div>' +
+      '<div class="carbon-insight" aria-live="polite">' +
+        '<div class="carbon-insight-top"><span class="carbon-insight-tag">' + (isTop ? 'Sumber terbesar' : 'Rincian scope') + '</span><strong class="carbon-insight-pct">' + nf(Math.max(0,Number(chosen.val)||0),2) + '</strong></div>' +
+        '<h4>' + esc(chosen.label) + '</h4>' +
+        '<p><strong>tCO₂e.</strong> ' + (isTop && active===3 ? 'Prioritas: kualitas data dan emisi pembiayaan.' : isTop ? 'Prioritaskan penelusuran sumber emisi ini.' : 'Bandingkan kontribusinya dengan scope lain.') + '</p>' +
       '</div>' +
     '</div>' +
-    '<div class="donut-legend">' + legend + '</div>';
+    '<div class="carbon-breakdown-title"><span>Rincian sumber emisi</span><small>Ketuk untuk melihat insight</small></div>' +
+    '<div class="carbon-breakdown" role="group" aria-label="Pilih scope untuk melihat rincian emisi">' + rows + '</div>' +
+    '<p class="carbon-footnote">Nilai dan persentase dihitung dari data emisi bruto aktif. Persentase dibulatkan; jumlahnya dapat berbeda sedikit dari 100%.</p>';
+  el.onclick = event => {
+    const source = event.target.closest('[data-carbon-scope]');
+    if (!source || !el.contains(source)) return;
+    const id = source.dataset.carbonScope;
+    el.dataset.carbonSelection = el.dataset.carbonSelection === id ? '' : id;
+    renderDonutChart(el,items);
+    const focus = el.querySelector('[data-carbon-scope="' + id + '"]');
+    if(focus) focus.focus({preventScroll:true});
+  };
 }
 
 function renderUnitBars(el, rows, emptyMsg) {
@@ -3826,6 +4348,8 @@ function renderWzListrik(box) {
         '<label class="field-group"><span class="field-label">Konsumsi (kWh)</span><input type="number" id="wzL_kwh" placeholder="mis. 12500" min="0" step="any" inputmode="decimal"></label>' +
         '<label class="field-group"><span class="field-label">Atau Estimasi Tagihan (Rp)</span><input type="number" id="wzL_idr" placeholder="mis. 18000000" min="0" step="any" inputmode="decimal"></label>' +
       '</div>' +
+      '<div class="carbon-factor-note">ℹ Faktor emisi mengikuti sistem kelistrikan PLN yang dipilih. Masukkan konsumsi aktual (kWh) agar perhitungan lebih tepat; tagihan rupiah hanya estimasi.</div>' +
+      '<div class="carbon-calc-label">HASIL PERHITUNGAN JEJAK KARBON</div>' +
       '<div class="result-box" id="wzL_res"><span>Masukkan kWh atau nominal tagihan rekening listrik PLN.</span></div>' +
       '<button class="btn primary" id="wzL_save" style="align-self:flex-start">Simpan ke Data Aktivitas</button>' +
     '</div>';
@@ -3891,80 +4415,150 @@ function renderWzListrik(box) {
   };
 }
 
+/* Fuel catalog UX: source-backed rows only; do not synthesize emission factors. */
+const GC_FUEL_GROUPS = [
+  "Diesel, Solar & Biodiesel",
+  "Bensin & Bahan Bakar Kendaraan",
+  "Minyak Bakar, Minyak Tanah & Avtur",
+  "Gas Alam, LPG, CNG & LNG",
+  "Biomassa & Biofuel",
+  "Batubara & Bahan Bakar Padat",
+  "Bahan Bakar Lainnya"
+];
+function gcFuelGroup(r) {
+  const k = String(r.key || "").toUpperCase(), n = String(r.name || "").toUpperCase();
+  if (/DIESEL|SOLAR|DEX|BIODIESEL|DISTILLATE/.test(k + " " + n)) return GC_FUEL_GROUPS[0];
+  if (/BENSIN|GASOLINE|RON-|RON /.test(k + " " + n)) return GC_FUEL_GROUPS[1];
+  if (/FUEL-OIL|MINYAK-BAKAR|MINYAK-TANAH|KEROSENE|AVTUR|PETROLEUM-COKE|RESIDUAL/.test(k)) return GC_FUEL_GROUPS[2];
+  if (/GAS|CNG|LNG|LPG|PROPANE|BUTANE/.test(k)) return GC_FUEL_GROUPS[3];
+  if (r.bio || /ETHANOL|WOOD|VEGETABLE|AGRICULTURAL|ANIMAL-FAT|PEAT/.test(k)) return GC_FUEL_GROUPS[4];
+  if (/COAL|COKE|LIGNITE|BITUMINOUS|ANTHRACITE/.test(k)) return GC_FUEL_GROUPS[5];
+  return GC_FUEL_GROUPS[6];
+}
+function gcFuelOptions(rows) {
+  return GC_FUEL_GROUPS.map(group => {
+    const list = rows.filter(r => gcFuelGroup(r) === group)
+      .sort((a,b) => a.name.localeCompare(b.name,"id"));
+    return list.length ? '<optgroup label="' + esc(group) + '">' +
+      list.map(r => '<option value="' + esc(r.key) + '">' + esc(r.name) + '</option>').join("") +
+      '</optgroup>' : "";
+  }).join("");
+}
+function gcFuelUnits(row, year) {
+  const preferred = row.unit === "short ton" ? ["kg","metric ton","short ton"] :
+    row.unit === "scf" ? ["m3","scf"] :
+    ["liter","gallon","kL","m3"];
+  return preferred.filter(u => conv(1,u,row.unit,year) != null);
+}
+function gcFuelUnitLabel(u) {
+  return u === "m3" ? "m³" : u === "scf" ? "scf (kaki³)" :
+    u === "short ton" ? "short ton" : u === "metric ton" ? "ton metrik" : u;
+}
+
 function renderWzBbm(box) {
-  const mobs = rowsFor("mobile", S.year).sort((a, b) => a.name.localeCompare(b.name));
   const units = st().units || ["Kantor Pusat"];
   box.innerHTML =
-    '<div class="form-stack">' +
-      '<h3 style="margin:0">⛽ Kalkulator Cepat: BBM Kendaraan &amp; Genset</h3>' +
+    '<div class="form-stack gc-fuel-form">' +
+      '<h3 style="margin:0">⛽ Kalkulator Cepat: Konsumsi Bahan Bakar</h3>' +
+      '<p class="gc-fuel-helper">Pilih peruntukan terlebih dahulu. Daftar bahan bakar serta satuan akan disesuaikan dengan faktor emisi yang tersedia untuk tahun ' + esc(String(S.year)) + '.</p>' +
       '<div class="input-row-2">' +
         '<label class="field-group"><span class="field-label">Unit Kerja</span><select id="wzB_unit">' + units.map(u => '<option value="' + esc(u) + '">' + esc(u) + '</option>').join("") + '</select></label>' +
-        '<label class="field-group"><span class="field-label">Peruntukan</span><select id="wzB_type"><option value="mob">Kendaraan Operasional (Scope 1)</option><option value="stat">Genset Kantor (Scope 1)</option></select></label>' +
+        '<label class="field-group"><span class="field-label">Peruntukan</span><select id="wzB_type"><option value="stat">Mesin Bakar Statis (Genset/Boiler)</option><option value="mob">Kendaraan / Mesin Bergerak</option></select></label>' +
       '</div>' +
       '<div class="input-row-2">' +
-        '<label class="field-group"><span class="field-label">Jenis Bahan Bakar</span><select id="wzB_fuel">' + mobs.map(m => '<option value="' + esc(m.key) + '">' + esc(m.name) + '</option>').join("") + '</select></label>' +
-        '<label class="field-group"><span class="field-label">Volume BBM (Liter)</span><input type="number" id="wzB_vol" placeholder="mis. 500" min="0" step="any" inputmode="decimal"></label>' +
+        '<label class="field-group"><span class="field-label">Jenis Bahan Bakar</span><select id="wzB_fuel" required></select><small id="wzB_catalogCount" class="gc-fuel-count"></small></label>' +
+        '<div class="field-group"><label class="field-label" for="wzB_vol">Jumlah Konsumsi</label><div class="qty-unit-wrap"><input type="number" id="wzB_vol" placeholder="Mis. 500" min="0" step="any" inputmode="decimal"><select id="wzB_qtyu" aria-label="Satuan bahan bakar"></select></div></div>' +
       '</div>' +
-      '<div class="result-box" id="wzB_res"><span>Masukkan volume liter BBM.</span></div>' +
-      '<button class="btn primary" id="wzB_save" style="align-self:flex-start">Simpan ke Data Aktivitas</button>' +
+      '<p class="gc-fuel-source" id="wzB_factorNote" role="status">Pilih jenis bahan bakar untuk melihat satuan dan sumber faktor emisi.</p>' +
+      '<div class="result-box" id="wzB_res"><span>Pilih bahan bakar dan isi konsumsinya untuk menghitung emisi.</span></div>' +
+      '<button class="btn primary" id="wzB_save" style="align-self:flex-start" disabled>Simpan ke Data Aktivitas</button>' +
     '</div>';
 
-  const calc = () => {
-    const vol = parseNum($("#wzB_vol").value);
-    const fuel = $("#wzB_fuel").value;
-    const type = $("#wzB_type").value;
-    if (vol != null && vol > 0) {
-      try {
-        const cat = type === "mob" ? "s1_mob" : "s1_stat";
-        const inp = type === "mob" ? { fuel, qty: String(vol), qty_u: "liter", veh: "1" } : { fuel, qty: String(vol), qty_u: "liter" };
-        const res = runCalc(cat, inp, S.year);
-        $("#wzB_res").innerHTML =
-          '<span class="result-val">' + nf(res.t, 3) + ' tCO₂e</span>' +
-          '<span class="result-formula">' + nf(vol, 0) + ' liter ' + fuel + '</span>' +
-          (res.bio > 0 ? '<span class="result-formula">+ ' + nf(res.bio, 3) + ' tCO₂ biogenik (terpisah)</span>' : '');
-        $("#wzB_res").dataset.valid = "1";
-        $("#wzB_res").dataset.vol = String(vol);
-      } catch(e) {
-        $("#wzB_res").innerHTML = '<span>' + esc(e.message) + '</span>';
-      }
-    } else {
-      $("#wzB_res").innerHTML = '<span>Masukkan volume liter BBM.</span>';
-      delete $("#wzB_res").dataset.valid;
+  const fuelSelect = $("#wzB_fuel"), typeSelect = $("#wzB_type"), qtySelect = $("#wzB_qtyu");
+  const volInput = $("#wzB_vol"), resultBox = $("#wzB_res"), saveBtn = $("#wzB_save");
+  const currentTable = () => typeSelect.value === "stat" ? "stationary" : "mobile";
+  const selectedRow = () => fuelSelect.value ? R(currentTable(), fuelSelect.value, S.year) : null;
+
+  function updateCatalog() {
+    const table = currentTable(), rows = rowsFor(table,S.year);
+    fuelSelect.innerHTML = '<option value="">Pilih jenis bahan bakar...</option>' + gcFuelOptions(rows);
+    $("#wzB_catalogCount").textContent = rows.length + ' pilihan tersedia · Ketuk untuk mencari';
+    updateFuel();
+  }
+  function updateFuel() {
+    resultBox.dataset.valid = "";
+    saveBtn.disabled = true;
+    if (!fuelSelect.value) {
+      qtySelect.innerHTML = '<option value="">Pilih bahan bakar dahulu</option>';
+      $("#wzB_factorNote").textContent = 'Pilih jenis bahan bakar untuk melihat satuan dan sumber faktor emisi.';
+      resultBox.innerHTML = '<span>Pilih bahan bakar dan isi konsumsinya untuk menghitung emisi.</span>';
+      return;
+    }
+    try {
+      const r = selectedRow();
+      const choices = gcFuelUnits(r,S.year);
+      if (!choices.length) throw Error('Tidak ada satuan yang sesuai dengan faktor emisi.');
+      const keep = qtySelect.value;
+      qtySelect.innerHTML = choices.map(u => '<option value="' + esc(u) + '">' + esc(gcFuelUnitLabel(u)) + '</option>').join('');
+      qtySelect.value = choices.includes(keep) ? keep : choices[0];
+      $("#wzB_factorNote").textContent = 'Faktor: ' + r.name + ' · ' + (r.src || 'Sumber tidak tersedia') + '. CO₂ biogenik dilaporkan terpisah jika berlaku.';
+      calc();
+    } catch(e) {
+      $("#wzB_factorNote").textContent = e.message;
+      resultBox.innerHTML = '<span>' + esc(e.message) + '</span>';
+    }
+  }
+  function currentInputs() {
+    const v = parseNum(volInput.value), r = selectedRow(), u = qtySelect.value;
+    if (!r) throw Error('Pilih jenis bahan bakar terlebih dahulu.');
+    if (!(v > 0)) throw Error('Masukkan konsumsi bahan bakar lebih besar dari nol.');
+    if (conv(1,u,r.unit,S.year) == null) throw Error('Satuan tidak sesuai dengan bahan bakar.');
+    const inp = {fuel:r.key, qty:String(v),qty_u:u};
+    if (currentTable() === 'mobile') inp.veh='1';
+    return {inp, row:r, quantity:v,unit:u,cat:currentTable()==='mobile'?'s1_mob':'s1_stat'};
+  }
+  function calc() {
+    resultBox.dataset.valid = '';
+    saveBtn.disabled = true;
+    try {
+      const data = currentInputs();
+      const r = runCalc(data.cat,data.inp,S.year);
+      if (!Number.isFinite(r.t)) throw Error('Hasil emisi tidak valid.');
+      resultBox.innerHTML =
+        '<span class="result-val">' + nf(r.t,3) + ' tCO₂e</span>' +
+        '<span class="result-formula">' + nf(data.quantity,2) + ' ' + esc(gcFuelUnitLabel(data.unit)) + ' · ' + esc(data.row.name) + '</span>' +
+        (r.bio > 0 ? '<span class="result-formula">' + nf(r.bio,3) + ' tCO₂ biogenik (dilaporkan terpisah)</span>' : '');
+      resultBox.dataset.valid = '1';
+      saveBtn.disabled = false;
+    } catch(e) {
+      resultBox.innerHTML = '<span class="result-formula">' + esc(e.message) + '</span>';
+    }
+  }
+  typeSelect.onchange = updateCatalog;
+  fuelSelect.onchange = updateFuel;
+  qtySelect.onchange = calc;
+  volInput.oninput = calc;
+  saveBtn.onclick = () => {
+    if (resultBox.dataset.valid !== '1') return;
+    try {
+      const data = currentInputs();
+      const res = runCalc(data.cat,data.inp,S.year);
+      S.entries.unshift({
+        id:newId("e"),year:S.year,unitKerja:$("#wzB_unit").value,
+        cat:data.cat,inputs:data.inp,
+        summary:data.row.name + ' · ' + nf(data.quantity,2) + ' ' + gcFuelUnitLabel(data.unit),
+        desc:(data.cat==='s1_mob'?'Kendaraan/Mesin Bergerak':'Mesin Bakar Statis') + ' (Kalkulator Cepat)',
+        evidence:"",res,at:nowIso(),contoh:false
+      });
+      saveStateToStorage();
+      renderAll();
+      toast('Data bahan bakar berhasil disimpan: ' + nf(res.t,3) + ' tCO₂e.');
+      setTab('aktivitas');
+    } catch(e) {
+      toast('Gagal menyimpan: ' + e.message);
     }
   };
-
-  $("#wzB_vol").oninput = calc;
-  $("#wzB_fuel").onchange = calc;
-  $("#wzB_type").onchange = calc;
-
-  $("#wzB_save").onclick = () => {
-    if (!$("#wzB_res").dataset.valid) { toast("Masukkan volume BBM terlebih dahulu."); return; }
-    const vol = $("#wzB_res").dataset.vol;
-    const fuel = $("#wzB_fuel").value;
-    const type = $("#wzB_type").value;
-    const unit = $("#wzB_unit").value;
-    const cat = type === "mob" ? "s1_mob" : "s1_stat";
-    const inp = type === "mob" ? { fuel, qty: vol, qty_u: "liter", veh: "1" } : { fuel, qty: vol, qty_u: "liter" };
-    const res = runCalc(cat, inp, S.year);
-
-    S.entries.unshift({
-      id: newId("e"),
-      year: S.year,
-      unitKerja: unit,
-      cat,
-      inputs: inp,
-      summary: fuel + " · " + nf(Number(vol), 0) + " liter",
-      desc: (type === "mob" ? "BBM Kendaraan Dinas" : "BBM Genset Kantor") + " (Kalkulator Cepat)",
-      evidence: "Voucher / Nota Pembelian BBM",
-      res,
-      at: nowIso(),
-      contoh: false
-    });
-    saveStateToStorage();
-    renderAll();
-    toast("Data BBM " + nf(res.t, 3) + " tCO₂e berhasil disimpan!");
-    setTab("aktivitas");
-  };
+  updateCatalog();
 }
 
 function renderWzAc(box) {
@@ -4118,13 +4712,105 @@ function renderWzDinas(box) {
   };
 }
 
+/* Sector catalog for PCAF debtor classification.
+   Business-sector choices are descriptive, NOT emission factors or automatic taxonomy compliance. */
+const GC_PCAF_SECTOR_GROUPS = [
+  {label:"Pertanian, Peternakan, Kehutanan & Perikanan",crsa:"Pertanian dan Peternakan",items:[
+    "Pertanian Tanaman Pangan","Hortikultura dan Perkebunan","Perkebunan Kelapa Sawit","Perkebunan Karet",
+    "Perkebunan Kopi, Teh dan Kakao","Peternakan Sapi dan Kerbau","Peternakan Unggas","Pertanian dan Peternakan",
+    "Kehutanan dan Hasil Hutan","Perikanan Tangkap","Perikanan Budidaya"
+  ]},
+  {label:"Pertambangan & Penggalian",crsa:"Pertambangan dan Penggalian",items:[
+    "Pertambangan Batu Bara","Pertambangan Minyak dan Gas Bumi","Pertambangan Mineral Logam",
+    "Pertambangan Nikel","Pertambangan Pasir, Batu dan Bahan Galian","Jasa Penunjang Pertambangan"
+  ]},
+  {label:"Industri Pengolahan / Manufaktur",crsa:"Industri Pengolahan",items:[
+    "Industri Pengolahan","Industri Makanan dan Minuman","Industri Pengolahan Kelapa Sawit",
+    "Industri Tekstil dan Pakaian Jadi","Industri Kayu, Furnitur dan Kertas","Industri Pulp dan Kertas",
+    "Industri Kimia dan Farmasi","Industri Plastik dan Karet","Industri Semen dan Bahan Bangunan",
+    "Industri Logam dan Baja","Industri Mesin dan Peralatan","Industri Otomotif dan Komponen",
+    "Industri Elektronik","Industri Pengolahan Hasil Laut"
+  ]},
+  {label:"Ketenagalistrikan, Gas & Energi",crsa:"Pengadaan Listrik, Gas, Uap/Air Panas dan Udara Dingin",items:[
+    "Pembangkit Listrik Batu Bara","Pembangkit Listrik Gas","Pembangkit Energi Terbarukan",
+    "Transmisi dan Distribusi Listrik","Pengadaan Listrik, Gas, Uap/Air Panas dan Udara Dingin",
+    "Distribusi Gas dan Energi"
+  ]},
+  {label:"Air Bersih, Limbah & Sanitasi",crsa:"Lainnya",items:[
+    "Pengelolaan Air Bersih","Pengolahan Air Limbah","Pengelolaan Sampah dan Daur Ulang"
+  ]},
+  {label:"Konstruksi & Infrastruktur",crsa:"Konstruksi, termasuk Real Estat",items:[
+    "Konstruksi, termasuk Real Estat","Konstruksi Gedung","Konstruksi Jalan, Jembatan dan Infrastruktur",
+    "Kontraktor Sipil dan Mekanikal Elektrikal","Pengembang Kawasan Industri"
+  ]},
+  {label:"Perdagangan Besar & Eceran",crsa:"Lainnya",items:[
+    "Perdagangan Besar / Distributor","Perdagangan Eceran / Ritel","Perdagangan Kendaraan Bermotor",
+    "Perdagangan Bahan Bakar","E-commerce dan Perdagangan Digital"
+  ]},
+  {label:"Transportasi, Logistik & Pergudangan",crsa:"Transportasi dan Pergudangan",items:[
+    "Transportasi dan Pergudangan","Transportasi Darat dan Angkutan Barang","Transportasi Laut dan Pelayaran",
+    "Transportasi Udara","Logistik, Ekspedisi dan Kurir","Pergudangan dan Cold Storage",
+    "Jasa Kepelabuhanan"
+  ]},
+  {label:"Akomodasi, Pariwisata & Kuliner",crsa:"Lainnya",items:[
+    "Hotel dan Akomodasi","Restoran dan Jasa Boga","Pariwisata dan Perjalanan Wisata"
+  ]},
+  {label:"Informasi, Digital & Telekomunikasi",crsa:"Lainnya",items:[
+    "Telekomunikasi","Pusat Data dan Cloud Computing","Teknologi Informasi dan Perangkat Lunak",
+    "Media, Penyiaran dan Konten Digital"
+  ]},
+  {label:"Jasa Keuangan & Asuransi",crsa:"Lainnya",items:[
+    "Perbankan dan Lembaga Pembiayaan","Asuransi dan Reasuransi",
+    "Fintech dan Jasa Keuangan Digital","Pasar Modal dan Jasa Penunjang Keuangan"
+  ]},
+  {label:"Properti & Real Estat",crsa:"Konstruksi, termasuk Real Estat",items:[
+    "Pengembang Properti Residensial","Properti Komersial dan Perkantoran",
+    "Pengelolaan dan Persewaan Properti"
+  ]},
+  {label:"Jasa Profesional & Penunjang Bisnis",crsa:"Lainnya",items:[
+    "Jasa Konsultansi dan Manajemen","Jasa Hukum, Akuntansi dan Audit",
+    "Arsitektur, Rekayasa dan Penelitian","Jasa Administrasi dan Outsourcing",
+    "Jasa Keamanan dan Kebersihan"
+  ]},
+  {label:"Layanan Publik, Sosial & Pendidikan",crsa:"Lainnya",items:[
+    "Pemerintahan dan Pelayanan Publik","Pendidikan Dasar dan Menengah",
+    "Perguruan Tinggi dan Pelatihan","Yayasan dan Organisasi Sosial"
+  ]},
+  {label:"Kesehatan & Layanan Medis",crsa:"Lainnya",items:[
+    "Rumah Sakit dan Klinik","Laboratorium dan Diagnostik Kesehatan","Jasa Kesehatan Lainnya"
+  ]},
+  {label:"Seni, Hiburan & Jasa Lainnya",crsa:"Lainnya",items:[
+    "Seni dan Hiburan","Olahraga dan Rekreasi","Jasa Perawatan dan Layanan Pribadi",
+    "Jasa Reparasi dan Pemeliharaan"
+  ]}
+];
+const GC_PCAF_SECTOR_INDEX = new Map(
+  GC_PCAF_SECTOR_GROUPS.flatMap(g => g.items.map(name => [name,{name,crsa:g.crsa,group:g.label}]))
+);
+function gcPcafSectorOptions() {
+  return '<option value="">Pilih sektor usaha debitur...</option>' +
+    GC_PCAF_SECTOR_GROUPS.map(g =>
+      '<optgroup label="' + esc(g.label) + '">' +
+      g.items.map(name => '<option value="' + esc(name) + '">' + esc(name) + '</option>').join("") +
+      '</optgroup>'
+    ).join("") +
+    '<option value="__custom__">Lainnya — tulis sektor usaha sendiri</option>';
+}
+function gcPcafSectorValue() {
+  const selected = $("#wzX_sec").value;
+  return selected === "__custom__" ? $("#wzX_secOther").value.trim() : selected;
+}
+
 function renderWzDebitur(box) {
   box.innerHTML =
     '<div class="form-stack">' +
       '<h3 style="margin:0">💼 Kalkulator Cepat: Pembiayaan Debitur (PCAF)</h3>' +
       '<div class="input-row-2">' +
         '<label class="field-group"><span class="field-label">Nama Debitur / Nasabah</span><input type="text" id="wzX_name" placeholder="mis. PT Samudera Perkasa"></label>' +
-        '<label class="field-group"><span class="field-label">Sektor Usaha</span><input type="text" id="wzX_sec" placeholder="mis. Industri Pengolahan"></label>' +
+        '<div class="field-group"><label class="field-label" for="wzX_sec">Sektor Usaha</label>' +
+        '<select id="wzX_sec" required>' + gcPcafSectorOptions() + '</select>' +
+        '<p class="gc-pcaf-sector-note" id="wzX_sectorHint">Pilih sektor usaha yang sesuai dengan kegiatan utama debitur.</p>' +
+        '<div id="wzX_secOtherWrap" class="field-group" hidden><label class="field-label" for="wzX_secOther">Sektor Usaha Lainnya</label><input type="text" id="wzX_secOther" maxlength="160" placeholder="Tulis sektor usaha debitur"></div></div>' +
       '</div>' +
       '<div class="input-row-2">' +
         '<label class="field-group"><span class="field-label">Outstanding Pembiayaan (Rp Miliar)</span><input type="number" id="wzX_os" placeholder="mis. 50" min="0" step="any" inputmode="decimal"></label>' +
@@ -4156,6 +4842,15 @@ function renderWzDebitur(box) {
   $("#wzX_os").oninput = calc;
   $("#wzX_denom").oninput = calc;
   $("#wzX_emis").oninput = calc;
+  $("#wzX_sec").onchange = () => {
+    const code = $("#wzX_sec").value;
+    const custom = code === "__custom__";
+    $("#wzX_secOtherWrap").hidden = !custom;
+    $("#wzX_sectorHint").textContent = custom
+      ? "Masukkan nama sektor yang belum tersedia. Klasifikasi CRSA dicatat sebagai Lainnya untuk ditinjau."
+      : code ? "Kategori CRSA: " + (GC_PCAF_SECTOR_INDEX.get(code)?.crsa || "Lainnya")
+        : "Pilih sektor usaha yang sesuai dengan kegiatan utama debitur.";
+  };
 
   $("#wzX_save").onclick = () => {
     const name = $("#wzX_name").value.trim();
@@ -4165,7 +4860,9 @@ function renderWzDebitur(box) {
     const os = parseNum($("#wzX_os").value);
     const denom = parseNum($("#wzX_denom").value);
     const emis = parseNum($("#wzX_emis").value);
-    const sector = $("#wzX_sec").value.trim() || "Industri Pengolahan";
+    const sector = gcPcafSectorValue();
+    if (!sector) { toast("Pilih sektor usaha atau isi sektor lainnya terlebih dahulu."); $("#wzX_sec").focus(); return; }
+    const crsa = GC_PCAF_SECTOR_INDEX.get(sector)?.crsa || "Lainnya";
 
     S.exposures.unshift({
       id: newId("x"),
@@ -4180,7 +4877,7 @@ function renderWzDebitur(box) {
       emis,
       pct: null,
       investKey: null,
-      crsa: sector,
+      crsa,
       tier: "2",
       tplan: "ada_nv",
       profit: null,
@@ -4326,7 +5023,54 @@ function renderAct() {
   renderActList();
 }
 
+
+/* GC-CARBON-EXPERIENCE-v2: overview is derived exclusively from registered activity data */
+function renderCarbonActivityHero() {
+  const host = $("#carbonActivityHero");
+  if (!host) return;
+  const current = S.entries.filter(e => e.year === S.year);
+  const totals = { "1":0,"2":0,"3":0 };
+  const counts = { "1":0,"2":0,"3":0 };
+  let total = 0, calculated = 0;
+  current.forEach(e => {
+    const scope = String((CAT(e.cat) || {}).s || "");
+    if (scope in counts) counts[scope]++;
+    if (!e.res) return;
+    const val = entryT(e, S.method);
+    if (!Number.isFinite(val)) return;
+    calculated++;
+    total += val;
+    if (scope in totals) totals[scope] += val;
+  });
+  const sampleCount = current.filter(e => e.contoh).length;
+  const filter = $("#fScope").value;
+  const leaf = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M20 3c-8 0-16 4-16 13a5 5 0 0 0 5 5C18 21 22 12 20 3Z"/><path d="M3 21c3-6 7-10 14-13"/></svg>';
+  const options = [["","Semua",current.length],["1","Scope 1",counts["1"]],["2","Scope 2",counts["2"]],["3","Scope 3",counts["3"]]];
+  host.innerHTML =
+    '<section class="carbon-hero" aria-label="Ringkasan jejak karbon operasional">' +
+      '<div class="carbon-hero-top">' + leaf + '<span>Jejak Karbon Operasional · ' + esc(S.year) + '</span></div>' +
+      '<div class="carbon-hero-main">' +
+        '<div class="carbon-total">' + nf(total,3) + ' <span>tCO₂e</span></div>' +
+        '<div class="carbon-hero-illustration" aria-hidden="true">' + leaf + '</div>' +
+      '</div>' +
+      '<p class="carbon-hero-note">' + (current.length ? 'Total emisi dari aktivitas Scope 1, 2, dan 3 yang tercatat pada tahun terpilih. Angka bukan klaim penurunan emisi.' : 'Belum ada data aktivitas untuk periode ini. Tambahkan data agar jejak karbon dapat dihitung.') + '</p>' +
+      '<div class="carbon-hero-foot">' +
+        '<span class="carbon-mini-pill">' + current.length + ' aktivitas tercatat</span>' +
+        '<span class="carbon-mini-pill">' + calculated + ' hasil perhitungan</span>' +
+        (sampleCount ? '<span class="carbon-mini-pill carbon-hero-warning">Termasuk ' + sampleCount + ' data contoh · belum terverifikasi</span>' : '') +
+      '</div>' +
+      '<div class="carbon-scope-filters" id="carbonScopeFilters" aria-label="Filter berdasarkan scope">' +
+        options.map(o => '<button type="button" data-carbon-scope="' + o[0] + '" aria-pressed="' + String(filter === o[0]) + '">' + o[1] + ' · ' + o[2] + '</button>').join("") +
+      '</div>' +
+    '</section>';
+  $("#carbonScopeFilters button").forEach(b => b.onclick = () => {
+    $("#fScope").value = b.dataset.carbonScope;
+    renderActList();
+  });
+}
+
 function renderActList() {
+  renderCarbonActivityHero();
   const y = S.year;
   const sc = $("#fScope").value;
   const q = ($("#fSearch").value || "").trim().toLowerCase();
@@ -4358,32 +5102,40 @@ function renderActList() {
     return;
   }
 
-  // Render Mobile Cards
+  // Render redesigned mobile and desktop activity cards using actual saved emissions.
   $("#actCardsList").innerHTML = rows.map(e => {
     const c = CAT(e.cat) || { t: e.cat, s: "?" };
+    const scope = String(c.s);
     const t = entryT(e, S.method);
+    const icon = scope === "2" ? "⚡" : (scope === "3" ? "✈" : (String(e.cat).includes("mobile") ? "🚗" : "🌿"));
     const chips = [];
-    chips.push('<span class="chip s' + c.s + '">Scope ' + c.s + '</span>');
+    chips.push('<span class="chip s' + esc(scope) + '">Scope ' + esc(scope) + '</span>');
     if (entryStale(e)) chips.push('<span class="chip bad">Faktor berubah</span>');
     if (!String(e.evidence || "").trim()) chips.push('<span class="chip warn">Tanpa bukti</span>');
     if (e.contoh) chips.push('<span class="chip">Contoh</span>');
-
     return (
-      '<div class="data-card">' +
-        '<div class="data-card-head">' +
-          '<div>' +
-            '<h4 class="data-card-title">' + esc(e.unitKerja) + '</h4>' +
+      '<article class="data-card carbon-activity-card scope-' + esc(scope) + '">' +
+        '<div class="carbon-activity-top">' +
+          '<div><h4 class="data-card-title">' + esc(e.unitKerja || "Unit kerja tidak diketahui") + '</h4>' +
             '<div class="data-card-meta">' + chips.join(" ") + '<span>· ' + esc(c.t) + '</span></div>' +
           '</div>' +
-          '<div class="data-card-val">' + (e.res ? nf(t, 3) + ' t' : '–') + '</div>' +
         '</div>' +
-        (e.desc ? '<div class="data-card-desc"><b>' + esc(e.desc) + '</b><br><span style="color:var(--ink-muted)">' + esc(e.summary || "") + '</span></div>' : '') +
-        '<div style="font-size:12px;color:var(--ink-muted)">Bukti: ' + esc(e.evidence || "–") + '</div>' +
+        '<div class="carbon-activity-body">' +
+          '<div class="carbon-activity-icon" aria-hidden="true">' + icon + '</div>' +
+          '<div class="carbon-activity-desc"><strong>' + esc(e.desc || c.t) + '</strong>' +
+          (e.summary ? '<small>' + esc(e.summary) + '</small>' : '') + '</div>' +
+        '</div>' +
+        '<div class="carbon-activity-measure"><span>Emisi dihitung</span><strong>' +
+          (e.res ? nf(t,3) + ' <small>tCO₂e</small>' : 'Belum dihitung') + '</strong></div>' +
+        '<div class="carbon-activity-evidence">' +
+          '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M8 3h8l4 4v14H4V3h4Z"/><path d="M16 3v5h4M8 12h8M8 16h8"/></svg>' +
+          '<span><b>Bukti:</b> ' + esc(e.evidence || "Belum dilampirkan") + '</span>' +
+        '</div>' +
         '<div class="data-card-actions">' +
-          '<button class="btn sm" data-ea="' + e.id + '">Edit</button>' +
-          '<button class="btn sm danger" data-ed="' + e.id + '">Hapus</button>' +
+          '<button type="button" class="btn sm" data-ea="' + esc(e.id) + '" aria-label="Edit aktivitas ' + esc(e.unitKerja || "") + '">Edit</button>' +
+          '<button type="button" class="btn sm danger" data-ed="' + esc(e.id) + '" aria-label="Hapus aktivitas ' + esc(e.unitKerja || "") + '">Hapus</button>' +
         '</div>' +
-      '</div>'
+      '</article>'
     );
   }).join("");
 
@@ -4530,7 +5282,10 @@ function renderFinForm() {
   fillSelect($("#xBasis"), BASIS.map(b => ({ v: b.k, t: b.t })));
   fillSelect($("#xCrsa"), (st().crsaSectors || []).map(c => ({ v: c, t: c })));
   fillSelect($("#xInv"), rowsFor("invest", y).sort((a, b) => a.name.localeCompare(b.name)).map(r => ({ v: r.key, t: r.name + " · " + nfx(r.ef) })));
-  $("#sectorList").innerHTML = Array.from(new Set(S.exposures.map(x => x.sector).filter(Boolean))).map(s => '<option value="' + esc(s) + '">').join("");
+  $("#sectorList").innerHTML = Array.from(new Set([
+    ...GC_PCAF_SECTOR_GROUPS.flatMap(g => g.items),
+    ...S.exposures.map(x => x.sector).filter(Boolean)
+  ])).map(s => '<option value="' + esc(s) + '">').join("");
   updFin();
 }
 
@@ -6166,6 +6921,85 @@ window.runAiAnalysisUi = runAiAnalysisUi;
 window.openAiConfigDialog = openAiConfigDialog;
 window.openAiConfigModal = openAiConfigDialog;
 window.displayAiResult = displayAiResult;
+
+
+
+/* GC-CARBON-EXPERIENCE-v2: searchable mobile bottom-sheet for lengthy dropdowns.
+   The original select remains the source of truth and emits the existing change event. */
+(function enableGreenCalChoiceSheet() {
+  if (window.__greenCalSheetReady) return;
+  window.__greenCalSheetReady = true;
+  const sheet = document.createElement("dialog");
+  sheet.className = "gc-choice-sheet";
+  sheet.setAttribute("aria-label","Pilih opsi");
+  sheet.innerHTML = '<div class="gc-sheet-head"><strong id="gcSheetTitle">Pilih opsi</strong><button type="button" class="gc-sheet-close" aria-label="Tutup pilihan">×</button></div>' +
+    '<input class="gc-sheet-search" type="search" placeholder="Cari pilihan..." aria-label="Cari pilihan">' +
+    '<div class="gc-choice-options" role="listbox"></div>';
+  document.body.appendChild(sheet);
+  const search = sheet.querySelector(".gc-sheet-search");
+  const list = sheet.querySelector(".gc-choice-options");
+  let active = null;
+  const allowed = sel => !!sel && !sel.disabled && sel.options.length >= 4 &&
+    (sel.id === "aUnit" || sel.id === "aCat" || sel.id === "wzL_unit" || sel.id === "wzL_grid" || sel.id === "wzB_fuel" || sel.id === "wzX_sec" ||
+      !!sel.closest("#aFields")) &&
+    window.matchMedia("(max-width: 859px)").matches;
+  const draw = () => {
+    if (!active) return;
+    const query = search.value.trim().toLocaleLowerCase("id");
+    let lastGroup = null, found = 0;
+    const out = [];
+    Array.from(active.options).forEach((o, index) => {
+      if (o.disabled) return;
+      const group = o.parentElement && o.parentElement.tagName === "OPTGROUP" ? o.parentElement.label : "";
+      if (query && !(o.textContent + " " + group).toLocaleLowerCase("id").includes(query)) return;
+      if (group && group !== lastGroup) out.push('<div class="gc-choice-group">' + esc(group) + '</div>');
+      lastGroup = group;
+      found++;
+      out.push('<button type="button" class="gc-choice-option" role="option" data-gc-option="' + index + '" aria-selected="' + (o.value === active.value) + '"><span>' +
+        esc(o.textContent.trim()) + '</span><span class="gc-choice-radio" aria-hidden="true"></span></button>');
+    });
+    list.innerHTML = found ? out.join("") : '<p class="gc-choice-empty">Tidak ada pilihan yang cocok.</p>';
+  };
+  function openChoice(sel) {
+    active = sel;
+    search.value = "";
+    const group = sel.closest("label");
+    const label = group && group.querySelector(".field-label");
+    sheet.querySelector("#gcSheetTitle").textContent = label ? label.textContent : "Pilih data";
+    draw();
+    if (!sheet.open) sheet.showModal();
+    search.focus();
+  }
+  sheet.querySelector(".gc-sheet-close").onclick = () => sheet.close();
+  sheet.onclick = e => { if (e.target === sheet) sheet.close(); };
+  sheet.addEventListener("close", () => { if(active) active.focus({preventScroll:true}); active = null; });
+  search.addEventListener("input",draw);
+  list.addEventListener("click", e => {
+    const b = e.target.closest("[data-gc-option]");
+    if (!b || !active) return;
+    const o = active.options[Number(b.dataset.gcOption)];
+    if (!o) return;
+    active.value = o.value;
+    active.dispatchEvent(new Event("change",{bubbles:true}));
+    sheet.close();
+  });
+  document.addEventListener("pointerdown",e => {
+    const target=e.target;
+    if (!target || !target.closest || sheet.open) return;
+    const sel=target.closest("select");
+    if (!allowed(sel) || e.pointerType === "mouse") return;
+    e.preventDefault();
+    openChoice(sel);
+  },true);
+  document.addEventListener("click",e => {
+    if (!e.target || !e.target.closest) return;
+    const sel=e.target.closest("select");
+    if (!allowed(sel)) return;
+    if (e.detail === 0) return; // retain native keyboard accessibility
+    e.preventDefault();
+    if (!sheet.open) openChoice(sel);
+  },true);
+})();
 
   </script>
 </body>

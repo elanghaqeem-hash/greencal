@@ -2240,6 +2240,74 @@ dialog.modal-sheet .modal-foot { background:var(--surface); }
 #wzX_secOther{width:100%;min-width:0;min-height:46px;}
 @media(max-width:620px){#wzX_sec{font-size:14px;}#wzX_secOther{font-size:16px;}}
 
+
+/* GreenCal v4: mobile-first reporting, compact and informative */
+.breakdown-panel {border-radius:22px;box-shadow:0 14px 36px rgba(9,65,42,.055);}
+.breakdown-heading {align-items:center;}
+.breakdown-eyebrow {display:block;color:var(--primary);font-size:10px;font-weight:800;letter-spacing:.10em;}
+.breakdown-heading h3 {font-size:clamp(18px,2vw,22px);letter-spacing:-.025em;margin:3px 0 4px;}
+.breakdown-heading p {line-height:1.6;}
+.breakdown-unit {font-size:11px;color:var(--primary);font-weight:800;background:var(--primary-soft);border-radius:99px;border:1px solid var(--primary-border);padding:6px 10px;}
+#sumTable thead th {padding:14px;background:var(--surface-2);font-size:11px;}
+#sumTable tbody td {padding:12px 14px;font-size:12.5px;line-height:1.5;}
+#sumTable tr.grp td {background:var(--surface-2);color:var(--primary);}
+#sumTable tr.tot td {background:var(--primary-soft);}
+#sumTable tbody tr:not(.grp):not(.tot):hover td {background:var(--surface-2);}
+#sumTable td.num {white-space:nowrap;font-variant-numeric:tabular-nums;}
+.mobile-breakdown,.breakdown-table-toggle {display:none;}
+@media(max-width:620px){
+  .breakdown-panel {padding:17px 14px;border-radius:20px;}
+  .breakdown-heading {align-items:flex-start;gap:8px;margin-bottom:16px;}
+  .breakdown-heading h3 {font-size:20px;}
+  .breakdown-heading p {font-size:11.5px;}
+  .breakdown-unit {font-size:10px;padding:5px 8px;}
+  .mobile-breakdown {display:grid;gap:13px;}
+  .breakdown-scope {--tone:var(--s1);--tint:var(--s1-soft);background:var(--surface);border:1px solid var(--line);border-radius:17px;overflow:hidden;box-shadow:0 4px 16px rgba(0,0,0,.025);}
+  .breakdown-scope.scope-2 {--tone:var(--s2);--tint:var(--s2-soft);}
+  .breakdown-scope.scope-3 {--tone:var(--fin);--tint:var(--fin-soft);}
+  .breakdown-scope.scope-4 {--tone:var(--ink-muted);--tint:var(--surface-2);}
+  .breakdown-scope-head {display:flex;gap:9px;align-items:center;justify-content:space-between;padding:13px 12px;background:linear-gradient(115deg,var(--tint),var(--surface) 95%);border-bottom:1px solid var(--line-subtle);}
+  .breakdown-scope-heading {min-width:0;}
+  .breakdown-scope-pill {font-size:10px;font-weight:800;color:var(--tone);background:var(--surface);border:1px solid var(--line-subtle);padding:4px 9px;border-radius:99px;}
+  .breakdown-scope-heading h4 {margin:8px 0 0;font-size:11.5px;color:var(--ink-muted);font-weight:700;line-height:1.4;}
+  .breakdown-scope-total {display:flex;flex-direction:column;align-items:flex-end;max-width:49%;flex-shrink:0;}
+  .breakdown-scope-total strong {font-size:clamp(18px,4.8vw,23px);font-weight:800;letter-spacing:-.045em;font-variant-numeric:tabular-nums;overflow-wrap:anywhere;text-align:right;line-height:1.25;}
+  .breakdown-scope-total small {font-size:10px;color:var(--ink-muted);}
+  .breakdown-scope-body {padding:5px 11px 9px;}
+  .breakdown-item {min-width:0;padding:12px 2px;border-bottom:1px solid var(--line-subtle);}
+  .breakdown-item-top {display:flex;gap:10px;justify-content:space-between;align-items:flex-start;}
+  .breakdown-item-name {min-width:0;max-width:63%;font-size:12px;line-height:1.45;font-weight:650;overflow-wrap:anywhere;}
+  .breakdown-item-value {text-align:right;font-size:14px;font-weight:800;line-height:1.3;letter-spacing:-.035em;font-variant-numeric:tabular-nums;overflow-wrap:anywhere;}
+  .breakdown-item-value small {display:block;font-size:9px;letter-spacing:0;font-weight:500;color:var(--ink-muted);}
+  .breakdown-meter {height:5px;border-radius:99px;background:var(--surface-2);overflow:hidden;margin-top:8px;}
+  .breakdown-meter span {height:100%;display:block;background:var(--tone);border-radius:99px;}
+  .breakdown-item.featured {margin:6px 0;border-radius:12px;padding:12px;border:1px solid color-mix(in srgb,var(--tone) 25%,var(--line));background:color-mix(in srgb,var(--tint) 70%,var(--surface));}
+  .breakdown-item.featured .breakdown-item-name {font-weight:800;}
+  .breakdown-item.featured .breakdown-item-value {color:var(--tone);}
+  .breakdown-note {font-size:10px;color:var(--ink-muted);font-weight:650;margin-top:6px;}
+  .breakdown-empty {color:var(--ink-muted);font-size:12px;line-height:1.55;margin:9px 0;}
+  .breakdown-zero-groups summary {display:flex;justify-content:space-between;align-items:center;cursor:pointer;list-style:none;min-height:44px;padding:9px 4px;color:var(--ink-muted);font-size:11px;font-weight:700;}
+  .breakdown-zero-groups summary::-webkit-details-marker {display:none;}
+  .breakdown-zero-groups[open] summary span {transform:rotate(180deg);}
+  .breakdown-zero-items {border-top:1px solid var(--line-subtle);}
+  .breakdown-item.zero .breakdown-item-name,.breakdown-item.zero .breakdown-item-value {font-size:11.5px;font-weight:500;color:var(--ink-muted);}
+  .breakdown-table-toggle {display:flex;align-items:center;gap:10px;justify-content:space-between;text-align:left;background:var(--surface-2);color:var(--ink);border:1px solid var(--line);border-radius:13px;width:100%;min-height:45px;padding:11px 12px;margin-top:14px;font-size:11.5px;font-weight:750;cursor:pointer;}
+  .breakdown-table-toggle .toggle-label {flex:1;}
+  .breakdown-table-toggle .toggle-arrow {font-size:20px;transition:transform .2s;}
+  .breakdown-table-toggle[aria-expanded="true"] .toggle-arrow {transform:rotate(180deg);}
+  #breakdownTableWrap {display:none;margin-top:10px;}
+  #breakdownTableWrap.is-expanded {display:block;}
+  #breakdownTableWrap table {min-width:620px;}
+  /* Shorten the tall brand header without harming logo legibility. */
+  .app-header {box-shadow:0 4px 16px rgba(8,40,30,.045);}
+  .header-inner {min-height:0;row-gap:5px;padding-top:8px;padding-bottom:8px;}
+  .brks-logo-wrap {height:40px;width:clamp(105px,34vw,139px);flex-basis:clamp(105px,34vw,139px);}
+  .brand-title {font-size:clamp(13px,3.8vw,15px);}
+  .brand-sub {font-size:10px;}
+  .year-select-wrap {min-height:34px;padding:4px 10px;}
+}
+@media(prefers-reduced-motion:reduce){.breakdown-table-toggle .toggle-arrow{transition:none;}}
+
 </style>
 </head>
 <body>
@@ -2439,16 +2507,23 @@ dialog.modal-sheet .modal-foot { background:var(--surface); }
         <ul class="alert-list" id="planList" style="margin-top:14px"></ul>
       </div>
 
-      <!-- SUMMARY TABLE -->
-      <div class="panel">
-        <div class="panel-header">
+      <!-- Buku 3: mobile insight cards + complete auditable table -->
+      <div class="panel breakdown-panel" id="emissionBreakdown">
+        <div class="panel-header breakdown-heading">
           <div>
-            <h3>Tabel Ringkasan Pelaporan Buku 3</h3>
-            <p>Emisi bruto, pengurangan offset, dan angka neto sebagai informasi</p>
+            <span class="breakdown-eyebrow">INVENTARISASI EMISI GRK</span>
+            <h3>Rincian Emisi per Kategori</h3>
+            <p>Temukan kontributor emisi utama dan telusuri semua kategori Scope 1–3.</p>
           </div>
+          <span class="breakdown-unit">tCO₂e</span>
         </div>
-        <div class="table-responsive">
-          <table id="sumTable"></table>
+        <div class="mobile-breakdown" id="mobileEmissionBreakdown" aria-label="Rincian kategori emisi menurut Scope"></div>
+        <button type="button" id="toggleFullBreakdown" class="breakdown-table-toggle" aria-expanded="false" aria-controls="breakdownTableWrap">
+          <span aria-hidden="true">▦</span><span class="toggle-label">Lihat tabel lengkap: bruto, offset &amp; neto</span>
+          <span class="toggle-arrow" aria-hidden="true">⌄</span>
+        </button>
+        <div class="table-responsive breakdown-table-wrap" id="breakdownTableWrap">
+          <table id="sumTable" aria-label="Tabel Buku 3 seluruh kategori emisi GRK"></table>
         </div>
       </div>
     </section>
@@ -4083,6 +4158,69 @@ function renderDash() {
   h += '<tr class="grp"><td colspan="4">Dilaporkan Terpisah</td></tr>' +
        '<tr><td>CO₂ Biogenik (Biomassa)</td><td class="r num">' + nf(s.bio, 3) + '</td><td>–</td><td>–</td></tr></tbody>';
   $("#sumTable").innerHTML = h;
+  renderMobileEmissionBreakdown();
+}
+
+
+/* The mobile view reads the EXISTING table, so all values are consistent
+   with Buku 3 totals and no emission formula is duplicated. */
+function renderMobileEmissionBreakdown() {
+  const holder = document.getElementById("mobileEmissionBreakdown");
+  const table = document.getElementById("sumTable");
+  if (!holder || !table) return;
+  const value = str => {
+    const n = Number(String(str || "").replace(/\s/g,"").replace(/\./g,"").replace(",","."));
+    return Number.isFinite(n) ? n : 0;
+  };
+  const groups = [];
+  let group = null;
+  table.querySelectorAll("tbody tr").forEach(tr => {
+    const cells = Array.from(tr.cells);
+    if (tr.classList.contains("grp")) {
+      group = { title:cells[0].textContent.trim(), list:[], total:null };
+      groups.push(group);
+    } else if (group && tr.classList.contains("tot")) {
+      group.total = {display:cells[1].textContent.trim(),numeric:value(cells[1].textContent)};
+    } else if (group && cells.length >= 2) {
+      group.list.push({
+        title:cells[0].textContent.trim(),
+        display:cells[1].textContent.trim(),
+        numeric:value(cells[1].textContent)
+      });
+    }
+  });
+  const row = (item,total) => {
+    const ratio = total > 0 ? Math.min(100,item.numeric/total*100) : 0;
+    const featured = /Kat\. 15\b|PCAF/i.test(item.title);
+    return '<div class="breakdown-item' + (featured?' featured':'') + (item.numeric===0?' zero':'') + '">' +
+      '<div class="breakdown-item-top"><span class="breakdown-item-name">' + esc(item.title) + '</span>' +
+      '<span class="breakdown-item-value">' + esc(item.display) + '<small>tCO₂e</small></span></div>' +
+      (item.numeric>0?'<div class="breakdown-meter" aria-hidden="true"><span style="width:'+Math.max(2,ratio).toFixed(2)+'%"></span></div>':'') +
+      (featured&&item.numeric>0?'<div class="breakdown-note">Pembiayaan PCAF · '+nf(ratio,1)+'% dalam Scope ini</div>':'') +
+      '</div>';
+  };
+  holder.innerHTML = groups.map((g,index) => {
+    const total = g.total?.numeric ?? g.list.reduce((n,r)=>n+r.numeric,0);
+    const displayed = g.total?.display ?? nf(total,3);
+    const relevant=g.list.filter(r=>r.numeric>0).sort((a,b)=>b.numeric-a.numeric);
+    const empty=g.list.filter(r=>r.numeric===0);
+    const label = index===3?'Biogenik':'Scope '+(index+1);
+    return '<section class="breakdown-scope scope-'+(index+1)+'" aria-label="'+esc(g.title)+'">' +
+      '<div class="breakdown-scope-head"><div class="breakdown-scope-heading">' +
+      '<span class="breakdown-scope-pill">'+esc(label)+'</span><h4>'+esc(g.title)+'</h4></div>' +
+      '<div class="breakdown-scope-total"><strong>'+esc(displayed)+'</strong><small>tCO₂e</small></div></div>' +
+      '<div class="breakdown-scope-body">' +
+      (relevant.length?relevant.map(r=>row(r,total)).join(''):'<p class="breakdown-empty">Belum ada emisi tercatat pada Scope ini.</p>') +
+      (empty.length?'<details class="breakdown-zero-groups"><summary>'+empty.length+' kategori dengan emisi 0 <span aria-hidden="true">⌄</span></summary><div class="breakdown-zero-items">'+empty.map(r=>row(r,total)).join('')+'</div></details>':'') +
+      '</div></section>';
+  }).join("");
+  const trigger=document.getElementById("toggleFullBreakdown");
+  const wrap=document.getElementById("breakdownTableWrap");
+  if(trigger&&wrap)trigger.onclick=()=>{
+    const expanded=wrap.classList.toggle("is-expanded");
+    trigger.setAttribute("aria-expanded",String(expanded));
+    trigger.querySelector(".toggle-label").textContent=expanded?"Sembunyikan tabel lengkap":"Lihat tabel lengkap: bruto, offset & neto";
+  };
 }
 
 /* SVG Donut Chart Renderer */
