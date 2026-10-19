@@ -5337,24 +5337,97 @@ function calcWarm(i, y) {
 
 const CAT = id => CATS.find(c => c.id === id);
 
+/* P3.1 — distinguish unknown measurements from an explicitly entered zero.
+ * All checks use category definitions; optional hotel metadata is never numeric input.
+ * This validates measurements, not the scientific authority of catalog factors.
+ */
+function gcValidateActivityInputs(c, inp) {
+  const supplied = key => inp[key] != null && String(inp[key]).trim() !== "";
+  const label = key => (c.f || []).find(field => field.k === key)?.label || key;
+  const requireFields = (...keys) => {
+    for (const key of keys) {
+      if (!supplied(key)) throw new Error("Isi " + label(key) + " untuk menghitung emisi.");
+    }
+  };
+  const requireOne = (...keys) => {
+    if (!keys.some(supplied)) {
+      throw new Error("Isi minimal satu pengukuran: " + keys.map(label).join(", ") + ".");
+    }
+  };
+  const method = inp.m || "";
+  switch (c.id) {
+    case "s1_stat": case "s1_waste": case "s2_elec": case "s3_c3":
+    case "s3_c5": requireFields("qty"); break;
+    case "s1_mob": requireFields("qty"); break;
+    case "s2_steam": requireFields("qty"); break;
+    case "s3_c1": requireFields("idr"); break;
+    case "s1_ref":
+      if (method === "sederhana") requireOne("nc","ncap","rech","dcap","rec");
+      else if (method === "penapisan") requireOne("nc","capop","dcap");
+      else requireOne("inv","tr","cc");
+      break;
+    case "s1_fire":
+      if (method === "penapisan") requireFields("cap");
+      else requireOne("inv","tr","cc");
+      break;
+    case "s3_c7":
+      if (method === "umum") requireFields("dist","emp");
+      else requireFields("vm");
+      break;
+    case "s3_c4": case "s3_c9":
+      if (method === "tm") requireFields("w","dist");
+      else requireFields("vm");
+      break;
+    case "s3_c8": case "s3_c13": case "s3_c14":
+      if (method === "bbm") requireFields("qty");
+      else if (method === "listrik") requireFields("kwh");
+      else requireFields("area");
+      break;
+    // s3_c6 already validates each travel method through mustPositive().
+  }
+  for (const field of c.f || []) {
+    if (field.t !== "num" || field.text || (field.show && !field.show(inp))) continue;
+    if (!supplied(field.k)) continue; // required values checked above
+    const value = Number(inp[field.k]);
+    if (!Number.isFinite(value) || value < 0) {
+      throw new Error("Nilai " + field.label + " harus angka tidak negatif.");
+    }
+    if (["veh","units","emp","days","eff","mon"].includes(field.k) && value <= 0) {
+      throw new Error(field.label + " harus lebih besar dari nol.");
+    }
+    if (field.k === "eff" && value > 100) {
+      throw new Error("Efisiensi ketel harus dalam rentang 0–100%.");
+    }
+    if (field.k === "mon" && value > 12) {
+      throw new Error("Bulan beroperasi harus dalam rentang 1–12.");
+    }
+  }
+}
+
 function runCalc(cat, inp, y) {
   const c = CAT(cat);
   if (!c) throw new Error("Kategori tidak dikenal: " + cat);
-  // P2: reject invalid or negative values in visible quantity fields.
-  for (const field of c.f || []) {
-    if (field.t !== "num" || (field.show && !field.show(inp))) continue;
-    const raw = inp[field.k];
-    if (raw == null || String(raw).trim() === "") continue;
-    const amount = Number(raw);
-    if (!Number.isFinite(amount) || amount < 0) throw new Error("Nilai " + field.label + " harus angka tidak negatif.");
-  }
+  gcValidateActivityInputs(c, inp);
   const o = c.calc(inp, y);
   const g1 = gwpCH4(y), g2 = gwpN2O(y);
   const kg = nn(o.co2) + (nn(o.ch4) / 1000) * g1 + (nn(o.n2o) / 1000) * g2 + nn(o.oth);
   if (!isFinite(kg)) throw new Error("Lengkapi data aktivitas");
-  const refs = (o.refs || []).map(([t, k]) => {
+  // Retain factor provenance in stored activity snapshots, including GWP
+  // multipliers actually used to convert CH4/N2O to CO2e.
+  const pairRefs = [...(o.refs || [])];
+  if (Number(o.ch4)) pairRefs.push(["gwp","METHANE"]);
+  if (Number(o.n2o)) pairRefs.push(["gwp","NITROUS-OXIDE"]);
+  const seenRefs = new Set();
+  const refs = pairRefs.filter(([t, k]) => {
+    const id = t + ":" + k;
+    if (seenRefs.has(id)) return false;
+    seenRefs.add(id); return true;
+  }).map(([t, k]) => {
     const r = R(t, k, y);
-    return { t, k, id: rowId(r), v: r.v };
+    return { t, k, id: rowId(r), v: r.v,
+      name: r.name || r.key, src: r.src || "",
+      validFrom: r.validFrom ?? null, validTo: r.validTo ?? null,
+      catalogStatus: r.status || "belum dicatat" };
   });
   return {
     t: kg / 1000,
@@ -6914,13 +6987,24 @@ function calcAct() {
   try {
     const o = runCalc(cat, i, y);
     CUR_ACT = { ok: true, res: o, inputs: i };
+    const factorTrace = o.refs.length ?
+      '<details class="gc-factor-trace"><summary>Rujukan faktor (' + o.refs.length + ')</summary>' +
+        o.refs.map(ref => '<div class="result-formula"><b>' + esc(ref.name) + '</b> · ' +
+          esc(ref.src || "Sumber belum dicatat") + ' · ' +
+          esc(String(ref.validFrom ?? "?")) + '–' + esc(String(ref.validTo ?? "?")) +
+          ' · versi ' + esc(String(ref.v ?? "?")) + '</div>').join("") +
+        '<small>Status faktor pada katalog bukan bukti verifikasi independen; periksa sumber primer sebelum pelaporan resmi.</small>' +
+      '</details>' : "";
     r.innerHTML =
       '<span class="result-val">' + nf(o.t, 3) + ' tCO₂e</span>' +
       (o.bio > 0 ? '<span class="result-formula">+ ' + nf(o.bio, 3) + ' tCO₂ biogenik (terpisah)</span>' : '') +
-      o.L.map(l => '<span class="result-formula">' + esc(l) + '</span>').join("");
+      o.L.map(l => '<span class="result-formula">' + esc(l) + '</span>').join("") +
+      factorTrace;
   } catch(e) {
     CUR_ACT = { ok: false };
-    r.innerHTML = '<span class="result-formula" style="color:var(--ink-muted)">' + esc(e.message.startsWith("Faktor") || e.message.startsWith("Satuan") ? e.message : "Isi data aktivitas untuk melihat hasil kalkulasi.") + '</span>';
+    const detail = /^(Faktor|Satuan|Isi |Nilai |Masukkan |Efisiensi |Bulan |Jumlah |Hari )/.test(e.message || "");
+    r.innerHTML = '<span class="result-formula" style="color:var(--ink-muted)">' +
+      esc(detail ? e.message : "Isi data aktivitas untuk melihat hasil kalkulasi.") + '</span>';
   }
 }
 
