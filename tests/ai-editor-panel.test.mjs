@@ -4,7 +4,7 @@ import fs from "node:fs";
 
 const html=fs.readFileSync(new URL("../index.html",import.meta.url),"utf8");
 const css=html.slice(html.indexOf("<style"),html.indexOf("</style>")+8);
-const body=html.slice(html.lastIndexOf("<script>")+8,html.lastIndexOf("</script>"));
+const body=html.slice(html.lastIndexOf("<script>")+8,html.indexOf("</script>", html.lastIndexOf("<script>")));
 const start=body.indexOf("// Editorial Word-like WYSIWYG panel");
 const stop=body.indexOf("box.innerHTML = html;",start);
 assert.ok(start>0&&stop>start,"cannot locate dynamically rendered editor");
