@@ -6,6 +6,9 @@
   const LEGACY_APP_STORE="green_calc_storage_v1";
   let scopedStore=null;
   let scopeReady=false;
+  let scopeGeneration=0;
+  const EXTRA_SCOPE_KEYS=Object.freeze(["activity-draft","transition-scenario"]);
+  const storageKey=name=>scopeReady&&scopedStore&&EXTRA_SCOPE_KEYS.includes(name)?scopedStore+":"+name:null;
   // Older unscoped data must never load automatically after network isolation is enabled.
   // Keep legacy keys for explicit backup/migration; never read into a network-scoped session. 
   const guest=Object.freeze({role:"public",email:null,permissions:{viewDashboard:true,manageAiKeys:false,viewUsers:false,manageParameters:false}});
@@ -18,7 +21,7 @@
     document.querySelectorAll('[data-tab="users"],[data-tab="parameter"]').forEach(el=>{el.hidden=true;});
     const cfg=get("btnConfigureAi");if(cfg)cfg.hidden=true;
     const account=document.querySelector(".gc-account-bar");
-    if(account){account.innerHTML='<span class="gc-role-tag" aria-label="Mode publik">Akses Publik</span>';}
+    if(account){account.textContent="";account.hidden=true;}
     const security=get("gcAccountSecurityPanel");if(security)security.hidden=true;
     const users=get("view-users");if(users)users.hidden=true;
     const backup=get("gcBackupDescription");
@@ -35,23 +38,25 @@
         narrativeDrafts:obj.narrativeDrafts&&typeof obj.narrativeDrafts==="object"&&!Array.isArray(obj.narrativeDrafts)?obj.narrativeDrafts:{}};
     }catch(e){return null;}
   }
-  async function save(snapshot){
+  async function save(snapshot,expectedGeneration){
+    if(expectedGeneration!==scopeGeneration||!scopeReady||!scopedStore)return;
     try{
       const r=await fetch("/api/client-scope",{cache:"no-store"});
       const d=r.ok?await r.json():null;
       if(!d || scopedStore!=="greencal_ip_scope_v1_"+d.scope){
         scopeReady=false;
         scopedStore=null;
+        scopeGeneration++;
         location.reload();
         return;
       }
-    }catch(e){scopeReady=false;scopedStore=null;location.reload();return;}
+    }catch(e){scopeReady=false;scopedStore=null;scopeGeneration++;location.reload();return;}
 
     try{
       const p=snapshot();
       const clean={entries:p.entries,exposures:p.exposures,offsets:p.offsets,
         narrativeDrafts:p.narrativeDrafts&&typeof p.narrativeDrafts==="object"?p.narrativeDrafts:{},updatedAt:new Date().toISOString()};
-      if(!scopeReady || !scopedStore)throw Error("IP scope not verified");
+      if(!scopeReady || !scopedStore || scopeGeneration!==expectedGeneration)return;
       localStorage.setItem(scopedStore,JSON.stringify(clean));
       const status=get("gcSyncStatus");if(status){status.hidden=true;status.textContent="";}
     }catch(e){
@@ -64,8 +69,8 @@
     try{
       const r=await fetch("/api/client-scope",{cache:"no-store"});
       const d=r.ok?await r.json():null;
-      if(!d||scopedStore!=="greencal_ip_scope_v1_"+d.scope){scopeReady=false;scopedStore=null;location.reload();}
-    }catch(_){scopeReady=false;scopedStore=null;location.reload();}
+      if(!d||scopedStore!=="greencal_ip_scope_v1_"+d.scope){scopeReady=false;scopedStore=null;scopeGeneration++;location.reload();}
+    }catch(_){scopeReady=false;scopedStore=null;scopeGeneration++;location.reload();}
   });
   window.GC_AUTH={
     get user(){return guest;},
@@ -79,11 +84,13 @@
         const result=await response.json();
         if(!/^[a-f0-9]{64}$/.test(result.scope||""))throw Error("Invalid IP scope");
         scopedStore="greencal_ip_scope_v1_"+result.scope;
+        scopeGeneration++;
         scopeReady=true;
         restored=read();
       }catch(error){
         scopeReady=false;
         scopedStore=null;
+        scopeGeneration++;
         const status=get("gcSyncStatus");
         if(status){status.hidden=false;status.textContent="Jaringan tidak dapat diverifikasi. Semua input tampil kosong; penyimpanan dinonaktifkan sampai koneksi tersedia.";}
       }
@@ -93,13 +100,16 @@
     resetCurrentScope(){
       if(!scopeReady||!scopedStore)throw Error("Jaringan belum terverifikasi. Reset tidak tersedia.");
       clearTimeout(debounce);
-      localStorage.removeItem(scopedStore);
+      scopeGeneration++;
+      const keys=[scopedStore,...EXTRA_SCOPE_KEYS.map(storageKey).filter(Boolean),"green_activity_draft_v1","greencal_transition_scenario_assumptions_v1"];
+      keys.forEach(key=>localStorage.removeItem(key));
       return true;
     },
     get scopeReady(){return scopeReady;},
+    scopedKey:storageKey,
     can(tab){return !["users","parameter"].includes(tab);},
     applyRole:removePrivateUi,
-    queue(snapshot){if(!scopeReady)return;clearTimeout(debounce);debounce=setTimeout(()=>save(snapshot),160);},
+    queue(snapshot){if(!scopeReady)return;clearTimeout(debounce);const revision=scopeGeneration;debounce=setTimeout(()=>save(snapshot,revision),160);},
     async renderUsers(){}
   };
 })();
