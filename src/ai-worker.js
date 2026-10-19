@@ -153,6 +153,44 @@ export default {async fetch(request,env){
  if(url.pathname==="/api/ai/analyze"&&request.method==="POST")return analyze(request,env);
  return error(404,"NOT_FOUND","API tidak tersedia.");
 }};
+/* Public calculator: optional AI Cloud is aggregate-only and rate-limited on D1.
+ * Never expose provider keys, priority settings, or admin status.
+ * The Worker verifies same-origin, Cloudflare-derived scope and per-day quotas.
+ */
+export async function handlePublicAiApi(request,env,scope){
+  const url=new URL(request.url);
+  if(url.pathname==="/api/ai/status"&&request.method==="GET"){
+    let ready=false;
+    if(env.GREENCAL_PUBLIC_AI_ENABLED==="true"&&env.AI_CONFIG&&env.DB&&scope){
+      const cfg=await loadConfig(env);
+      ready=(cfg.order||[]).some(x=>x.enabled&&(x.sealedKey||env[keyVar[x.provider]]));
+    }
+    return asJson({ok:true,role:"public",publicCloudEnabled:ready,
+      remainingPolicy:{perNetworkDay:3,globalDay:50},
+      message:ready?"AI Cloud tersedia untuk data agregat dengan batas harian.":"Analisa lokal tetap tersedia; AI Cloud belum diaktifkan."});
+  }
+  if(url.pathname!=="/api/ai/analyze"||request.method!=="POST")return error(404,"NOT_FOUND","Endpoint tidak tersedia.");
+  if(env.GREENCAL_PUBLIC_AI_ENABLED!=="true")return error(403,"AI_PUBLIC_DISABLED","AI Cloud publik belum diaktifkan; gunakan Analisa Lokal.");
+  if(!scope||!env.DB||!env.AI_CONFIG)return error(503,"AI_UNAVAILABLE","Identitas jaringan atau layanan AI tidak tersedia.");
+  if(request.headers.get("Origin")!==url.origin || !["same-origin","none"].includes(request.headers.get("Sec-Fetch-Site")||"same-origin"))
+    return error(403,"ORIGIN","Permintaan lintas situs tidak diizinkan.");
+  if((request.headers.get("Content-Type")||"").split(";")[0].trim().toLowerCase()!=="application/json")
+    return error(415,"CONTENT_TYPE","Gunakan Content-Type application/json.");
+  if(Number(request.headers.get("Content-Length")||0)>8192)return error(413,"INPUT_TOO_LARGE","Data agregat terlalu besar.");
+  // Verify input before spending quota; never pass arbitrary user text to providers.
+  let payload;
+  try{payload=validate(await request.clone().json());}catch(e){return error(400,"INVALID_INPUT",e.message);}
+  if(!payload || payload.total===null)return error(400,"INVALID_INPUT","Data agregat tidak valid.");
+  const {consumePublicAiQuota}=await import("./public-ai.js");
+  let quota;
+  try{quota=await consumePublicAiQuota(env.DB,scope);}catch(e){
+    console.error("GreenCal public AI quota unavailable");
+    return error(503,"QUOTA_UNAVAILABLE","Batas penggunaan AI tidak dapat diverifikasi.");
+  }
+  if(!quota.ok)return error(429,quota.code,"Kuota AI Cloud harian sudah tercapai. Gunakan Analisa Lokal.");
+  return analyze(request,env);
+}
+
 /* GreenCal D1 IAM bridge: server-verified role for existing AI Gateway. */
 export async function handleAiApi(request,env,actor){
  const url=new URL(request.url);
