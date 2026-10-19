@@ -60,8 +60,9 @@ test("EEIO only computes for positive outstanding and a valid applicable factor"
 });
 
 const runCalc = new Function("CAT","gwpCH4","gwpN2O","nn","R","rowId","nf",
-  block("function runCalc(cat, inp, y) {","function entryT(")+"; return runCalc;")(
+  block("function gcValidateActivityInputs(c, inp) {","function entryT(")+"; return runCalc;")(
   ()=>({
+    id:"s2_elec",
     f:[{k:"qty",t:"num",label:"Kuantitas"},{k:"ignored",t:"num",label:"Field tersembunyi",show:i=>i.mode==="other"}],
     calc:i=>({co2:Number(i.qty)*.76,ch4:0,n2o:0,oth:0,bio:0,refs:[],L:["uji"]})
   }),
