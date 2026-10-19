@@ -1,4 +1,4 @@
-import { handleAiApi, verifyAccessIdentity } from "./ai-worker.js";
+import { handleAiApi, handlePublicAiApi, verifyAccessIdentity } from "./ai-worker.js";
 import { permissionsForRole, writableKeysForRole, preservesExistingRecords } from "./roles.js";
 // GreenCal — D1-backed authentication, two-role RBAC, shared state.
 // All security decisions are enforced by the Worker; the browser role is advisory only.
@@ -99,6 +99,14 @@ async function updatePassword(req,db,user){
   await audit(db,user.id,"auth.password_changed","first_login_or_regular");
   return C({ok:true,reauthRequired:true},200,{"set-cookie":cookie("",0)});
 }
+async function networkScope(req,env){
+  // IP is observed by Cloudflare (not supplied in a payload); only an HMAC pseudonym leaves the Worker.
+  const ip=req.headers.get("CF-Connecting-IP");
+  if(!ip||!env.IP_SCOPE_SECRET||env.IP_SCOPE_SECRET.length<32)return null;
+  const key=await crypto.subtle.importKey("raw",enc(env.IP_SCOPE_SECRET),{name:"HMAC",hash:"SHA-256"},false,["sign"]);
+  const signed=await crypto.subtle.sign("HMAC",key,enc("greencal:v1:"+ip));
+  return Array.from(new Uint8Array(signed),v=>v.toString(16).padStart(2,"0")).join("");
+}
 async function router(req,env) {
   const url=new URL(req.url),path=url.pathname,method=req.method,db=env.DB;
   if(!db)return err("Database autentikasi belum terhubung",503);
@@ -190,15 +198,14 @@ export default {
   async fetch(req,env){
     const path=new URL(req.url).pathname;
     if(path==="/api/client-scope" && req.method==="GET"){
-      // Never trust a browser-supplied IP. Cloudflare supplies the observed IP.
-      const ip=req.headers.get("CF-Connecting-IP");
-      if(!ip || !env.IP_SCOPE_SECRET || env.IP_SCOPE_SECRET.length<32)
-        return err("Identitas jaringan tidak tersedia. Penyimpanan dinonaktifkan.",503);
-      const key=await crypto.subtle.importKey("raw",new TextEncoder().encode(env.IP_SCOPE_SECRET),
-        {name:"HMAC",hash:"SHA-256"},false,["sign"]);
-      const signed=await crypto.subtle.sign("HMAC",key,new TextEncoder().encode("greencal:v1:"+ip));
-      const scope=Array.from(new Uint8Array(signed),v=>v.toString(16).padStart(2,"0")).join("");
-      return C({scope}); 
+      const scope=await networkScope(req,env);
+      return scope?C({scope}):err("Identitas jaringan tidak tersedia. Penyimpanan dinonaktifkan.",503);
+    }
+    // Public AI is narrow and never grants access to /api/state, /api/admin or /api/ai/settings.
+    if((path==="/api/ai/status"&&req.method==="GET")||
+       (path==="/api/ai/analyze"&&req.method==="POST")){
+      try{return await handlePublicAiApi(req,env,await networkScope(req,env));}
+      catch(e){console.error("GreenCal public AI exception");return err("Layanan AI tidak tersedia",503);}
     }
     if(path.startsWith("/api/")){
       try{return await router(req,env)}catch(e){console.error("GreenCal API exception",e);return err("Permintaan gagal diproses",500);}
