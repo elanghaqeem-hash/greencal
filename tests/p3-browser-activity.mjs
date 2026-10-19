@@ -35,7 +35,9 @@ try {
   await page.locator("#f_qty").fill("100");
   assert.equal(await page.locator("#aResult .result-val").count(),1,"valid electricity result");
   await page.locator("#aResult .gc-factor-trace summary").click();
-  const trace=await page.locator("#aResult .gc-factor-trace").innerText();
+  // Read the complete DOM text even if the accordion rerenders/starts closed
+  // during a form-field blur; factor lineage must always exist in the markup.
+  const trace=await page.locator("#aResult .gc-factor-trace").textContent();
   assert.match(trace,/Buku 3 CRMS/);
   assert.match(trace,/verifikasi independen/);
   await page.locator("#aSave").click();
