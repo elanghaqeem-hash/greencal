@@ -5,11 +5,13 @@ on:
     paths:
       - 'index.html'
       - 'tests/security-sector-ui.test.mjs'
+      - 'tests/learning-responsive.test.mjs'
       - '.github/workflows/security-sector-ui.yml'
   pull_request:
     paths:
       - 'index.html'
       - 'tests/security-sector-ui.test.mjs'
+      - 'tests/learning-responsive.test.mjs'
       - '.github/workflows/security-sector-ui.yml'
 permissions:
   contents: read
@@ -23,6 +25,6 @@ jobs:
           node-version: '22'
       - name: Test issuer UI, PCAF calculations, editor, and existing features
         run: |
-          node --test tests/security-sector-ui.test.mjs tests/ai-editor-panel.test.mjs tests/business-travel.test.mjs tests/auth-ui.test.mjs tests/rbac.test.mjs
+          node --test tests/learning-responsive.test.mjs tests/security-sector-ui.test.mjs tests/ai-editor-panel.test.mjs tests/business-travel.test.mjs tests/auth-ui.test.mjs tests/rbac.test.mjs
           node --check auth-client.js
           node --check src/worker.js
