@@ -157,7 +157,7 @@ test("wizard provides all categories, real calculation and factor catalog; mobil
 });
 
 test("complete inline application script parses",()=>{
- const block=html.slice(html.lastIndexOf("<script>")+8,html.lastIndexOf("</script>"));
+ const block=html.slice(html.lastIndexOf("<script>")+8,html.indexOf("</script>", html.lastIndexOf("<script>")));
  assert.ok(block.length>200000);
  assert.doesNotThrow(()=>new Function(block));
 });
