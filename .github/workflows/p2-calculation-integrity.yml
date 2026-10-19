@@ -1,0 +1,28 @@
+name: GreenCal P2 calculation integrity
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'index.html'
+      - 'tests/p2-calculations.test.mjs'
+      - '.github/workflows/p2-calculation-integrity.yml'
+  pull_request:
+    paths:
+      - 'index.html'
+      - 'tests/p2-calculations.test.mjs'
+      - '.github/workflows/p2-calculation-integrity.yml'
+permissions:
+  contents: read
+jobs:
+  calculation-integrity:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Run PCAF, securities, travel and negative-input regressions
+        run: |
+          node --test tests/p2-calculations.test.mjs tests/pcaf-securities.test.mjs tests/business-travel.test.mjs
+          node --check src/worker.js
+          node --check auth-client.js
