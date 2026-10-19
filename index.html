@@ -3553,6 +3553,7 @@ dialog.modal-sheet .modal-foot { background:var(--surface); }
   header.app-header .year-select-wrap{min-height:39px}
 }
 
+#btnRunCloudAi[hidden]{display:none!important}
 </style>
   <script src="/assets/guide-learning.js"></script>
 </head>
@@ -3816,6 +3817,7 @@ dialog.modal-sheet .modal-foot { background:var(--surface); }
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
               <span>Atur AI Tier (Admin)</span>
             </button>
+            <button class="btn sm" id="btnRunCloudAi" type="button" hidden title="Hanya data ringkasan agregat yang dikirim ke penyedia AI; tanpa rincian debitur">AI Cloud</button>
             <button class="btn primary sm" id="btnRunAi">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
               <span>Jalankan Analisa</span>
@@ -8654,7 +8656,11 @@ function bindEvents() {
   const btnCfgAi = $("#btnConfigureAi");
   if (btnCfgAi) btnCfgAi.onclick = openAiConfigDialog;
   const btnRunAi = $("#btnRunAi");
-  if (btnRunAi) btnRunAi.onclick = runAiAnalysisUi;
+  if (btnRunAi) btnRunAi.onclick = () => runAiAnalysisUi();
+  const btnCloud = $("#btnRunCloudAi");
+  if(btnCloud)btnCloud.onclick = () => confirmDlg("Jalankan Analisa AI Cloud?",
+    "Hanya jumlah emisi agregat per Scope, pembiayaan, dan tahun yang dikirim ke penyedia AI eksternal. Tidak termasuk nama debitur atau bukti transaksi. Keluaran adalah draf yang perlu ditinjau.",
+    "Jalankan AI Cloud",() => { void runAiAnalysisUi(true); });
 
   // NGFS Scenarios
   ["#tScen", "#tYr"].forEach(s => { const el = $(s); if (el) el.onchange = renderTrans; });
@@ -8708,6 +8714,16 @@ function bindEvents() {
     confirmDlg("Reset Aktivitas?", "Semua aktivitas, eksposur dan offset bersama akan dikosongkan.", "Reset Data", () => { S.entries=[]; S.exposures=[]; S.offsets=[]; S.narrativeDrafts={}; saveStateToStorage(); renderAll(); toast("Menyimpan perubahan."); });
   };}
 
+async function refreshCloudAiAvailability(){
+  const button=$("#btnRunCloudAi");
+  if(!button)return;
+  button.hidden=true;
+  try{
+    const response=await fetch("/api/ai/status",{credentials:"same-origin",cache:"no-store"});
+    const status=response.ok?await response.json():null;
+    button.hidden=!(status?.ok&&status.publicCloudEnabled===true);
+  }catch(_){button.hidden=true;}
+}
 async function boot() {
   initTheme();
   // Clean any legacy browser API key values before activating public mode.
@@ -8728,6 +8744,7 @@ async function boot() {
     renderAll();
     setTab("ringkasan");
   });
+  void refreshCloudAiAvailability();
 }
 
 function closeDlg() {
@@ -9422,7 +9439,7 @@ async function runAiTier3(summaryData, year, config) {
     response=await fetch("/api/ai/analyze",{method:"POST",headers:{"Content-Type":"application/json"},
       body:JSON.stringify(payload),credentials:"same-origin",cache:"no-store"});
     result=await response.json();
-  }catch(e){throw Error("Tidak bisa menjangkau layanan AI server. Periksa koneksi atau autentikasi Cloudflare Access.");}
+  }catch(e){throw Error("Tidak dapat menghubungi layanan AI Cloud. Periksa koneksi dan ketersediaan layanan.");}
   if(!response.ok||!result.ok)throw Error(result.message||("Layanan AI gagal (HTTP "+response.status+")."));
   const local=runAiTier2(s,year);
   return Object.assign({},local,{
@@ -9483,7 +9500,7 @@ function renderAiView() {
   }
 }
 
-async function runAiAnalysisUi() {
+async function runAiAnalysisUi(useCloud=false) {
   if(!gcAiEnsureSaved())return;
   const box = $("#aiContentBox");
   box.innerHTML = 
@@ -9494,7 +9511,7 @@ async function runAiAnalysisUi() {
     '</div>';
 
   try {
-    const res = await executeAiAnalysis();
+    const res = useCloud===true ? await runAiTier3(summary(S.year,S.method),S.year,{}) : await executeAiAnalysis();
     LAST_AI_RESULT = res;
     LAST_AI_FINGERPRINT = gcAiFingerprint(S.year);
     displayAiResult(res);
