@@ -15,19 +15,32 @@ Materi, dokumentasi, dan kode dapat ditambahkan melalui commit atau pull request
 - `Kalkulator Emisi CRMS.html` — Versi cadangan / standalone kalkulator emisi CRMS OJK
 
 
-## Deployment produksi otomatis (Cloudflare Workers Builds)
+## Deployment produksi dan P0 asset integrity
 
 GreenCal ditayangkan pada **https://greencal.elang-haqeem.workers.dev** melalui Cloudflare Worker `greencal`.
 
 - **Sumber produksi:** repository `elanghaqeem-hash/greencal`, branch `main`.
-- **Pemicu:** Cloudflare Workers Builds terhubung ke GitHub dan `auto_build_enabled` aktif. Setiap push/merge ke `main` seharusnya memicu build baru; branch pengembangan tidak langsung masuk ke produksi.
-- **Build command:** `mkdir -p dist && cp index.html dist/index.html && if [ -f assets/brks-syariah.svg ]; then mkdir -p dist/assets && cp assets/brks-syariah.svg dist/assets/brks-syariah.svg; fi`.
-- **Deploy command:** `npx wrangler deploy --assets ./dist --name greencal --compatibility-date 2026-10-18`.
-- **Entry point:** hanya `index.html` yang dipublikasikan sebagai aset web produksi. File `Kalkulator Emisi CRMS.html` adalah versi standalone cadangan.
+- **Status pemicu:** Integrasi Workers Builds otomatis **belum terverifikasi aktif**. Pemeriksaan Cloudflare tanggal 20 Oktober 2026 menunjukkan belum ada build trigger untuk Worker ini. Jangan menganggap push ke `main` telah tayang sebelum deployment selesai.
+- **Build command wajib:** `node scripts/build-dist.mjs` — menyalin `index.html`, `auth-client.js`, `assets/guide-learning.js` dan `assets/brks-syariah.svg`; gagal otomatis apabila ada file penting hilang.
+- **Deploy command:** `npx wrangler deploy --config wrangler.jsonc` (setelah build; binding `ASSETS`, D1, KV tetap mengikuti konfigurasi Worker).
+- **Entry point:** `index.html` sebagai halaman utama serta **seluruh dependensi eksternal** wajib berada dalam paket `dist/`. File `Kalkulator Emisi CRMS.html` tetap cadangan dan tidak dibundel.
 - **Verifikasi:** periksa status **Builds** dan **Deployments** di [Cloudflare Dashboard](https://dash.cloudflare.com/), lalu uji halaman publik di HP dan laptop.
 - **Keamanan:** token build disimpan dan dikelola pada Cloudflare Workers Builds, tidak di-commit ke GitHub.
 
 Jika terjadi build gagal, periksa log di Cloudflare terlebih dahulu. Jangan menganggap merge GitHub sebagai bukti deployment berhasil tanpa status **SUCCESS** dan versi deployment terbaru.
+
+## P0 — pemeriksaan aplikasi sebelum rilis
+
+```bash
+node scripts/build-dist.mjs
+node --test tests/p0-assets.test.mjs
+node --check auth-client.js
+node --check assets/guide-learning.js
+# Kemudian deployment manual setelah CI lolos:
+npx wrangler deploy --config wrangler.jsonc
+```
+
+Workflow `GreenCal P0 assets and browser smoke` melakukan uji Chromium desktop dan seluler dengan API identity lokal yang ditiru. Ini tidak mengubah database maupun API key produksi. Setelah deploy, periksa file HTTP `/auth-client.js`, `/assets/guide-learning.js` dan `/assets/brks-syariah.svg`, pastikan bukan 404/HTML fallback; uji kalkulator, simpan, refresh, menu lengkap, dan console errors pada alamat produksi. GitHub CI yang berhasil **tidak sama** dengan deployment produksi yang berhasil.
 
 ## Logo BRK Syariah
 
