@@ -3553,6 +3553,7 @@ dialog.modal-sheet .modal-foot { background:var(--surface); }
   header.app-header .year-select-wrap{min-height:39px}
 }
 
+#btnRunCloudAi[hidden]{display:none!important}
 </style>
   <script src="/assets/guide-learning.js"></script>
 </head>
@@ -3816,6 +3817,7 @@ dialog.modal-sheet .modal-foot { background:var(--surface); }
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
               <span>Atur AI Tier (Admin)</span>
             </button>
+            <button class="btn sm" id="btnRunCloudAi" type="button" hidden title="Hanya data ringkasan agregat yang dikirim ke penyedia AI; tanpa rincian debitur">AI Cloud</button>
             <button class="btn primary sm" id="btnRunAi">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
               <span>Jalankan Analisa</span>
@@ -6914,10 +6916,12 @@ function renderAct() {
 
 
 /* Data draft is device-local and excluded from saved activity calculations. */
-const ACTIVITY_DRAFT_KEY = "green_activity_draft_v1";
+// Drafts follow the same Cloudflare-verified network scope as saved activities.
+const activityDraftKey = () => window.GC_AUTH?.scopedKey("activity-draft") || null;
 function getActivityDraft() {
   try {
-    const raw = localStorage.getItem(ACTIVITY_DRAFT_KEY);
+    const key=activityDraftKey();
+    const raw = key ? localStorage.getItem(key) : null;
     if (!raw) return null;
     const d = JSON.parse(raw);
     return d && typeof d === "object" && d.cat ? d : null;
@@ -6938,7 +6942,7 @@ function renderActivityDraftState() {
     '<button class="btn sm" type="button" id="btnRemoveActivityDraft">Hapus draft</button></div>';
   $("#btnRestoreActivityDraft").onclick = restoreActivityDraft;
   $("#btnRemoveActivityDraft").onclick = () => {
-    try { localStorage.removeItem(ACTIVITY_DRAFT_KEY); }
+    try { const key=activityDraftKey(); if(!key)throw Error("Network not verified"); localStorage.removeItem(key); }
     catch(err) { toast("Tidak dapat menghapus draft."); return; }
     renderActivityDraftState();
     toast("Draft telah dihapus.");
@@ -6952,7 +6956,7 @@ function saveActivityDraft() {
     desc:$("#aDesc").value,evidence:$("#aEvidence").value,
     savedAt:new Date().toISOString()
   };
-  try { localStorage.setItem(ACTIVITY_DRAFT_KEY,JSON.stringify(d)); }
+  try { const key=activityDraftKey(); if(!key)throw Error("Network not verified"); localStorage.setItem(key,JSON.stringify(d)); }
   catch(err) { toast("Penyimpanan lokal tidak diizinkan browser."); return; }
   renderActivityDraftState();
   toast("Draft tersimpan di browser. Belum termasuk data emisi.");
@@ -7412,7 +7416,7 @@ async function saveAct(ev) {
   }
 
   saveStateToStorage();
-  try { localStorage.removeItem(ACTIVITY_DRAFT_KEY); } catch (err) {}
+  try { const key=activityDraftKey(); if(key)localStorage.removeItem(key); } catch (err) {}
   resetAct();
   renderAll();
 }
@@ -7689,13 +7693,15 @@ async function saveFin(ev) {
 }
 
 /* ---------- RISIKO TRANSISI DEBITUR (NGFS) — GC_TRANSITION_WORKSPACE_V1 ---------- */
-const GC_TRANS_SCENARIO_STORE = "greencal_transition_scenario_assumptions_v1";
+// No unscoped transition assumptions: switching IP must show a blank workspace.
+const transitionScenarioKey = () => window.GC_AUTH?.scopedKey("transition-scenario") || null;
 const GC_TRANS_RATING_TEXT = ["Belum dinilai","1 · Rendah","2 · Agak rendah","3 · Sedang","4 · Tinggi","5 · Sangat tinggi"];
 const GC_TRANS_PLAN_TEXT = {"":"Belum diketahui","tidak":"Belum tersedia","proses":"Dalam penyusunan","ada_nv":"Ada, belum diverifikasi","ada_v":"Ada, terverifikasi"};
 function transKey(sc,yr) { return String(sc) + "|" + String(yr); }
 function transLoadOverrides() {
   try {
-    const x=JSON.parse(localStorage.getItem(GC_TRANS_SCENARIO_STORE)||"{}");
+    const key=transitionScenarioKey();
+    const x=JSON.parse((key && localStorage.getItem(key))||"{}");
     return x&&typeof x==="object"&&!Array.isArray(x)?x:{};
   }catch(e){return {};}
 }
@@ -7810,7 +7816,7 @@ function transSaveScenario(e) {
   if(x.price===null||x.red===null||x.source.length<6){toast("Isi harga karbon, penurunan 0–100%, dan referensi sumber (minimal 6 karakter).");return;}
   const obj=transLoadOverrides();
   obj[transKey(sc,yr)]={...x,updatedAt:nowIso()};
-  try{localStorage.setItem(GC_TRANS_SCENARIO_STORE,JSON.stringify(obj));}
+  try{const key=transitionScenarioKey();if(!key)throw Error("Network not verified");localStorage.setItem(key,JSON.stringify(obj));}
   catch(e){toast("Penyimpanan asumsi gagal. Periksa kapasitas browser.");return;}
   toast("Asumsi skenario tersimpan lokal pada perangkat ini.");
   renderTrans();
@@ -7818,7 +7824,7 @@ function transSaveScenario(e) {
 function transClearScenario() {
   const {sc,yr}=transSelected(),obj=transLoadOverrides();
   delete obj[transKey(sc,yr)];
-  try{localStorage.setItem(GC_TRANS_SCENARIO_STORE,JSON.stringify(obj));}
+  try{const key=transitionScenarioKey();if(!key)throw Error("Network not verified");localStorage.setItem(key,JSON.stringify(obj));}
   catch(e){toast("Gagal menghapus asumsi.");return;}
   renderTrans();toast("Asumsi lokal dihapus; kembali ke parameter tabel jika tersedia.");
 }
@@ -8650,7 +8656,11 @@ function bindEvents() {
   const btnCfgAi = $("#btnConfigureAi");
   if (btnCfgAi) btnCfgAi.onclick = openAiConfigDialog;
   const btnRunAi = $("#btnRunAi");
-  if (btnRunAi) btnRunAi.onclick = runAiAnalysisUi;
+  if (btnRunAi) btnRunAi.onclick = () => runAiAnalysisUi();
+  const btnCloud = $("#btnRunCloudAi");
+  if(btnCloud)btnCloud.onclick = () => confirmDlg("Jalankan Analisa AI Cloud?",
+    "Hanya jumlah emisi agregat per Scope, pembiayaan, dan tahun yang dikirim ke penyedia AI eksternal. Tidak termasuk nama debitur atau bukti transaksi. Keluaran adalah draf yang perlu ditinjau.",
+    "Jalankan AI Cloud",() => { void runAiAnalysisUi(true); });
 
   // NGFS Scenarios
   ["#tScen", "#tYr"].forEach(s => { const el = $(s); if (el) el.onchange = renderTrans; });
@@ -8668,7 +8678,12 @@ function bindEvents() {
 
   // Menu Backup & Restore
   $("#btnBackupJson").onclick = backupJson;
-  $("#btnClearPublicData").onclick = () => confirmDlg("Hapus data perangkat?", "Semua aktivitas, pembiayaan, dan offset yang disimpan di browser ini akan dihapus. Unduh cadangan JSON terlebih dahulu bila diperlukan.", "Hapus Data Lokal", () => { S.entries=[]; S.exposures=[]; S.offsets=[]; S.narrativeDrafts={}; S.audit=[]; saveStateToStorage(); LAST_AI_RESULT=null; renderAll(); toast("Data lokal perangkat berhasil dikosongkan."); });
+  $("#btnClearPublicData").onclick = () => confirmDlg("Hapus data perangkat?", "Seluruh aktivitas, pembiayaan, offset, draf aktivitas, narasi dan asumsi transisi pada sesi jaringan ini akan dihapus. Cadangkan JSON terlebih dahulu.", "Hapus Data Lokal", () => {
+    try { GC_AUTH.resetCurrentScope(); } catch(e) { toast(e.message); return; }
+    S.entries=[]; S.exposures=[]; S.offsets=[]; S.narrativeDrafts={}; S.audit=[];
+    S.editActId=null; S.editFinId=null; LAST_AI_RESULT=null;
+    renderAll(); setTab("ringkasan"); toast("Data dan draf pada jaringan saat ini telah dihapus.");
+  });
   $("#fileRestoreJson").onchange = restoreJson;
   // Per-user browser working copy, isolated by the IP verified by Cloudflare.
   const scopeResetBtn=document.createElement("button");
@@ -8681,7 +8696,7 @@ function bindEvents() {
   if(backupPanel)backupPanel.appendChild(scopeResetBtn);
   scopeResetBtn.onclick=()=>confirmDlg(
     "Reset seluruh input pada IP ini?",
-    "Aktivitas, data pembiayaan dan offset pada browser dan jaringan saat ini akan dihapus. Tindakan ini tidak dapat dibatalkan. Cadangkan terlebih dahulu bila diperlukan.",
+    "Aktivitas, pembiayaan, offset, draf dan asumsi transisi pada browser dan jaringan saat ini akan dihapus. Tindakan ini tidak dapat dibatalkan. Cadangkan terlebih dahulu bila diperlukan.",
     "Ya, Hapus Data Saya",
     ()=>{
       try{
@@ -8699,6 +8714,16 @@ function bindEvents() {
     confirmDlg("Reset Aktivitas?", "Semua aktivitas, eksposur dan offset bersama akan dikosongkan.", "Reset Data", () => { S.entries=[]; S.exposures=[]; S.offsets=[]; S.narrativeDrafts={}; saveStateToStorage(); renderAll(); toast("Menyimpan perubahan."); });
   };}
 
+async function refreshCloudAiAvailability(){
+  const button=$("#btnRunCloudAi");
+  if(!button)return;
+  button.hidden=true;
+  try{
+    const response=await fetch("/api/ai/status",{credentials:"same-origin",cache:"no-store"});
+    const status=response.ok?await response.json():null;
+    button.hidden=!(status?.ok&&status.publicCloudEnabled===true);
+  }catch(_){button.hidden=true;}
+}
 async function boot() {
   initTheme();
   // Clean any legacy browser API key values before activating public mode.
@@ -8719,6 +8744,7 @@ async function boot() {
     renderAll();
     setTab("ringkasan");
   });
+  void refreshCloudAiAvailability();
 }
 
 function closeDlg() {
@@ -9413,7 +9439,7 @@ async function runAiTier3(summaryData, year, config) {
     response=await fetch("/api/ai/analyze",{method:"POST",headers:{"Content-Type":"application/json"},
       body:JSON.stringify(payload),credentials:"same-origin",cache:"no-store"});
     result=await response.json();
-  }catch(e){throw Error("Tidak bisa menjangkau layanan AI server. Periksa koneksi atau autentikasi Cloudflare Access.");}
+  }catch(e){throw Error("Tidak dapat menghubungi layanan AI Cloud. Periksa koneksi dan ketersediaan layanan.");}
   if(!response.ok||!result.ok)throw Error(result.message||("Layanan AI gagal (HTTP "+response.status+")."));
   const local=runAiTier2(s,year);
   return Object.assign({},local,{
@@ -9474,7 +9500,7 @@ function renderAiView() {
   }
 }
 
-async function runAiAnalysisUi() {
+async function runAiAnalysisUi(useCloud=false) {
   if(!gcAiEnsureSaved())return;
   const box = $("#aiContentBox");
   box.innerHTML = 
@@ -9485,7 +9511,7 @@ async function runAiAnalysisUi() {
     '</div>';
 
   try {
-    const res = await executeAiAnalysis();
+    const res = useCloud===true ? await runAiTier3(summary(S.year,S.method),S.year,{}) : await executeAiAnalysis();
     LAST_AI_RESULT = res;
     LAST_AI_FINGERPRINT = gcAiFingerprint(S.year);
     displayAiResult(res);
