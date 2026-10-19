@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 
 const html=fs.readFileSync(new URL("../index.html",import.meta.url),"utf8");
-const code=html.slice(html.lastIndexOf("<script>")+8,html.lastIndexOf("</script>"));
+const code=html.slice(html.lastIndexOf("<script>")+8,html.indexOf("</script>", html.lastIndexOf("<script>")));
 const css=html.slice(html.indexOf("<style"),html.indexOf("</style>")+8);
 const sectorStart=code.indexOf("function gcPcafSectorOptions(");
 const sectorEnd=code.indexOf("function gcPcafSectorValue(",sectorStart);

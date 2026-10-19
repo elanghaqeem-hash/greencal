@@ -5340,6 +5340,14 @@ const CAT = id => CATS.find(c => c.id === id);
 function runCalc(cat, inp, y) {
   const c = CAT(cat);
   if (!c) throw new Error("Kategori tidak dikenal: " + cat);
+  // P2: reject invalid or negative values in visible quantity fields.
+  for (const field of c.f || []) {
+    if (field.t !== "num" || (field.show && !field.show(inp))) continue;
+    const raw = inp[field.k];
+    if (raw == null || String(raw).trim() === "") continue;
+    const amount = Number(raw);
+    if (!Number.isFinite(amount) || amount < 0) throw new Error("Nilai " + field.label + " harus angka tidak negatif.");
+  }
   const o = c.calc(inp, y);
   const g1 = gwpCH4(y), g2 = gwpN2O(y);
   const kg = nn(o.co2) + (nn(o.ch4) / 1000) * g1 + (nn(o.n2o) / 1000) * g2 + nn(o.oth);
@@ -5382,25 +5390,33 @@ const clsById = id => S.classes.find(c => c.id === id);
 
 function expCalc(x) {
   if (x.assetKind === "security") return gcSecExpCalc(x);
+  // P2: invalid outstanding/denominators are data gaps, never silently capped.
+  const numeric = v => v == null || (typeof v === "string" && !v.trim())
+    ? null : (Number.isFinite(Number(v)) ? Number(v) : null);
   const b = x.basis, y = x.year;
-  let af = null, emis = x.emis, fin = null;
+  const os = numeric(x.os), denom = numeric(x.denom), pct = numeric(x.pct);
+  let af = null, emis = numeric(x.emis), fin = null;
+  const basis = BASIS.find(z => z.k === b);
   if (b === "eeio") {
     try {
       const r = R("invest", x.investKey, y);
-      fin = ((x.os || 0) * 1e9 * r.ef) / 1000;
-      af = null;
-      emis = null;
+      if (os != null && os > 0 && Number.isFinite(r.ef) && r.ef >= 0) {
+        const amount = os * 1e9 * r.ef / 1000;
+        if (Number.isFinite(amount)) fin = amount;
+      }
     } catch(e) { fin = null; }
-    return { af, emis, fin, dq: 5 };
+    return { af:null, emis:null, fin, dq:fin == null ? null : 5 };
   }
+  if (!basis || b === "belum") return { af:null, emis:null, fin:null, dq:null };
   if (b === "kepemilikan") {
-    af = x.pct != null ? x.pct / 100 : null;
-  } else {
-    af = (x.denom > 0 && x.os != null) ? Math.min(x.os / x.denom, 1) : null;
+    if (pct != null && pct >= 0 && pct <= 100) af = pct / 100;
+  } else if (os != null && os >= 0 && denom != null && denom > 0 && os <= denom) {
+    af = os / denom;
   }
-  if (b === "belum") emis = null;
-  fin = (af != null && emis != null) ? af * emis : null;
-  return { af, emis, fin, dq: (BASIS.find(z => z.k === b) || {}).dq };
+  if (emis != null && emis < 0) emis = null;
+  const estimate = af != null && emis != null ? af * emis : null;
+  if (estimate != null && Number.isFinite(estimate)) fin = estimate;
+  return { af, emis, fin, dq: fin == null ? null : basis.dq };
 }
 
 /* ---------- SUMMARY AGGREGATOR ---------- */
@@ -7506,15 +7522,21 @@ function updFin() {
   if (b === "eeio") {
     try {
       const f = R("invest", x.investKey, x.year);
-      h = x.os != null ?
+      h = r.fin != null ?
         '<span class="result-val">' + nf(r.fin, 2) + ' tCO₂e</span><span class="result-formula">Rp ' + nfa(x.os) + ' Miliar × ' + nfx(f.ef) + ' kgCO₂e/IDR</span>' :
-        '<span class="result-formula">Isi nilai outstanding pembiayaan.</span>';
+        '<span class="result-formula">Isi outstanding positif dan periksa faktor emisi investasi yang berlaku.</span>';
     } catch(e) { h = '<span>' + esc(e.message) + '</span>'; }
   } else if (r.af == null) {
-    h = '<span class="result-formula">' + (b === "kepemilikan" ? "Isi porsi kepemilikan." : "Isi outstanding dan penyebut untuk menghitung Attribution Factor.") + '</span>';
+    const invalidRatio = x.os != null && x.denom != null && x.denom > 0 && x.os > x.denom;
+    const invalidPct = b === "kepemilikan" && x.pct != null && (x.pct < 0 || x.pct > 100);
+    h = '<span class="result-formula">' +
+      (invalidRatio ? "Outstanding melebihi penyebut atribusi. Koreksi input; emisi terbiayai dicatat sebagai Gap Data." :
+       invalidPct ? "Porsi kepemilikan harus berada pada rentang 0–100%." :
+       b === "kepemilikan" ? "Isi porsi kepemilikan 0–100%." :
+       "Isi outstanding dan penyebut positif. Outstanding tidak boleh melebihi penyebut.") + '</span>';
   } else {
     h = (r.fin != null ? '<span class="result-val">' + nf(r.fin, 2) + ' tCO₂e</span>' : '<span><b>Belum dapat dihitung</b> — emisi debitur belum ada (dicatat sebagai Gap).</span>') +
-      '<span class="result-formula">' + (b === "kepemilikan" ? "AF = " + nfa(x.pct) + "% = " + nf(r.af, 4) : "AF = min(" + nfa(x.os) + " ÷ " + nfa(x.denom) + ", 1) = " + nf(r.af, 4)) + '</span>' +
+      '<span class="result-formula">' + (b === "kepemilikan" ? "AF = " + nfa(x.pct) + "% = " + nf(r.af, 4) : "AF = " + nfa(x.os) + " ÷ " + nfa(x.denom) + " = " + nf(r.af, 4)) + '</span>' +
       (r.fin != null ? '<span class="result-formula">' + nf(r.af, 4) + ' × ' + nfa(r.emis) + ' tCO₂e = ' + nf(r.fin, 2) + ' tCO₂e</span>' : '');
   }
   el.innerHTML = h;
@@ -7681,7 +7703,13 @@ async function saveFin(ev) {
   ev.preventDefault();
   const x = finFromForm();
   if (!x.debtor) { toast("Isi nama debitur terlebih dahulu."); return; }
-  if (x.os == null || x.os < 0) { toast("Isi nilai outstanding pembiayaan."); return; }
+  if (x.os == null || x.os < 0) { toast("Isi nilai outstanding pembiayaan yang tidak negatif."); return; }
+  if (x.denom != null && x.denom <= 0) { toast("Penyebut harus lebih besar dari nol, atau kosong jika belum tersedia."); return; }
+  if (x.basis !== "kepemilikan" && x.basis !== "eeio" && x.denom != null && x.os > x.denom) {
+    toast("Outstanding melebihi penyebut atribusi. Periksa nilai sebelum menyimpan."); return;
+  }
+  if (x.pct != null && (x.pct < 0 || x.pct > 100)) { toast("Porsi kepemilikan harus 0–100%."); return; }
+  if (x.emis != null && x.emis < 0) { toast("Emisi debitur tidak boleh negatif."); return; }
 
   x.at = nowIso();
   x.contoh = false;
