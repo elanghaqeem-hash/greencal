@@ -21,7 +21,8 @@ test("public calculator isolates browser data by verified IP scope",()=>{
  assert.match(client,/scopeReady=true/);
  assert.match(client,/localStorage.setItem\(scopedStore/);
  assert.match(client,/localStorage.getItem\(scopedStore/);
- assert.match(client,/localStorage.removeItem\(scopedStore/);
+ assert.match(client,/keys.forEach\(key=>localStorage.removeItem\(key\)\)/);
+ assert.match(client,/EXTRA_SCOPE_KEYS/);
  assert.match(client,/entries:Array.isArray/);
  assert.match(client,/exposures:Array.isArray/);
  assert.match(client,/offsets:Array.isArray/);
