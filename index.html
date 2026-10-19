@@ -5409,8 +5409,8 @@ function expCalc(x) {
   }
   if (!basis || b === "belum") return { af:null, emis:null, fin:null, dq:null };
   if (b === "kepemilikan") {
-    if (pct != null && pct >= 0 && pct <= 100) af = pct / 100;
-  } else if (os != null && os >= 0 && denom != null && denom > 0 && os <= denom) {
+    if (os != null && os > 0 && pct != null && pct >= 0 && pct <= 100) af = pct / 100;
+  } else if (os != null && os > 0 && denom != null && denom > 0 && os <= denom) {
     af = os / denom;
   }
   if (emis != null && emis < 0) emis = null;
@@ -7703,13 +7703,22 @@ async function saveFin(ev) {
   ev.preventDefault();
   const x = finFromForm();
   if (!x.debtor) { toast("Isi nama debitur terlebih dahulu."); return; }
-  if (x.os == null || x.os < 0) { toast("Isi nilai outstanding pembiayaan yang tidak negatif."); return; }
+  // Parsing must not silently turn malformed numbers into a valid missing-value state.
+  for (const [id, label] of [["xOs","Outstanding"],["xDenom","Penyebut"],["xPct","Kepemilikan"],["xEmis","Emisi debitur"],["xProfit","Laba"]]) {
+    const el = $( "#" + id );
+    if (!el || el.disabled || el.closest("[hidden]")) continue;
+    if (el.value.trim() && parseNum(el.value) == null) {
+      toast("Nilai " + label + " tidak valid. Gunakan angka."); return;
+    }
+  }
+  if (x.os == null || x.os <= 0) { toast("Outstanding harus lebih besar dari nol."); return; }
   if (x.denom != null && x.denom <= 0) { toast("Penyebut harus lebih besar dari nol, atau kosong jika belum tersedia."); return; }
   if (x.basis !== "kepemilikan" && x.basis !== "eeio" && x.denom != null && x.os > x.denom) {
     toast("Outstanding melebihi penyebut atribusi. Periksa nilai sebelum menyimpan."); return;
   }
   if (x.pct != null && (x.pct < 0 || x.pct > 100)) { toast("Porsi kepemilikan harus 0–100%."); return; }
   if (x.emis != null && x.emis < 0) { toast("Emisi debitur tidak boleh negatif."); return; }
+  if (x.profit != null && x.profit < 0) { toast("Nilai laba negatif tidak didukung pada formulir ini."); return; }
 
   x.at = nowIso();
   x.contoh = false;
