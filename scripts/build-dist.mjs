@@ -1,0 +1,39 @@
+import { copyFile, mkdir, readFile, rm, stat } from "node:fs/promises";
+import { resolve, join, dirname } from "node:path";
+
+// P0: publish every external asset the production HTML requires.
+// Never silently deploy an index.html with broken JavaScript imports.
+const root = resolve(import.meta.dirname, "..");
+const dist = join(root, "dist");
+const required = [
+  "index.html",
+  "auth-client.js",
+  "assets/guide-learning.js",
+  "assets/brks-syariah.svg",
+];
+const html = await readFile(join(root, "index.html"), "utf8");
+for (const asset of required.slice(1)) {
+  const variants = [asset, "./" + asset, "/" + asset];
+  if (!variants.some(ref => html.includes(ref))) {
+    throw new Error("Asset not referenced by index.html: " + asset);
+  }
+  const f = join(root, asset);
+  const meta = await stat(f);
+  if (!meta.isFile() || meta.size < 100) {
+    throw new Error("Required GreenCal asset missing or empty: " + asset);
+  }
+}
+await rm(dist, { recursive: true, force: true });
+await mkdir(dist, { recursive: true });
+for (const asset of required) {
+  const target = join(dist, asset);
+  await mkdir(dirname(target), { recursive: true });
+  await copyFile(join(root, asset), target);
+  const copied = await stat(target);
+  const original = await stat(join(root, asset));
+  if (copied.size !== original.size) {
+    throw new Error("Asset copy size differs: " + asset);
+  }
+  console.log("P0 asset:", asset, copied.size, "bytes");
+}
+console.log("GreenCal dist is complete; Cloudflare can deploy ./dist.");
