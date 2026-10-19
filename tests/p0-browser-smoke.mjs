@@ -25,7 +25,7 @@ async function check(variant) {
     const r = await page.goto(base + "/", { waitUntil: "domcontentloaded", timeout: 45000 });
     assert.equal(r.status(), 200, variant + ": root should load");
     await page.waitForFunction(() => window.GC_AUTH?.scopeReady === true, { timeout: 20000 });
-    await page.waitForSelector("#dashYear option", { timeout: 15000 });
+    await page.waitForFunction(() => document.querySelector("#dashYear")?.options.length > 0, null, { timeout: 15000 });
     assert.equal(await page.locator("#view-ringkasan").isVisible(), true);
 
     async function openTab(tab) {
