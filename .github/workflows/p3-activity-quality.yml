@@ -1,0 +1,41 @@
+name: GreenCal P3.1 activity validation and factor provenance
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'index.html'
+      - 'tests/p3-*.mjs'
+      - 'tests/p2-calculations.test.mjs'
+      - '.github/workflows/p3-activity-quality.yml'
+  pull_request:
+    paths:
+      - 'index.html'
+      - 'tests/p3-*.mjs'
+      - 'tests/p2-calculations.test.mjs'
+      - '.github/workflows/p3-activity-quality.yml'
+permissions:
+  contents: read
+jobs:
+  factor-and-browser-validation:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify all calibration guards and prior calculator regressions
+        run: |
+          node --test tests/p3-activity-input-factor-trace.test.mjs tests/p2-calculations.test.mjs tests/pcaf-securities.test.mjs tests/business-travel.test.mjs
+      - name: Assemble production assets
+        run: node scripts/build-dist.mjs
+      - name: Install headless Chromium
+        run: |
+          npm install --no-save --no-package-lock playwright@1.56.1
+          npx playwright install --with-deps chromium
+      - name: Verify missing measurement and hotel form on desktop and phone
+        run: |
+          python3 -m http.server 8787 --directory dist >/tmp/greencal-p3-http.log 2>&1 &
+          SERVER_PID=$!
+          trap 'kill "$SERVER_PID" || true' EXIT
+          node tests/p3-browser-activity.mjs
