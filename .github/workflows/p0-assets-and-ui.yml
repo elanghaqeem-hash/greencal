@@ -1,0 +1,49 @@
+name: GreenCal P0 assets and browser smoke
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'index.html'
+      - 'auth-client.js'
+      - 'assets/**'
+      - 'scripts/build-dist.mjs'
+      - 'tests/p0-*.mjs'
+      - '.github/workflows/p0-assets-and-ui.yml'
+  pull_request:
+    paths:
+      - 'index.html'
+      - 'auth-client.js'
+      - 'assets/**'
+      - 'scripts/build-dist.mjs'
+      - 'tests/p0-*.mjs'
+      - '.github/workflows/p0-assets-and-ui.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  p0-smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Assemble all assets required by GreenCal
+        run: node scripts/build-dist.mjs
+      - name: Validate published bundle and core source
+        run: |
+          node --test tests/p0-assets.test.mjs
+          node --check auth-client.js
+          node --check assets/guide-learning.js
+          node --check src/worker.js
+      - name: Install headless Chromium smoke runner
+        run: |
+          npm install --no-save --no-package-lock playwright@1.56.1
+          npx playwright install --with-deps chromium
+      - name: Check menus and calculator in desktop and mobile browsers
+        run: |
+          python3 -m http.server 8787 --directory dist >/tmp/greencal-p0-http.log 2>&1 &
+          SERVER_PID=$!
+          trap 'kill "$SERVER_PID" || true' EXIT
+          node tests/p0-browser-smoke.mjs
