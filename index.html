@@ -3234,6 +3234,45 @@ dialog.modal-sheet .modal-foot { background:var(--surface); }
 @media(max-width:860px){.gc-learning .edu-layout{grid-template-columns:1fr;padding:14px}.gc-learning .edu-nav{position:static;display:flex;overflow-x:auto;padding:0 0 8px;gap:7px}.gc-learning .edu-nav button{flex:0 0 auto;width:auto;white-space:nowrap}.gc-learning .edu-grid{grid-template-columns:1fr 1fr}.gc-learning .edu-flow{grid-template-columns:1fr 1fr}}
 @media(max-width:520px){.gc-learning .edu-grid,.gc-learning .edu-flow{grid-template-columns:1fr}.gc-learning .edu-demo{grid-template-columns:1fr}.gc-learning .edu-hero{padding:18px}.gc-learning .edu-layout{padding:12px}.gc-learning .edu-card{padding:14px}}
 
+
+/* GreenCal Learning Center mobile card layout v1 — all columns remain visible */
+@media (max-width:700px){
+  #guide.gc-learning{max-width:100%;overflow:hidden}
+  .gc-learning .edu-layout,.gc-learning .edu-content,.gc-learning .edu-pane{
+    min-width:0;max-width:100%;
+  }
+  .gc-learning .edu-pane h4{font-size:clamp(17px,4.8vw,20px);overflow-wrap:anywhere}
+  .gc-learning .edu-demo{min-width:0;padding:14px;gap:12px;border:1px solid var(--line)}
+  .gc-learning .edu-demo label{min-width:0;overflow-wrap:anywhere;line-height:1.45}
+  .gc-learning .edu-demo input{max-width:100%;font-size:16px}
+  .gc-learning .edu-result{font-size:clamp(20px,6vw,26px);overflow-wrap:anywhere}
+  .gc-learning .edu-table{display:block;max-width:100%;min-width:0;width:100%;font-size:14px}
+  .gc-learning .edu-table thead{
+    display:block;position:absolute;width:1px;height:1px;margin:-1px;padding:0;
+    overflow:hidden;clip-path:inset(50%);white-space:nowrap;border:0;
+  }
+  .gc-learning .edu-table tbody{display:grid;gap:12px;min-width:0;width:100%}
+  .gc-learning .edu-table tbody tr{
+    display:block;min-width:0;max-width:100%;overflow:hidden;
+    border:1px solid var(--line);border-radius:14px;background:var(--surface);
+    box-shadow:0 2px 8px rgba(22,76,54,.045);
+  }
+  .gc-learning .edu-table tbody td{
+    display:block;box-sizing:border-box;max-width:100%;width:100%;
+    padding:10px 14px;border-bottom:1px solid var(--line);
+    text-align:left;line-height:1.55;white-space:normal;overflow-wrap:anywhere;
+  }
+  .gc-learning .edu-table tbody td::before{
+    content:attr(data-label);display:block;margin-bottom:3px;
+    font-size:10px;line-height:1.4;font-weight:800;letter-spacing:.06em;
+    text-transform:uppercase;color:var(--ink-muted);
+  }
+  .gc-learning .edu-table tbody td:first-child{
+    background:var(--primary-soft);font-weight:800;color:var(--primary);
+  }
+  .gc-learning .edu-table tbody td:last-child{border-bottom:0}
+}
+
 /* GreenCal · Surat Berharga / PCAF · Sektor Usaha Penerbit control */
 #wizardFormPanel .gc-security-sector-field{min-width:0;position:relative;display:flex;flex-direction:column;gap:7px}
 #wizardFormPanel .gc-security-sector-field>.field-label{
@@ -8258,7 +8297,7 @@ function renderGuide() {
             <small style="grid-column:1/-1;color:var(--ink-muted)">Faktor 0,85 hanya angka latihan, bukan faktor grid resmi. Pilih faktor sesuai periode, jaringan, dan metodologi pada tab Parameter.</small>
           </div>
           <table class="edu-table"><thead><tr><th>Aktivitas</th><th>Data yang dikumpulkan</th><th>Catatan</th></tr></thead><tbody>
-          <tr><td>Listrik</td><td>kWh, lokasi, periode</td><td>Scope 2; tentukan metode dan faktor grid</td></tr><tr><td>BBM</td><td>Liter menurut jenis bahan bakar</td><td>Scope 1 jika sumber dimiliki/dikendalikan</td></tr><tr><td>Refrigeran</td><td>Massa kebocoran per jenis gas</td><td>Gunakan GWP yang terdokumentasi</td></tr><tr><td>Perjalanan bisnis</td><td>Moda, jarak, kelas, frekuensi</td><td>Umumnya Scope 3; identifikasi faktor relevan</td></tr></tbody></table>
+          <tr><td data-label="Aktivitas">Listrik</td><td data-label="Data yang dikumpulkan">kWh, lokasi, periode</td><td data-label="Catatan">Scope 2; tentukan metode dan faktor grid</td></tr><tr><td data-label="Aktivitas">BBM</td><td data-label="Data yang dikumpulkan">Liter menurut jenis bahan bakar</td><td data-label="Catatan">Scope 1 jika sumber dimiliki/dikendalikan</td></tr><tr><td data-label="Aktivitas">Refrigeran</td><td data-label="Data yang dikumpulkan">Massa kebocoran per jenis gas</td><td data-label="Catatan">Gunakan GWP yang terdokumentasi</td></tr><tr><td data-label="Aktivitas">Perjalanan bisnis</td><td data-label="Data yang dikumpulkan">Moda, jarak, kelas, frekuensi</td><td data-label="Catatan">Umumnya Scope 3; identifikasi faktor relevan</td></tr></tbody></table>
         </section>
         <section class="edu-pane" data-edu-pane="pcaf" hidden>
           <h4>Menghitung emisi yang dibiayai (Financed Emissions)</h4>
@@ -8277,7 +8316,7 @@ function renderGuide() {
         </section>
         <section class="edu-pane" data-edu-pane="audit" hidden>
           <h4>Tata kelola tiga lini dan kesiapan audit</h4>
-          <table class="edu-table"><thead><tr><th>Lini</th><th>Tanggung jawab utama</th><th>Bukti minimum</th></tr></thead><tbody><tr><td>1 · Unit kerja</td><td>Input dan validasi awal data aktivitas/debitur</td><td>Tagihan, meter, dokumen pembiayaan</td></tr><tr><td>2 · Risiko &amp; Kepatuhan</td><td>Metodologi, faktor emisi, limit dan kajian skenario</td><td>Register parameter, review, persetujuan</td></tr><tr><td>3 · Audit Internal</td><td>Uji independen desain dan efektivitas kontrol</td><td>Sampling, kertas kerja, temuan, tindak lanjut</td></tr></tbody></table>
+          <table class="edu-table"><thead><tr><th>Lini</th><th>Tanggung jawab utama</th><th>Bukti minimum</th></tr></thead><tbody><tr><td data-label="Lini">1 · Unit kerja</td><td data-label="Tanggung jawab utama">Input dan validasi awal data aktivitas/debitur</td><td data-label="Bukti minimum">Tagihan, meter, dokumen pembiayaan</td></tr><tr><td data-label="Lini">2 · Risiko &amp; Kepatuhan</td><td data-label="Tanggung jawab utama">Metodologi, faktor emisi, limit dan kajian skenario</td><td data-label="Bukti minimum">Register parameter, review, persetujuan</td></tr><tr><td data-label="Lini">3 · Audit Internal</td><td data-label="Tanggung jawab utama">Uji independen desain dan efektivitas kontrol</td><td data-label="Bukti minimum">Sampling, kertas kerja, temuan, tindak lanjut</td></tr></tbody></table>
           <h4 style="margin-top:22px">Checklist kelengkapan pengungkapan</h4><p>Tandai setiap kontrol untuk melihat kemajuan persiapan dokumen. Checklist ini hanya berada di halaman panduan, bukan bukti persetujuan audit.</p>
           <div id="edu-checks"><label class="edu-check"><input type="checkbox"> Batas organisasi, tahun, dan sumber data terdokumentasi</label><label class="edu-check"><input type="checkbox"> Faktor emisi memiliki sumber, unit, dan tahun berlaku</label><label class="edu-check"><input type="checkbox"> Scope dan kategori dihitung tanpa duplikasi internal</label><label class="edu-check"><input type="checkbox"> Asumsi dan kualitas data pembiayaan dicatat</label><label class="edu-check"><input type="checkbox"> Hasil dan skenario direview secara berjenjang</label><label class="edu-check"><input type="checkbox"> Bukti, keterbatasan, dan koreksi siap diaudit</label></div>
           <div class="edu-progress" aria-label="Progres checklist"><span id="edu-progress" style="width:0%"></span></div><p id="edu-check-status">0 dari 6 pemeriksaan ditandai</p>
