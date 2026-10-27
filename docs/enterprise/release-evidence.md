@@ -64,3 +64,11 @@ No production deployment was performed. No gate was changed to PASS solely becau
 ## Continuation checkpoint
 
 Proceed with complete original-source ingestion and per-page SME rule mapping; obtain an approved staging database slot and bank IAM configuration; rehearse D1 migration/recovery; extend normalized organization/portfolio data and reconcile existing calculators into server adapters before activating scenario/physical/financial/Book 7 and official reporting engines. See roadmap for dependencies and acceptance criteria.
+
+## Controlled code rollout scope — 27 October 2026
+
+The user subsequently authorized merge and production deployment of the foundation code. This authorization permits publishing the current code package with enterprise processing disabled; it does not establish bank UAT acceptance or seven-book compliance. No enterprise migration, bank-data import, identity assignment or enabling flag is included. Existing public calculator/resources remain the operational service.
+
+Pre-release Workers runtime validation identified a canonical redirect loop: rewriting `/enterprise/` to `/enterprise/index.html` causes the asset service to redirect back to `/enterprise/`. The Worker now preserves the original URL when fetching assets. `tests/runtime-assets-smoke.mjs` uses the real Workers asset service to check canonical URLs, exact content hashes, enterprise CSP/no-store, disabled enterprise and denied unauthorized state. This supplements the existing signed-identity browser tests, whose file-backed asset transport did not reproduce canonical redirects.
+
+A full public D1 export was restored into an isolated local SQLite copy: quick_check=ok, foreign_key_check=0 violations. The pre-release checkpoint preserves the deployed Worker version/configuration by reference and the SQL backup; it excludes secret values. Production deploy/version and smoke evidence will be recorded in PR #40 after rollout. Full enterprise activation gates above remain outstanding.

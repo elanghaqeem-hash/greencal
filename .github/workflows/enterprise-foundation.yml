@@ -25,10 +25,12 @@ jobs:
           node --check assets/enterprise.js
       - name: Install Chromium for signed-identity browser integration
         run: |
-          npm install --no-save --no-package-lock playwright@1.56.1
+          npm install --no-save --no-package-lock playwright@1.56.1 wrangler@4.153.0
           npx playwright install --with-deps chromium
       - name: Enterprise browser → Worker → SQLite flow and mobile layouts
         run: node tests/enterprise-browser.mjs
+      - name: Real Workers asset routing and security regression
+        run: node tests/runtime-assets-smoke.mjs
       - name: Public calculator desktop/mobile regression
         run: |
           python3 -m http.server 8787 --directory dist >/tmp/greencal-public-http.log 2>&1 &

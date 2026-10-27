@@ -214,8 +214,8 @@ export default {
     }
     // The UI shell is public; the authenticated state and mutations are NOT.
     const enterpriseShell=path==="/enterprise"||path==="/enterprise/"||path==="/enterprise/index.html";
-    const assetRequest=enterpriseShell?new Request(new URL("/enterprise/index.html",req.url),req):req;
-    const out=await env.ASSETS.fetch(assetRequest);
+    // Preserve canonical directory URLs: rewriting to index.html would redirect back forever.
+    const out=await env.ASSETS.fetch(req);
     const headers=new Headers(out.headers);
     headers.set("x-content-type-options","nosniff");
     if(enterpriseShell){

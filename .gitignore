@@ -19,3 +19,6 @@ $RECYCLE.BIN/
 # Generated Cloudflare static-asset bundle
 dist/
 /node_modules
+
+# Local Workers runtime state
+.wrangler/
