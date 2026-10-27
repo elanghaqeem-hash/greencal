@@ -6,6 +6,7 @@ This is the first controlled increment of the six-month programme. It is not com
 - [Architecture, database, API and security model](architecture.md)
 - [Six-month roadmap and backlog](roadmap.md)
 - [Seven-book source and traceability status](regulatory-matrix.csv)
+- [Source ingestion and unresolved methodology issues](source-review.md)
 - [Release gate and validation evidence](release-evidence.md)
 - [Deployment, provisioning, backup and rollback](operations.md)
 

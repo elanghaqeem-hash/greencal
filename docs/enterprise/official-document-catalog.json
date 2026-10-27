@@ -51,7 +51,8 @@
     "ingestion_status": "extracted_pending_visual_and_SME_review",
     "page_count": 91,
     "file_bytes": 9245764,
-    "analysis_status": "initial_selected_requirement_review"
+    "analysis_status": "initial_selected_requirement_review",
+    "retrieved_from": "https://www.ojk.go.id/id/Publikasi/Roadmap-dan-Pedoman/Perbankan/Documents/Buku%202%20Panduan%20Teknis%20CRMS%20Perbankan%202026.pdf"
   },
   {
     "document_id": "OJK-CRMS-2026-B3",
@@ -86,7 +87,7 @@
     "publication_date": "2026-10-06",
     "version": "2026",
     "source_url": "https://ojk.go.id/id/Publikasi/Roadmap-dan-Pedoman/Perbankan/Documents/Buku%204%20Data%20Makroekonomi%20CRMS%20Perbankan%202026.pdf",
-    "sha256": "",
+    "sha256": "4a9cccab3fc4a378b288aa609695fcdc0e24ca3762a0ffa588c122de5575d768",
     "chapter": "",
     "section": "",
     "page": "",
@@ -102,8 +103,11 @@
     "compliance_status": "Not Assessed",
     "verification_status": "Not Assessed",
     "owner": "Proposed: bank Compliance + model owner",
-    "ingestion_status": "failed",
-    "analysis_status": "not_assessed"
+    "ingestion_status": "extracted_pending_visual_and_SME_review",
+    "analysis_status": "initial_selected_requirement_review",
+    "page_count": 81,
+    "file_bytes": 15221944,
+    "retrieved_from": "https://www.ojk.go.id/id/Publikasi/Roadmap-dan-Pedoman/Perbankan/Documents/Buku%204%20Data%20Makroekonomi%20CRMS%20Perbankan%202026.pdf"
   },
   {
     "document_id": "OJK-CRMS-2026-B5",

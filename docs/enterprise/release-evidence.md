@@ -38,6 +38,10 @@ Existing public Worker is live at the supplied production URL. Verified deployme
 
 Attempted creation of dedicated `greencal-enterprise-staging-20261027`: Cloudflare HTTP 403 code 7406, “System limit reached: databases per account (10)”. This is a platform quota error, not an automatic approval rejection. No existing databases were deleted/reused and no migration was applied to the public production DB. Need an additional approved database slot or separate approved account/environment, then rerun staging/recovery gates.
 
+## Regulatory source checkpoint
+
+Books 2 and 4 were downloaded as whole originals and extracted (91 and 81 pages); source hashes recorded. Initial matrix contains seven document gap rows, fifteen selected Book 2 and eleven selected Book 4 requirement rows. Source inconsistencies and raster numeric-table gaps are documented in source-review.md. No full seven-book validation or accepted formula/template implementation is claimed.
+
 ## Release gates
 
 The status applies to enterprise production acceptance, not merely code completeness.
