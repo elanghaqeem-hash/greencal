@@ -25,8 +25,9 @@ for (const asset of required.slice(1)) {
 }
 await rm(dist, { recursive: true, force: true });
 await mkdir(dist, { recursive: true });
-for (const asset of required) {
-  const target = join(dist, asset);
+const enterpriseAssets = ["enterprise.html", "assets/enterprise.css", "assets/enterprise.js"];
+for (const asset of [...required, ...enterpriseAssets]) {
+  const target = join(dist, asset === "enterprise.html" ? "enterprise/index.html" : asset);
   await mkdir(dirname(target), { recursive: true });
   await copyFile(join(root, asset), target);
   const copied = await stat(target);
