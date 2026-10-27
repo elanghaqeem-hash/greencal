@@ -45,3 +45,7 @@ Workflow `GreenCal P0 assets and browser smoke` melakukan uji Chromium desktop d
 ## Logo BRK Syariah
 
 Aset `assets/brks-syariah.svg` diolah dari gambar yang disediakan pengguna; header menggunakannya pada desktop dan ponsel. Build Cloudflare menyalin logo ke `dist/assets/`. Untuk membuka HTML secara lokal, sertakan direktori `assets/` di sebelah file HTML.
+
+## GreenCal CRMS Enterprise — tahap fondasi
+
+Lihat [baseline, audit, arsitektur, roadmap dan release gates](docs/enterprise/README.md). Workspace `/enterprise/` memakai API `/api/enterprise/*`, verifikasi identitas institusi, database terpisah dan review berjenjang. Fitur enterprise belum diaktifkan pada produksi; kelengkapan tujuh buku dan UAT bank belum dinyatakan lulus.

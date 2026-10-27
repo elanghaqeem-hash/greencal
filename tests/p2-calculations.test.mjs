@@ -26,6 +26,7 @@ test("PCAF financing returns transparent, uncapped valid attribution",()=>{
   assert.equal(r.fin,2500);
   assert.equal(r.dq,2);
   assert.equal(pcaf({os:200,denom:200}).af,1);
+  assert.equal(pcaf({os:0,denom:200}).fin,null,"zero outstanding is not a covered exposure");
 });
 
 test("outstanding above denominator or zero/negative denominator is a gap",()=>{
@@ -40,6 +41,7 @@ test("outstanding above denominator or zero/negative denominator is a gap",()=>{
 test("ownership percentage outside 0–100 cannot create financed emissions",()=>{
   assert.equal(pcaf({basis:"kepemilikan",pct:35}).fin,3500);
   assert.equal(pcaf({basis:"kepemilikan",pct:0}).fin,0);
+  assert.equal(pcaf({basis:"kepemilikan",pct:35,os:0}).fin,null,"zero outstanding ownership is not covered");
   for(const pct of [-0.5,101,null,"wrong"]){
     assert.equal(pcaf({basis:"kepemilikan",pct}).fin,null,String(pct));
   }
@@ -82,4 +84,9 @@ test("financing UI and save action explain gaps rather than hiding attribution e
   assert.match(source,/Outstanding melebihi penyebut atribusi\. Koreksi input/);
   assert.match(source,/Periksa nilai sebelum menyimpan/);
   assert.doesNotMatch(block("function expCalc(x) {","/* ---------- SUMMARY AGGREGATOR"),/Math\.min\(x\.os\s*\/\s*x\.denom/);
+});
+
+test("form rejects malformed numbers and zero outstanding before persisting",()=>{
+  assert.match(source,/el\.value\.trim\(\) && parseNum\(el\.value\) == null/);
+  assert.match(source,/x\.os == null \|\| x\.os <= 0/);
 });

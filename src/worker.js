@@ -1,3 +1,4 @@
+import { handleEnterpriseApi } from "./enterprise/api.js";
 import { handleAiApi, handlePublicAiApi, verifyAccessIdentity } from "./ai-worker.js";
 import { permissionsForRole, writableKeysForRole, preservesExistingRecords } from "./roles.js";
 // GreenCal — D1-backed authentication, two-role RBAC, shared state.
@@ -197,6 +198,7 @@ async function router(req,env) {
 export default {
   async fetch(req,env){
     const path=new URL(req.url).pathname;
+    if(path==="/api/enterprise" || path.startsWith("/api/enterprise/"))return handleEnterpriseApi(req,env);
     if(path==="/api/client-scope" && req.method==="GET"){
       const scope=await networkScope(req,env);
       return scope?C({scope}):err("Identitas jaringan tidak tersedia. Penyimpanan dinonaktifkan.",503);
@@ -211,10 +213,16 @@ export default {
       try{return await router(req,env)}catch(e){console.error("GreenCal API exception",e);return err("Permintaan gagal diproses",500);}
     }
     // The UI shell is public; the authenticated state and mutations are NOT.
-    const out=await env.ASSETS.fetch(req);
+    const enterpriseShell=path==="/enterprise"||path==="/enterprise/"||path==="/enterprise/index.html";
+    const assetRequest=enterpriseShell?new Request(new URL("/enterprise/index.html",req.url),req):req;
+    const out=await env.ASSETS.fetch(assetRequest);
     const headers=new Headers(out.headers);
     headers.set("x-content-type-options","nosniff");
-    if(path==="/"||path==="/index.html")headers.set("cache-control","no-store");
+    if(enterpriseShell){
+      headers.set("content-security-policy","default-src 'self'; script-src 'self'; style-src 'self'; connect-src 'self'; img-src 'self' data:; object-src 'none'; base-uri 'none'; frame-ancestors 'none'; form-action 'self'");
+      headers.set("referrer-policy","no-referrer");
+    }
+    if(enterpriseShell||path==="/"||path==="/index.html")headers.set("cache-control","no-store");
     return new Response(out.body,{status:out.status,statusText:out.statusText,headers});
   }
 };

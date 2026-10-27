@@ -1,0 +1,38 @@
+name: GreenCal Enterprise Foundation
+on:
+  pull_request:
+  push:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  regression-and-integration:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - run: node scripts/build-dist.mjs
+      - name: All calculator, security and real SQLite enterprise tests
+        run: node --test tests/*.test.mjs
+      - name: Check enterprise JavaScript syntax
+        run: |
+          node --check src/enterprise/api.js
+          node --check src/enterprise/identity.js
+          node --check src/enterprise/validation.js
+          node --check assets/enterprise.js
+      - name: Install Chromium for signed-identity browser integration
+        run: |
+          npm install --no-save --no-package-lock playwright@1.56.1
+          npx playwright install --with-deps chromium
+      - name: Enterprise browser → Worker → SQLite flow and mobile layouts
+        run: node tests/enterprise-browser.mjs
+      - name: Public calculator desktop/mobile regression
+        run: |
+          python3 -m http.server 8787 --directory dist >/tmp/greencal-public-http.log 2>&1 &
+          SERVER_PID=$!
+          trap 'kill "$SERVER_PID" || true' EXIT
+          node tests/p0-browser-smoke.mjs
+          node tests/p3-browser-activity.mjs
