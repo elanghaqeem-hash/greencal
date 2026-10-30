@@ -46,7 +46,7 @@ Import example (all **synthetic test values**, not recommended financial or emis
  "controlReference":"SYNTHETIC_GL_UAT",
  "exposures":[{
   "facilityRef":"FAC-ANON-01","obligorRef":"OBL-ANON-01","assetClass":"business_loans",
-  "currency":"IDR","asOf":"2026-09-30","outstanding":"20","attributionDenominator":"100",
+  "currency":"IDR","asOf":"2026-09-30","outstanding":"20","attributionDenominator":"100","denominatorCurrency":"IDR",
   "denominatorBasis":"total_equity_and_debt",
   "emissions":{"scope1":"100","scope2":"30","scope3":null},
   "dataQualityScore":3,"evidenceReference":"SYNTHETIC_TEST_ONLY","emissionSourceVintage":"2025"
