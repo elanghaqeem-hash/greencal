@@ -26,7 +26,7 @@ test('PCAF shares and scopes: no null-to-zero or fabricated denominators',()=>{
  const x=financedEmissions(position());assert.equal(x.attributionFactor,'0.2');
  assert.deepEqual(x.financedTco2e,{scope1:'20',scope2:'6',scope3:null});
  assert.deepEqual(x.excludedScopes,['scope3']);
- for(const change of [{attributionDenominator:'0'},{attributionDenominator:'10'},{assetClass:'mortgages'},{dataQualityScore:6}])assert.throws(()=>financedEmissions({...position(),...change}));
+ for(const change of [{attributionDenominator:'0'},{attributionDenominator:'10'},{assetClass:'mortgages'},{dataQualityScore:6},{denominatorCurrency:'USD'}])assert.throws(()=>financedEmissions({...position(),...change}));
 });
 test('Portfolio source/GL reconciliation rejects mismatches and duplicate facilities',()=>{
  assert.equal(reconcilePortfolio(batch()).reconciliation,'pass');
