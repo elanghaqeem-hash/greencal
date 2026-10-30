@@ -25,6 +25,10 @@ test('source-level reconciliation requires registered parent, both batches and n
   assert.equal((await run(db,'/analytics/import',batch('FAC-02',2))).status,201);
   const status=(await run(db,'/analytics/sources/'+sha)).body;
   assert.equal(status.completed,true);assert.equal(status.actualCount,2);assert.equal(status.actualTotal,'40');
+  const report=(await run(db,'/analytics/sources/'+sha+'/report')).body;
+  assert.equal(report.totals.outstanding,'40');assert.equal(report.totals.financedTco2e.scope1,'40');
+  assert.equal(report.totals.coverage.scope2.missing,2);
+  assert.equal(report.officialOjkSubmission,false);
   assert.equal((await run(db,'/analytics/sources')).body.sources[0].status,'reconciled_to_declared_GL');
   await assert.rejects(()=>run(db,'/analytics/sources',source));
   assert.equal((await run(db,'/analytics/sources')).body.sources.length,1);
