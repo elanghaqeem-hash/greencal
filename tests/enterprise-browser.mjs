@@ -10,7 +10,7 @@ let playwright;try{playwright=await import('playwright');}catch{playwright=await
 playwright=playwright.default||playwright;
 const db=enterpriseDb(),now=new Date().toISOString(),root=resolve(import.meta.dirname,'../dist');
 db.sqlite.prepare('INSERT INTO gcx_institutions VALUES(?,?,?,?,?,?)').run('uat-only','SYNTHETIC UAT Bank','BUS','IDR',1,now);
-for(const [s,r] of [['factor-maker','climate_model_analyst'],['maker','data_maker'],['checker','checker'],['approver','approver'],['viewer','executive_viewer']])db.sqlite.prepare('INSERT INTO gcx_memberships VALUES(?,?,?,?,?)').run('uat-only',s,s+'@uat.invalid',r,1);
+for(const [s,r] of [['factor-maker','climate_model_analyst'],['maker','data_maker'],['checker','checker'],['approver','approver'],['viewer','executive_viewer'],['risk-maker','risk_analyst']])db.sqlite.prepare('INSERT INTO gcx_memberships VALUES(?,?,?,?,?)').run('uat-only',s,s+'@uat.invalid',r,1);
 const keys=await crypto.subtle.generateKey({name:'RSASSA-PKCS1-v1_5',modulusLength:2048,publicExponent:new Uint8Array([1,0,1]),hash:'SHA-256'},true,['sign','verify']);
 const jwk=await crypto.subtle.exportKey('jwk',keys.publicKey);jwk.kid='browser-uat';
 const nativeFetch=globalThis.fetch;globalThis.fetch=(u,o)=>String(u)==='https://browser-uat.cloudflareaccess.com/cdn-cgi/access/certs'?Promise.resolve(new Response(JSON.stringify({keys:[jwk]}))):nativeFetch(u,o);
@@ -22,7 +22,7 @@ const server=createServer(async(req,res)=>{try{let chunks=[];for await(const c o
 await new Promise(r=>server.listen(0,'127.0.0.1',r));const base='http://127.0.0.1:'+server.address().port;
 const browser=await playwright.chromium.launch({headless:true}),errors=[];
 async function pageFor(subject,width=1366){const context=await browser.newContext({viewport:{width,height:900},extraHTTPHeaders:{'Cf-Access-Jwt-Assertion':await jwt(subject)}});const page=await context.newPage();page.on('pageerror',e=>errors.push(e.message));await page.goto(base+'/enterprise/');await page.locator('#workspace').waitFor({state:'visible'});await page.locator('#notice').filter({hasText:'Status penerimaan regulasi'}).waitFor();return {context,page};}
-const clickMenu=async(page,view)=>{if(await page.locator('#menuToggle').isVisible())await page.locator('#menuToggle').click();await page.locator('[data-view="'+view+'"]').click();if(view==='manual')await page.getByRole('heading',{name:'Alur penggunaan foundation'}).waitFor();else await page.locator('#notice').filter({hasText:'Record institusi'}).waitFor();};
+const clickMenu=async(page,view)=>{if(!(await page.locator('#sidebar').isVisible()))await page.locator('#menuToggle').click();await page.locator('[data-view="'+view+'"]').click();if(view==='manual')await page.getByRole('heading',{name:'Alur penggunaan foundation'}).waitFor();else await page.locator('#notice').filter({hasText:'Record institusi'}).waitFor();};
 try{
  const {page:fm}=await pageFor('factor-maker');await clickMenu(fm,'factor');await fm.getByRole('button',{name:'Tambah draf'}).click();
  const values={title:'SYNTHETIC UAT factor',value:'0.85',activityUnit:'kWh',sourceUrl:'https://uat.invalid/factor',sourceDocument:'SYNTHETIC UAT no OJK claim',page:'1',methodology:'Synthetic browser vector',geography:'UAT',effectiveFrom:'2026-01-01',effectiveTo:'2026-12-31',version:'synthetic-v1',gwpBasis:'CO2e synthetic'};
@@ -30,6 +30,23 @@ try{
  await fm.getByRole('button',{name:'Simpan draf',exact:true}).click();await fm.locator('td').filter({hasText:'SYNTHETIC UAT factor'}).waitFor();await fm.getByRole('button',{name:'Ajukan',exact:true}).click();await fm.locator('td').filter({hasText:/^submitted$/}).waitFor();
  const {page:checker}=await pageFor('checker');await clickMenu(checker,'factor');await checker.getByRole('button',{name:'Periksa',exact:true}).click();await checker.locator('td').filter({hasText:/^checked$/}).waitFor();
  const {page:approver}=await pageFor('approver');approver.on('dialog',d=>d.accept());await clickMenu(approver,'factor');await approver.getByRole('button',{name:'Setujui',exact:true}).click();await approver.locator('td').filter({hasText:/^approved$/}).waitFor();
+ // Domain UI smoke: scenario metadata, approved reference suggestions, and physical screening.
+ const {page:climate}=await pageFor('factor-maker');await clickMenu(climate,'scenario');await climate.getByRole('button',{name:'Tambah draf'}).click();
+ for(const [k,v] of Object.entries({title:'SYNTHETIC scenario',scenarioName:'Synthetic UAT',vintage:'synthetic-2026',pathway:'No real NGFS figures',horizonYear:'2035',sourceUrl:'https://uat.invalid/scenario',sourceVersion:'synthetic-v1',assumptions:'Synthetic input, not bank validated',limitations:'No financial calculation'}))await climate.locator('[name="'+k+'"]').fill(v);
+ await climate.getByRole('button',{name:'Simpan draf',exact:true}).click();await climate.getByText('SYNTHETIC scenario',{exact:true}).waitFor();
+ await climate.getByRole('button',{name:'Ajukan',exact:true}).click();await clickMenu(checker,'scenario');await checker.getByRole('button',{name:'Periksa',exact:true}).click();
+ await clickMenu(approver,'scenario');await approver.getByRole('button',{name:'Setujui',exact:true}).click();
+ const scenarioId=db.sqlite.prepare("SELECT id FROM gcx_domain_records WHERE kind='scenario'").get().id;
+ const {page:portfolioMaker}=await pageFor('maker');await clickMenu(portfolioMaker,'portfolio');await portfolioMaker.getByRole('button',{name:'Tambah draf'}).click();
+ for(const [k,v] of Object.entries({title:'SYNTHETIC exposure',facilityRef:'UAT-ANON-F1',obligorRef:'UAT-ANON-D1',sector:'UAT financial sector',region:'UAT region',currency:'IDR',ead:'100000',outstanding:'90000',asOf:'2026-09-30',maturityDate:'2029-12-31',evidence:'Synthetic only'}))await portfolioMaker.locator('[name="'+k+'"]').fill(v);
+ await portfolioMaker.getByRole('button',{name:'Simpan draf',exact:true}).click();await portfolioMaker.getByText('SYNTHETIC exposure',{exact:true}).waitFor();
+ await portfolioMaker.getByRole('button',{name:'Ajukan',exact:true}).click();await clickMenu(checker,'portfolio');await checker.getByRole('button',{name:'Periksa',exact:true}).click();
+ await clickMenu(approver,'portfolio');await approver.getByRole('button',{name:'Setujui',exact:true}).click();
+ const portfolioId=db.sqlite.prepare("SELECT id FROM gcx_domain_records WHERE kind='portfolio'").get().id;
+ const {page:screen}=await pageFor('risk-maker');await clickMenu(screen,'physical');await screen.getByRole('button',{name:'Tambah draf'}).click();
+ for(const [k,v] of Object.entries({title:'SYNTHETIC flood screening',portfolioId,scenarioId,hazardSource:'Synthetic hazards',hazardLevel:'3',vulnerabilityLevel:'2',mitigation:'Synthetic plan',evidence:'Synthetic evidence'}))await screen.locator('[name="'+k+'"]').fill(v);
+ await screen.getByRole('button',{name:'Simpan draf',exact:true}).click();await screen.getByText('SYNTHETIC flood screening',{exact:true}).waitFor();
+ assert.equal(db.sqlite.prepare("SELECT json_extract(payload,'$.screenScore') AS score FROM gcx_domain_records WHERE kind='physical'").get().score,6);
  const factorId=db.sqlite.prepare("SELECT id FROM gcx_records WHERE kind='factor'").get().id;
  const {page:maker}=await pageFor('maker');await clickMenu(maker,'emission');await maker.getByRole('button',{name:'Tambah draf'}).click();
  for(const [k,v] of Object.entries({title:'SYNTHETIC UAT electricity',quantity:'1000',activityUnit:'kWh',activityDate:'2026-06-30',factorId,evidence:'SYNTHETIC UAT meter',branch:'UAT branch'}))await maker.locator('[name="'+k+'"]').fill(v);await maker.locator('[name="scope"]').selectOption('scope2');await maker.getByRole('button',{name:'Simpan draf',exact:true}).click();await maker.getByText('0.85 tCO₂e',{exact:true}).waitFor();
