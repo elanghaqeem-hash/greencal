@@ -1,10 +1,12 @@
-import {ApiError,KINDS,permissions,canCreate,transition} from './policy.js';
+import {ApiError,KINDS,DOMAIN_KINDS,permissions,canCreate,transition} from './policy.js';
 import {verifyEnterpriseIdentity} from './identity.js';
 import {readJson,validatePayload,calculateEmission,text} from './validation.js';
 const json=(data,status=200)=>new Response(JSON.stringify(data),{status,headers:{'content-type':'application/json; charset=utf-8','cache-control':'no-store','x-content-type-options':'nosniff','referrer-policy':'no-referrer'}});
 const conflict=()=>{throw new ApiError(409,'REVISION_CONFLICT','Data berubah. Muat ulang data sebelum menyimpan.');};
 const unpack=r=>r?{...r,payload:JSON.parse(r.payload)}:null;
 const idPattern=/^[a-zA-Z0-9_-]{1,80}$/;
+const tableFor=kind=>DOMAIN_KINDS.includes(kind)?'gcx_domain_records':'gcx_records';
+const versionsFor=kind=>DOMAIN_KINDS.includes(kind)?'gcx_domain_versions':'gcx_record_versions';
 export async function handleEnterpriseApi(request,env){
  try{
   if(env.GC_ENTERPRISE_ENABLED!=='true'||!env.ENTERPRISE_DB)throw new ApiError(503,'ENTERPRISE_NOT_ENABLED','Workspace enterprise belum diaktifkan; kalkulator publik tetap tersedia.');
@@ -14,7 +16,7 @@ export async function handleEnterpriseApi(request,env){
   const identity=await verifyEnterpriseIdentity(request,env),db=env.ENTERPRISE_DB;
   if(url.pathname==='/api/enterprise/session'&&method==='GET'){
    const tenants=await db.prepare('SELECT m.tenant_id,m.role,i.name,i.institution_type,i.currency FROM gcx_memberships m JOIN gcx_institutions i ON i.id=m.tenant_id WHERE m.subject=? AND m.email=? COLLATE NOCASE AND m.active=1 AND i.active=1 ORDER BY i.name').bind(identity.subject,identity.email).all();
-   return json({user:identity,tenants:tenants.results.map(t=>({...t,permissions:permissions(t.role)})),release:'enterprise-p0-foundation-v1'});
+   return json({user:identity,tenants:tenants.results.map(t=>({...t,permissions:permissions(t.role)})),release:'enterprise-domain-registers-v2'});
   }
   const tenant=request.headers.get('x-greencal-tenant')||'';
   if(!idPattern.test(tenant))throw new ApiError(400,'TENANT_REQUIRED','Pilih institusi.');
@@ -22,12 +24,20 @@ export async function handleEnterpriseApi(request,env){
   if(!member)throw new ApiError(403,'TENANT_DENIED','Tidak memiliki akses ke institusi ini.');
   const actor={...identity,role:member.role},path=url.pathname.replace('/api/enterprise','');
   const getRecord=async id=>{
-   const row=await db.prepare('SELECT * FROM gcx_records WHERE tenant_id=? AND id=?').bind(tenant,id).first();
+   let row=await db.prepare('SELECT * FROM gcx_records WHERE tenant_id=? AND id=?').bind(tenant,id).first();
+   if(!row)row=await db.prepare('SELECT * FROM gcx_domain_records WHERE tenant_id=? AND id=?').bind(tenant,id).first();
    if(!row||(actor.role==='external_auditor'&&row.status!=='approved'))throw new ApiError(404,'NOT_FOUND','Record tidak ditemukan.');return row;
   };
   async function preparedPayload(kind,payload){
    let p=validatePayload(kind,payload);
    if(kind==='emission')p=calculateEmission(p,await getRecord(p.factorId));
+   if(kind==='physical'||kind==='transition'){
+    const portfolio=await getRecord(p.portfolioId),scenario=await getRecord(p.scenarioId);
+    if(portfolio.kind!=='portfolio'||portfolio.status!=='approved'||scenario.kind!=='scenario'||scenario.status!=='approved')throw new ApiError(400,'REFERENCE_NOT_APPROVED','Portofolio dan skenario harus disetujui secara terpisah terlebih dahulu.');
+    const exposure=JSON.parse(portfolio.payload),source=JSON.parse(scenario.payload);
+    p.portfolioSnapshot={id:portfolio.id,revision:portfolio.revision,facilityRef:exposure.facilityRef,asOf:exposure.asOf,currency:exposure.currency,ead:exposure.ead};
+    p.scenarioSnapshot={id:scenario.id,revision:scenario.revision,framework:source.framework,vintage:source.vintage,horizonYear:source.horizonYear,sourceVersion:source.sourceVersion};
+   }
    if(kind==='requirement'){
     const document=await getRecord(p.documentId);
     if(document.kind!=='regulatory_document'||document.status!=='approved')throw new ApiError(400,'DOCUMENT_NOT_APPROVED','Pilih dokumen sumber yang sudah direview dan disetujui.');
@@ -38,8 +48,10 @@ export async function handleEnterpriseApi(request,env){
   }
   if(path==='/institution'&&method==='GET')return json({id:tenant,...member,permissions:permissions(actor.role)});
   if(path==='/summary'&&method==='GET'){
-   const rows=await db.prepare('SELECT kind,status,COUNT(*) AS count FROM gcx_records WHERE tenant_id=? GROUP BY kind,status').bind(tenant).all();
-   return json({counts:rows.results,regulatoryAcceptance:'not_validated',scope:'Foundation registers and activity-factor calculation; seven-book modelling and official reporting are not released.'});
+   const visibility=actor.role==='external_auditor'?" AND status='approved'":'';
+   const rows=await db.prepare('SELECT kind,status,COUNT(*) AS count FROM gcx_records WHERE tenant_id=?'+visibility+' GROUP BY kind,status').bind(tenant).all();
+   const domain=await db.prepare('SELECT kind,status,COUNT(*) AS count FROM gcx_domain_records WHERE tenant_id=?'+visibility+' GROUP BY kind,status').bind(tenant).all();
+   return json({counts:[...rows.results,...domain.results],regulatoryAcceptance:'not_validated',scope:'Approved portfolio/scenario governance and qualitative climate screening; financial loss models and official OJK reporting are not released.'});
   }
   if(path==='/audit'&&method==='GET'){
    if(!permissions(actor.role).audit)throw new ApiError(403,'ROLE_DENIED','Peran tidak dapat membaca audit institusi.');
@@ -48,10 +60,19 @@ export async function handleEnterpriseApi(request,env){
    const events=await db.prepare('SELECT id,actor,action,target,occurred_at FROM gcx_events WHERE tenant_id=? AND id<? ORDER BY id DESC LIMIT 100').bind(tenant,before).all();
    return json({events:events.results,next:events.results.length===100?events.results.at(-1).id:null});
   }
+  if(path==='/references'&&method==='GET'){
+   const kind=url.searchParams.get('kind');
+   if(!['portfolio','scenario'].includes(kind))throw new ApiError(400,'INVALID_KIND','Referensi hanya untuk portofolio atau skenario.');
+   const q=(url.searchParams.get('q')||'').trim();
+   if(q.length>100)throw new ApiError(400,'INVALID_QUERY','Pencarian terlalu panjang.');
+   const escaped=q.replace(/[\\%_]/g,c=>'\\'+c);
+   const rows=await db.prepare("SELECT id,title,revision FROM gcx_domain_records WHERE tenant_id=? AND kind=? AND status='approved' AND title LIKE ? ESCAPE '\\' ORDER BY updated_at DESC LIMIT 100").bind(tenant,kind,'%'+escaped+'%').all();
+   return json({records:rows.results,limit:100});
+  }
   if(path==='/records'&&method==='GET'){
    const kind=url.searchParams.get('kind');if(!KINDS.includes(kind))throw new ApiError(400,'INVALID_KIND','Pilih jenis register.');
    const page=Number(url.searchParams.get('page')||1);if(!Number.isInteger(page)||page<1||page>10000)throw new ApiError(400,'INVALID_PAGE','Halaman tidak valid.');
-   const rows=await db.prepare('SELECT * FROM gcx_records WHERE tenant_id=? AND kind=? AND (?<>\'external_auditor\' OR status=\'approved\') ORDER BY updated_at DESC,id LIMIT 51 OFFSET ?').bind(tenant,kind,actor.role,(page-1)*50).all();
+   const rows=await db.prepare('SELECT * FROM '+tableFor(kind)+' WHERE tenant_id=? AND kind=? AND (?<>\'external_auditor\' OR status=\'approved\') ORDER BY updated_at DESC,id LIMIT 51 OFFSET ?').bind(tenant,kind,actor.role,(page-1)*50).all();
    return json({records:rows.results.slice(0,50).map(unpack),hasMore:rows.results.length>50,page});
   }
   if(path==='/records'&&method==='POST'){
@@ -59,7 +80,7 @@ export async function handleEnterpriseApi(request,env){
    if(!canCreate(actor.role,kind))throw new ApiError(403,'ROLE_DENIED','Peran tidak dapat membuat register ini.');
    const title=text(body.title,'Judul',200),payload=await preparedPayload(kind,body.payload);
    const id=crypto.randomUUID(),now=new Date().toISOString();
-   await db.prepare("INSERT INTO gcx_records(tenant_id,id,kind,title,payload,created_by,updated_by,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?,?)").bind(tenant,id,kind,title,JSON.stringify(payload),actor.subject,actor.subject,now,now).run();
+   await db.prepare('INSERT INTO '+tableFor(kind)+'(tenant_id,id,kind,title,payload,created_by,updated_by,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?,?)').bind(tenant,id,kind,title,JSON.stringify(payload),actor.subject,actor.subject,now,now).run();
    return json({record:unpack(await getRecord(id))},201);
   }
   const match=/^\/records\/([a-zA-Z0-9_-]{1,80})(?:\/(workflow|history|export))?$/.exec(path);
@@ -67,12 +88,12 @@ export async function handleEnterpriseApi(request,env){
    const [,id,action]=match,row=await getRecord(id);
    if(!action&&method==='GET')return json({record:unpack(row)});
    if(action==='history'&&method==='GET'){
-    const versions=await db.prepare('SELECT revision,status,actor,checked_by,approved_by,reason,occurred_at FROM gcx_record_versions WHERE tenant_id=? AND record_id=? ORDER BY revision DESC LIMIT 100').bind(tenant,id).all();
+    const versions=await db.prepare('SELECT revision,status,actor,checked_by,approved_by,reason,occurred_at FROM '+versionsFor(row.kind)+' WHERE tenant_id=? AND record_id=? ORDER BY revision DESC LIMIT 100').bind(tenant,id).all();
     return json({versions:versions.results});
    }
    if(action==='export'&&method==='GET'){
     if(row.status!=='approved')throw new ApiError(409,'NOT_APPROVED','Ekspor snapshot hanya untuk record disetujui.');
-    const versions=await db.prepare('SELECT * FROM gcx_record_versions WHERE tenant_id=? AND record_id=? ORDER BY revision').bind(tenant,id).all();
+    const versions=await db.prepare('SELECT * FROM '+versionsFor(row.kind)+' WHERE tenant_id=? AND record_id=? ORDER BY revision').bind(tenant,id).all();
     const data=JSON.stringify({schema:'greencal-evidence-v1',tenantId:tenant,record:unpack(row),history:versions.results.map(unpack),regulatoryReport:false});
     const digest=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(data));
     return json({snapshot:JSON.parse(data),sha256:Array.from(new Uint8Array(digest),x=>x.toString(16).padStart(2,'0')).join(''),disclaimer:'Internal evidence export; not an official OJK working paper or submission.'});
@@ -93,7 +114,7 @@ export async function handleEnterpriseApi(request,env){
      if(!['draft','rejected'].includes(row.status)||row.created_by!==actor.subject||!canCreate(actor.role,row.kind))throw new ApiError(403,'EDIT_DENIED','Hanya pembuat dapat mengedit draf atau revisi yang ditolak.');
      payload=JSON.stringify(await preparedPayload(row.kind,body.payload));title=text(body.title,'Judul',200);status='draft';checked=null;approved=null;
     }
-    const result=await db.prepare('UPDATE gcx_records SET title=?,payload=?,status=?,revision=revision+1,updated_by=?,checked_by=?,approved_by=?,reason=?,updated_at=? WHERE tenant_id=? AND id=? AND revision=? RETURNING id').bind(title,payload,status,actor.subject,checked,approved,reason,new Date().toISOString(),tenant,id,row.revision).first();
+    const result=await db.prepare('UPDATE '+tableFor(row.kind)+' SET title=?,payload=?,status=?,revision=revision+1,updated_by=?,checked_by=?,approved_by=?,reason=?,updated_at=? WHERE tenant_id=? AND id=? AND revision=? RETURNING id').bind(title,payload,status,actor.subject,checked,approved,reason,new Date().toISOString(),tenant,id,row.revision).first();
     if(!result)conflict();return json({record:unpack(await getRecord(id))});
    }
   }

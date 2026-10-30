@@ -1,1 +1,49 @@
 :root{font-family:Inter,system-ui,sans-serif;color:#173c3d;background:#f3f7f6;font-size:15px;--brand:#0b6355;--line:#d7e3df}*{box-sizing:border-box}body{margin:0}button,input,select,textarea{font:inherit}button,a,input,select,textarea{outline-offset:3px}button{cursor:pointer;border:1px solid var(--line);background:white;color:#173c3d;border-radius:8px;padding:10px 14px;min-height:42px}button:disabled{opacity:.55;cursor:wait}a{color:var(--brand)}[hidden]{display:none!important}header{position:sticky;top:0;z-index:3;display:flex;gap:18px;align-items:center;padding:16px 24px;background:white;border-bottom:1px solid var(--line);flex-wrap:wrap}.brand{text-decoration:none;font-size:24px;font-weight:750;margin-right:auto}.brand span{display:block;font-size:11px;letter-spacing:1.2px;font-weight:550}.stage,.badge{display:inline-block;font-size:12px;background:#e7f3ed;border:1px solid #c5dfd0;border-radius:20px;padding:5px 9px}.stage{background:#fff7e1;border-color:#eadcb5}.layout{display:grid;grid-template-columns:255px minmax(0,1fr);min-height:calc(100vh - 85px)}aside{background:#fff;border-right:1px solid var(--line);padding:22px 16px}aside nav{display:grid;gap:6px;margin-top:20px}nav button{text-align:left;border-color:transparent}nav button.active{background:#e6f4ec;color:#064e41;border-color:#bfdccc}nav small{color:#627b74;margin:18px 10px 4px}.sideNote{font-size:12px;color:#627b74;line-height:1.6;margin:28px 10px}main{padding:32px;max-width:1500px;width:100%;min-width:0}.eyebrow{font-size:11px;letter-spacing:1.5px;color:#52756a}h1{font-size:28px;line-height:1.25;margin:12px 0 24px}h2{font-size:20px}p{line-height:1.65}#notice{padding:12px 16px;border-left:3px solid #4c9480;background:#e9f3ed;margin-bottom:22px;overflow-wrap:anywhere}#notice.error,#formError:not(:empty){background:#fff0ec;color:#9b3022;border-color:#c64e3d}.toolbar{display:flex;justify-content:space-between;gap:16px;align-items:center;flex-wrap:wrap;margin-bottom:24px}label{display:grid;gap:7px;font-size:13px;font-weight:600;min-width:0}input,select,textarea{border:1px solid #b9cec4;background:#fff;border-radius:7px;padding:11px;width:100%;max-width:100%;color:#183b35}textarea{min-height:95px;resize:vertical}.toolbar label{min-width:240px}.toolbar p{font-size:13px;color:#52756a}.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(175px,1fr));gap:16px}.card,section.panel{background:white;border:1px solid var(--line);border-radius:12px;padding:22px}.card b{display:block;font-size:30px;margin-top:10px}.card span{font-size:13px;color:#52756a}.panel{margin:20px 0}.sectionHead{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}.primary{background:var(--brand);color:white;border-color:var(--brand)}.tableWrap{overflow:auto;border:1px solid var(--line);background:white;border-radius:10px}table{border-collapse:collapse;width:100%;font-size:13px}th,td{padding:14px;text-align:left;border-bottom:1px solid var(--line);vertical-align:top}th{background:#eaf1ed}td:first-child{min-width:160px}td button{font-size:12px;padding:7px;margin:3px;min-height:36px}.pager{display:flex;justify-content:flex-end;gap:12px;margin-top:16px}.empty{padding:28px;border:1px dashed #b9cec4;border-radius:10px;background:#fff}dialog{width:min(740px,95vw);max-height:90dvh;border:1px solid var(--line);border-radius:14px;padding:24px;color:inherit}dialog::backdrop{background:#122f2a99}.modalHead{display:flex;justify-content:space-between;align-items:center;gap:16px}#recordForm>label{margin:16px 0}#fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}#fields label.wide{grid-column:1/-1}.formActions{display:flex;justify-content:flex-end;gap:12px;position:sticky;bottom:-24px;background:white;padding:16px 0;margin-top:20px}#formError{padding:12px;margin-top:16px}.detailField{padding:12px 0;border-bottom:1px solid var(--line);overflow-wrap:anywhere}.detailField b{display:block;font-size:12px;color:#52756a}pre{white-space:pre-wrap;overflow-wrap:anywhere;font-size:12px}.history{font-size:13px;padding:12px;background:#f3f7f6}#menuToggle{display:none}@media(max-width:800px){header{padding:12px;gap:12px}.brand{font-size:21px}.stage{order:5;font-size:10px}header>a:not(.brand){font-size:12px}.layout{grid-template-columns:minmax(0,1fr)}#menuToggle{display:block}aside{display:none}body.navOpen aside{display:block;position:fixed;z-index:5;top:130px;bottom:0;left:0;width:min(300px,90vw);overflow:auto;box-shadow:10px 0 30px #163a3226}main{padding:22px 16px}h1{font-size:25px}#fields{grid-template-columns:minmax(0,1fr)}.toolbar label{min-width:0;width:100%}dialog{padding:18px}.formActions{bottom:-18px}table{min-width:560px}.cards{grid-template-columns:repeat(2,minmax(0,1fr))}.card{padding:16px}.card b{font-size:24px}}@media(prefers-reduced-motion:no-preference){button{transition:background .15s}} 
+
+
+/* CRMS v2: calmer enterprise visual language, accessible navigation and dense registers. */
+:root{--brand:#087466;--ink:#16363a;--surface:#fff;--soft:#e9f5f1;--line:#d8e6e4}
+body{background:linear-gradient(148deg,#edf7f4 0%,#f7faf9 42%,#eef4f8 100%);color:var(--ink)}
+header{box-shadow:0 3px 16px #113f3210;gap:14px}
+.brand{letter-spacing:-.6px}.brand span{letter-spacing:1px;color:#4d7770}
+aside{min-width:0;max-height:calc(100vh - 85px);overflow-y:auto;position:sticky;top:85px;align-self:start}
+aside nav button{border-radius:9px;font-weight:550;padding:11px 13px;line-height:1.3;transition:background .15s}
+aside nav button:hover{background:#f1f8f6}aside nav button.active{box-shadow:inset 3px 0 var(--brand);font-weight:700}
+#menuToggle{display:block;flex-shrink:0}
+body.navCollapsed .layout{grid-template-columns:minmax(0,1fr)}
+body.navCollapsed aside{display:none}
+h1{letter-spacing:-.75px;font-weight:760}
+section.panel,.card,.tableWrap{box-shadow:0 7px 28px #153e3410;border-color:#dbe8e4}
+.card{background:linear-gradient(160deg,#fff 65%,#f0f9f6);min-width:0}
+.card b{font-variant-numeric:tabular-nums;color:#075f57}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid #78c8b7;outline-offset:2px}
+button.primary:hover{background:#065c53}
+.tableWrap tr:hover td{background:#f5faf9}
+#notice{border-radius:0 9px 9px 0}
+#formError:empty{display:none}
+#fields label{line-height:1.35}
+#fields label:has(textarea){grid-column:1/-1}
+#fields input,#fields select{min-height:44px}
+.detailField pre{max-width:100%;overflow-wrap:anywhere}
+@media(max-width:800px){
+ aside{max-height:none;position:fixed;top:110px}
+ body.navCollapsed aside{display:none}
+ body.navCollapsed .layout{grid-template-columns:minmax(0,1fr)}
+ header{gap:10px}
+ #menuToggle{min-width:44px}
+ .card{min-height:96px}
+ .card span{font-size:12px}
+}
+
+
+/* Ensure deep enterprise navigation remains fully reachable on short mobile screens. */
+@media(max-width:800px){
+ body.navOpen #sidebar{
+  position:fixed;left:0;right:auto;top:110px;bottom:0;
+  height:calc(100dvh - 110px);max-height:calc(100dvh - 110px);
+  min-height:0;overflow-x:hidden;overflow-y:auto;
+  overscroll-behavior-y:contain;-webkit-overflow-scrolling:touch;
+ }
+ body.navOpen #sidebar nav{display:flex;flex-direction:column;align-items:stretch}
+ body.navOpen #sidebar nav button{flex:none;min-height:42px}
+}

@@ -1,7 +1,20 @@
 // Membership and role come exclusively from ENTERPRISE_DB after JWT verification.
 export const ROLES = Object.freeze(['super_administrator','institution_administrator','crms_project_administrator','data_maker','risk_analyst','climate_model_analyst','checker','approver','risk_management_head','compliance_reviewer','sharia_governance_reviewer','executive_viewer','internal_auditor','external_auditor']);
-export const KINDS = Object.freeze(['risk','factor','emission','regulatory_document','requirement']);
-const creators = Object.freeze({risk:['risk_analyst','crms_project_administrator'],factor:['institution_administrator','climate_model_analyst'],emission:['data_maker'],regulatory_document:['compliance_reviewer','crms_project_administrator'],requirement:['compliance_reviewer','crms_project_administrator']});
+export const DOMAIN_KINDS=Object.freeze(['governance','portfolio','scenario','physical','transition','report_package']);
+export const KINDS = Object.freeze(['risk','factor','emission','regulatory_document','requirement',...DOMAIN_KINDS]);
+const creators = Object.freeze({
+ risk:['risk_analyst','crms_project_administrator'],
+ factor:['institution_administrator','climate_model_analyst'],
+ emission:['data_maker'],
+ regulatory_document:['compliance_reviewer','crms_project_administrator'],
+ requirement:['compliance_reviewer','crms_project_administrator'],
+ governance:['crms_project_administrator','risk_analyst'],
+ portfolio:['data_maker'],
+ scenario:['climate_model_analyst'],
+ physical:['risk_analyst','climate_model_analyst'],
+ transition:['risk_analyst','climate_model_analyst'],
+ report_package:['compliance_reviewer','crms_project_administrator']
+});
 export const canCreate = (role,kind) => (creators[kind]||[]).includes(role);
 export const canCheck = role => ['checker','climate_model_analyst','compliance_reviewer','sharia_governance_reviewer'].includes(role);
 export const canApprove = role => ['approver','risk_management_head'].includes(role);
