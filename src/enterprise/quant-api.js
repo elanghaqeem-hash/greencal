@@ -1,4 +1,6 @@
 import {ApiError} from './policy.js';
+import {handleSourceControls} from './source-control.js';
+import {handleAdvancedAnalytics} from './quant-v2-api.js';
 import {readJson} from './validation.js';
 import {reconcilePortfolio,interpolateScenario,physicalOverlay,creditTransmission,standardizedApproach,reconcileOjkDraft} from './quant.js';
 // Access identity, role and tenant membership have already been checked by handleEnterpriseApi.
@@ -35,9 +37,16 @@ async function batchReport(db,tenant,id){
 export async function handleQuantApi(request,env,db,tenant,actor,path){
  if(env.GC_ENTERPRISE_QUANT_ENABLED!=='true')throw new ApiError(503,'QUANT_DISABLED','Engine kuantitatif belum diaktifkan untuk lingkungan ini.');
  if(!roles.includes(actor.role))deny();
+ if(path.startsWith('/analytics/sources'))return handleSourceControls(request,db,tenant,actor,path);
+ if(path.startsWith('/analytics/advanced/'))return handleAdvancedAnalytics(request,env,db,tenant,actor,path);
  if(path==='/analytics/import'&&request.method==='POST'){
   if(actor.role!=='data_maker')deny();
   const batch=reconcilePortfolio(await readJson(request)),id=crypto.randomUUID(),m=batch.metadata,now=new Date().toISOString();
+  if(env.GC_ENTERPRISE_REQUIRE_SOURCE_MANIFEST==='true'){
+   const source=await db.prepare('SELECT as_of,currency,source_system,expected_total,expected_count FROM gcx_portfolio_sources WHERE tenant_id=? AND source_sha256=?').bind(tenant,m.sourceSha256).first();
+   if(!source)throw new ApiError(409,'SOURCE_REQUIRED','Daftarkan GL control total sumber lengkap sebelum impor.');
+   if(source.as_of!==m.asOf||source.currency!==m.currency||source.source_system!==m.sourceSystem)throw new ApiError(409,'SOURCE_DIMENSION_MISMATCH','Dimensi sumber berbeda dengan GL manifest.');
+  }
   if(typeof db.batch!=='function')throw new ApiError(503,'TRANSACTION_REQUIRED','Database memerlukan D1 batch atomic.');
   const stmts=[db.prepare('INSERT INTO gcx_portfolio_batches(tenant_id,id,as_of,currency,source_sha256,source_system,gl_reference,gl_control_total,gl_control_count,owner_subject,created_at) VALUES(?,?,?,?,?,?,?,?,?,?,?)').bind(tenant,id,m.asOf,m.currency,m.sourceSha256,m.sourceSystem,m.controlReference,m.glControlTotal,m.glControlCount,actor.subject,now)];
   for(let i=0;i<batch.exposures.length;i++)stmts.push(db.prepare('INSERT INTO gcx_portfolio_positions(tenant_id,batch_id,facility_ref,data_json,result_json) VALUES(?,?,?,?,?)').bind(tenant,id,batch.exposures[i].facilityRef,JSON.stringify(batch.exposures[i]),JSON.stringify(batch.results[i])));
