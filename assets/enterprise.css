@@ -34,3 +34,16 @@ button.primary:hover{background:#065c53}
  .card{min-height:96px}
  .card span{font-size:12px}
 }
+
+
+/* Ensure deep enterprise navigation remains fully reachable on short mobile screens. */
+@media(max-width:800px){
+ body.navOpen #sidebar{
+  position:fixed;left:0;right:auto;top:110px;bottom:0;
+  height:calc(100dvh - 110px);max-height:calc(100dvh - 110px);
+  min-height:0;overflow-x:hidden;overflow-y:auto;
+  overscroll-behavior-y:contain;-webkit-overflow-scrolling:touch;
+ }
+ body.navOpen #sidebar nav{display:flex;flex-direction:column;align-items:stretch}
+ body.navOpen #sidebar nav button{flex:none;min-height:42px}
+}
