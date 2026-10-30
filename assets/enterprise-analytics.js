@@ -1,4 +1,4 @@
-/* GreenCal protected analytics console. No localStorage/sessionStorage, secrets, or PII in browser storage. */
+/* GreenCal protected analytics console. Volatile input fields only; no sensitive client persistence. */
 (()=>{'use strict';
 const specs={
  source_control:{name:'Daftar kontrol sumber CBS/GL lengkap',role:['data_maker'],url:'/analytics/sources',kind:null,help:'Langkah pertama: daftarkan SHA-256 sumber, total GL penuh, dan jumlah fasilitas sebelum mengimpor batch.',fields:['sourceSha256','asOf','currency','sourceSystem','glControlTotal','glControlCount','controlReference']},
