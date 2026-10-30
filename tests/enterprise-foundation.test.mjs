@@ -92,6 +92,7 @@ test('reject with reason, edit and resubmit retain old versions and re-run indep
 test('external auditor sees only approved records; deactivated membership loses access',async()=>{
  const f=fixture();const draft=await create(f,'risk',risk,'risk-maker');assert.equal((await call(f,'/records/'+draft.id,'external')).status,404);
  assert.equal((await call(f,'/records?kind=risk','external')).body.records.length,0);
+ assert.ok((await call(f,'/summary','external')).body.counts.every(c=>c.status==='approved'));
  const fac=await approveFactor(f);assert.equal((await call(f,'/records/'+fac.id,'external')).status,200);assert.equal((await call(f,'/audit','external')).status,403);
  f.db.sqlite.prepare('UPDATE gcx_memberships SET active=0 WHERE subject=?').run('maker');assert.equal((await call(f,'/summary')).status,403);f.db.sqlite.close();
 });
