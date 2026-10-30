@@ -1,6 +1,7 @@
 /* GreenCal protected analytics console. No localStorage/sessionStorage, secrets, or PII in browser storage. */
 (()=>{'use strict';
 const specs={
+ source_control:{name:'Daftar kontrol sumber CBS/GL lengkap',role:['data_maker'],url:'/analytics/sources',kind:null,help:'Langkah pertama: daftarkan SHA-256 sumber, total GL penuh, dan jumlah fasilitas sebelum mengimpor batch.',fields:['sourceSha256','asOf','currency','sourceSystem','glControlTotal','glControlCount','controlReference']},
  portfolio_import:{name:'Portofolio PCAF · impor dan rekonsiliasi',role:['data_maker'],url:'/analytics/import',kind:null,help:'Gunakan batch JSON anonim hasil adapter CBS/GL. Wajib control total dan checksum berkas sumber.',fields:['asOf','currency','sourceSha256','sourceSystem','glControlTotal','glControlCount','controlReference','exposures']},
  ngfs_interpolation:{name:'Skenario NGFS · deret waktu',role:['climate_model_analyst'],url:'/analytics/runs',kind:'ngfs_interpolation',help:'Masukkan seri resmi yang diunduh dengan izin dan metadata vintage, model, region, variabel, satuan.',fields:['scenario','model','region','variable','unit','vintage','sourceSha256','year','points']},
  geospatial_overlay:{name:'Risiko fisik · overlay geospasial',role:['risk_analyst','climate_model_analyst'],url:'/analytics/runs',kind:'geospatial_overlay',help:'Koordinat WGS84 [longitude,latitude] dan GeoJSON Polygon tersumber; tidak menghitung kerugian.',fields:['facilityRef','coordinates','hazard','hazardScore','hazardName','dataset','datasetVersion','datasetSha256']},
@@ -40,17 +41,18 @@ window.GreenCalAnalytics={async render(root,ctx){
  async function loadHistory(){
   history.replaceChildren(el('h2','Hasil analitik, bukti dan status rekonsiliasi'));
   const messages=[];
-  for(const [endpoint,label] of [['/analytics/batches','Batch portofolio'],['/analytics/runs','Run kuantitatif'],['/analytics/advanced/runs','Run lanjutan']]){
-   try{const data=await ctx.api(endpoint),rows=data.batches||data.runs||[];
+  for(const [endpoint,label] of [['/analytics/sources','Rekonsiliasi berkas CBS/GL'],['/analytics/batches','Batch portofolio'],['/analytics/runs','Run kuantitatif'],['/analytics/advanced/runs','Run lanjutan']]){
+   try{const data=await ctx.api(endpoint),rows=data.sources||data.batches||data.runs||[];
     history.append(el('h3',label));
     if(!rows.length){history.append(el('p','Belum ada hasil di institusi ini.'));continue;}
     table(history,['ID','Jenis/Periode','Status','Bukti'],rows.map(item=>{
      const link=el('button','Lihat / ekspor JSON');
      link.type='button';link.onclick=async()=>{try{
-      const route=endpoint==='/analytics/batches'?'/analytics/batches/'+item.id:endpoint+'/'+item.id;
+      const recordKey=item.id||item.sourceSha256;
+      const route=endpoint+'/'+recordKey;
       const detail=await ctx.api(route);download('GreenCal_'+item.id+'.json',detail);
      }catch(e){ctx.notice(e.message,true);}};
-     return [item.id,item.kind||item.as_of||'—',item.status,link];
+     return [item.id||item.sourceSha256,item.kind||item.asOf||item.as_of||'—',item.status,link];
     }));
    }catch(e){messages.push(label+': '+e.message);}
   }
