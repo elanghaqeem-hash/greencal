@@ -64,7 +64,7 @@ export async function handleSourceControls(request,db,tenant,actor,path){
   const rows=(await db.prepare('SELECT source_sha256 FROM gcx_portfolio_sources WHERE tenant_id=? ORDER BY created_at DESC LIMIT 100').bind(tenant).all()).results;
   const sources=[];for(const row of rows)sources.push(await sourceStatus(db,tenant,row.source_sha256));return json({sources});
  }
- const preview=/^\\/analytics\\/sources\\/([a-f0-9]{64})\\/report$/.exec(path);
+ const preview=/^\/analytics\/sources\/([a-f0-9]{64})\/report$/.exec(path);
  if(preview&&request.method==='GET')return json(await reportingPreview(db,tenant,preview[1]));
  const match=/^\/analytics\/sources\/([a-f0-9]{64})$/.exec(path);
  if(match&&request.method==='GET')return json(await sourceStatus(db,tenant,match[1]));
