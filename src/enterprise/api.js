@@ -59,6 +59,15 @@ export async function handleEnterpriseApi(request,env){
    const events=await db.prepare('SELECT id,actor,action,target,occurred_at FROM gcx_events WHERE tenant_id=? AND id<? ORDER BY id DESC LIMIT 100').bind(tenant,before).all();
    return json({events:events.results,next:events.results.length===100?events.results.at(-1).id:null});
   }
+  if(path==='/references'&&method==='GET'){
+   const kind=url.searchParams.get('kind');
+   if(!['portfolio','scenario'].includes(kind))throw new ApiError(400,'INVALID_KIND','Referensi hanya untuk portofolio atau skenario.');
+   const q=(url.searchParams.get('q')||'').trim();
+   if(q.length>100)throw new ApiError(400,'INVALID_QUERY','Pencarian terlalu panjang.');
+   const escaped=q.replace(/[\\%_]/g,c=>'\\'+c);
+   const rows=await db.prepare("SELECT id,title,revision FROM gcx_domain_records WHERE tenant_id=? AND kind=? AND status='approved' AND title LIKE ? ESCAPE '\\' ORDER BY updated_at DESC LIMIT 100").bind(tenant,kind,'%'+escaped+'%').all();
+   return json({records:rows.results,limit:100});
+  }
   if(path==='/records'&&method==='GET'){
    const kind=url.searchParams.get('kind');if(!KINDS.includes(kind))throw new ApiError(400,'INVALID_KIND','Pilih jenis register.');
    const page=Number(url.searchParams.get('page')||1);if(!Number.isInteger(page)||page<1||page>10000)throw new ApiError(400,'INVALID_PAGE','Halaman tidak valid.');
