@@ -38,6 +38,7 @@ window.GreenCalAnalytics={async render(root,ctx){
  root.append(entry);
  const history=el('section',undefined,'panel');history.append(el('h2','Hasil analitik, bukti dan status rekonsiliasi'));root.append(history);
  async function loadHistory(){
+  history.replaceChildren(el('h2','Hasil analitik, bukti dan status rekonsiliasi'));
   const messages=[];
   for(const [endpoint,label] of [['/analytics/batches','Batch portofolio'],['/analytics/runs','Run kuantitatif'],['/analytics/advanced/runs','Run lanjutan']]){
    try{const data=await ctx.api(endpoint),rows=data.batches||data.runs||[];
