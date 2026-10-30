@@ -19,3 +19,7 @@ The public GreenCal is preserved. Its client-side outputs and IP-scoped browser 
 ## Controlled implementation increment — 30 October 2026
 
 [Six domain registers v2, governance, portfolio, scenarios, physical/transition screening and internal report-pack workflow](domain-registers-v2.md). This is source-controlled implementation, **not** complete CRMS modelling or permission to handle live bank data. All seven books, quantitative models, data imports, official reporting and acceptance gates remain subject to independent regulatory/model/bank review.
+
+## Quantitative development increment — 31 October 2026
+
+[PCAF financed emissions, portfolio ingestion, NGFS scenario interpolation, geospatial screening, PD/LGD/EAD sensitivity, Buku 7 draft mapping and reconciled OJK preview](quant-engine-v3.md). Quantitative operations remain disabled by default and do not constitute regulatory reporting or permission to process bank production data.
