@@ -5,7 +5,7 @@ import {readFile,stat,writeFile} from 'node:fs/promises';
 import {pathToFileURL} from 'node:url';
 import {reconcilePortfolio} from '../src/enterprise/quant.js';
 const columns=['facilityRef','obligorRef','assetClass','currency','asOf','outstanding','attributionDenominator','denominatorCurrency','denominatorBasis','scope1','scope2','scope3','dataQualityScore','evidenceReference','emissionSourceVintage'];
-function parseCsv(text){
+export function parseCsv(text){
  const rows=[];let row=[],field='',quote=false;
  for(let i=0;i<text.length;i++){
   const c=text[i];
