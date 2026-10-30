@@ -26,5 +26,5 @@ test('enterprise analytics is bundled into secured UI without browser persistenc
  assert.match(html,/assets\/enterprise-analytics\.js/);
  assert.match(html,/data-view="analytics"/);
  assert.doesNotMatch(js,/\b(?:localStorage|sessionStorage)\b|innerHTML\s*=/);
- assert.match(js,/official/i);
+ assert.match(js,/internal_only/);
 });
