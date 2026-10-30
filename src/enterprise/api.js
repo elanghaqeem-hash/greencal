@@ -1,5 +1,6 @@
 import {ApiError,KINDS,DOMAIN_KINDS,permissions,canCreate,transition} from './policy.js';
 import {verifyEnterpriseIdentity} from './identity.js';
+import {handleQuantApi} from './quant-api.js';
 import {readJson,validatePayload,calculateEmission,text} from './validation.js';
 const json=(data,status=200)=>new Response(JSON.stringify(data),{status,headers:{'content-type':'application/json; charset=utf-8','cache-control':'no-store','x-content-type-options':'nosniff','referrer-policy':'no-referrer'}});
 const conflict=()=>{throw new ApiError(409,'REVISION_CONFLICT','Data berubah. Muat ulang data sebelum menyimpan.');};
@@ -46,6 +47,7 @@ export async function handleEnterpriseApi(request,env){
    }
    return p;
   }
+  if(path.startsWith('/analytics/'))return handleQuantApi(request,env,db,tenant,actor,path);
   if(path==='/institution'&&method==='GET')return json({id:tenant,...member,permissions:permissions(actor.role)});
   if(path==='/summary'&&method==='GET'){
    const visibility=actor.role==='external_auditor'?" AND status='approved'":'';
