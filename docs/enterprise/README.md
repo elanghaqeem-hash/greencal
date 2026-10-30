@@ -15,3 +15,7 @@ Implemented increment: separate enterprise route, dedicated database binding, cr
 Not released: bank SSO enrolment, institutional lifecycle UI, organization hierarchy, production enterprise storage, official seven-book models, full factor reconciliation, financed-emission server adapters, scenario/macroeconomic/geospatial engines, Buku 7 calculator, official Buku 6 exports, full reporting workflow, enterprise AI, operational backup restore, subscription enforcement, and bank UAT/sign-off.
 
 The public GreenCal is preserved. Its client-side outputs and IP-scoped browser storage are not trusted enterprise inputs. There is no automatic import of old public or singleton state into bank data.
+
+## Controlled implementation increment — 30 October 2026
+
+[Six domain registers v2, governance, portfolio, scenarios, physical/transition screening and internal report-pack workflow](domain-registers-v2.md). This is source-controlled implementation, **not** complete CRMS modelling or permission to handle live bank data. All seven books, quantitative models, data imports, official reporting and acceptance gates remain subject to independent regulatory/model/bank review.
