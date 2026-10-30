@@ -48,8 +48,9 @@ export async function handleEnterpriseApi(request,env){
   }
   if(path==='/institution'&&method==='GET')return json({id:tenant,...member,permissions:permissions(actor.role)});
   if(path==='/summary'&&method==='GET'){
-   const rows=await db.prepare('SELECT kind,status,COUNT(*) AS count FROM gcx_records WHERE tenant_id=? GROUP BY kind,status').bind(tenant).all();
-   const domain=await db.prepare('SELECT kind,status,COUNT(*) AS count FROM gcx_domain_records WHERE tenant_id=? GROUP BY kind,status').bind(tenant).all();
+   const visibility=actor.role==='external_auditor'?" AND status='approved'":'';
+   const rows=await db.prepare('SELECT kind,status,COUNT(*) AS count FROM gcx_records WHERE tenant_id=?'+visibility+' GROUP BY kind,status').bind(tenant).all();
+   const domain=await db.prepare('SELECT kind,status,COUNT(*) AS count FROM gcx_domain_records WHERE tenant_id=?'+visibility+' GROUP BY kind,status').bind(tenant).all();
    return json({counts:[...rows.results,...domain.results],regulatoryAcceptance:'not_validated',scope:'Approved portfolio/scenario governance and qualitative climate screening; financial loss models and official OJK reporting are not released.'});
   }
   if(path==='/audit'&&method==='GET'){
