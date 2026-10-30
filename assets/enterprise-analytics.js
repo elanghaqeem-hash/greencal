@@ -49,7 +49,7 @@ window.GreenCalAnalytics={async render(root,ctx){
      const link=el('button','Lihat / ekspor JSON');
      link.type='button';link.onclick=async()=>{try{
       const recordKey=item.id||item.sourceSha256;
-      const route=endpoint+'/'+recordKey;
+      const route=endpoint+'/'+recordKey+(endpoint==='/analytics/sources'&&item.completed?'/report':'');
       const detail=await ctx.api(route);download('GreenCal_'+item.id+'.json',detail);
      }catch(e){ctx.notice(e.message,true);}};
      return [item.id||item.sourceSha256,item.kind||item.asOf||item.as_of||'—',item.status,link];
