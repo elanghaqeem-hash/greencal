@@ -118,3 +118,56 @@ test('local SQLite backup restores frozen data, history and foreign-key integrit
  const f=fixture(),fac=await approveFactor(f),directory=await mkdtemp(join(tmpdir(),'greencal-restore-'));
  try{const path=join(directory,'snapshot.sqlite');await backup(f.db.sqlite,path);const restored=new DatabaseSync(path);assert.equal(restored.prepare('SELECT payload FROM gcx_records WHERE id=?').get(fac.id).payload,JSON.stringify(fac.payload));assert.equal(restored.prepare('SELECT COUNT(*) AS n FROM gcx_record_versions').get().n,4);assert.equal(restored.prepare('SELECT COUNT(*) AS n FROM gcx_events').get().n,4);assert.deepEqual(restored.prepare('PRAGMA foreign_key_check').all(),[]);assert.throws(()=>restored.exec('DELETE FROM gcx_records'),/retention/);restored.close();}finally{f.db.sqlite.close();await rm(directory,{recursive:true,force:true});}
 });
+
+const UAT_PORTFOLIO={facilityRef:'FACILITY-ANON-UAT-101',obligorRef:'DEBTOR-ANON-UAT-9',sector:'KBLI-UAT',region:'WEST-JAVA-UAT',product:'murabahah',currency:'IDR',ead:'1200000.50',outstanding:'900000.25',asOf:'2026-09-30',maturityDate:'2029-12-31',evidence:'SYNTHETIC portfolio source, not production data'};
+const UAT_SCENARIO={framework:'NGFS',scenarioName:'UAT hypothetical transition',vintage:'synthetic-2026',pathway:'Synthetic pathway',horizonYear:2035,sourceUrl:'https://scenario.uat.invalid/source',sourceVersion:'SYNTHETIC',assumptions:'Synthetic unsupported input for workflow testing',limitations:'Not a verified NGFS dataset or bank-approved model'};
+const UAT_PHYSICAL=(portfolioId,scenarioId)=>({portfolioId,scenarioId,hazard:'flood',hazardSource:'SYNTHETIC hazard source',hazardLevel:3,vulnerabilityLevel:2,mitigation:'SYNTHETIC flood mitigation',evidence:'Synthetic location check'});
+const UAT_TRANSITION=(portfolioId,scenarioId)=>({portfolioId,scenarioId,driver:'policy_legal',channel:'SYNTHETIC policy cost channel',carbonPrice:'125000',carbonPriceUnit:'IDR/tCO2e',shockAssumption:'No financial translation; synthetic input only',adaptation:'SYNTHETIC strategy',evidence:'Synthetic assumptions source'});
+
+test('typed climate domain registers reject malformed exposure, vintage and invented computed values',()=>{
+ assert.equal(validatePayload('portfolio',UAT_PORTFOLIO).ead,'1200000.50');
+ assert.throws(()=>validatePayload('portfolio',{...UAT_PORTFOLIO,currency:'idR'}));
+ assert.throws(()=>validatePayload('portfolio',{...UAT_PORTFOLIO,ead:'1e99'}));
+ assert.throws(()=>validatePayload('portfolio',{...UAT_PORTFOLIO,asOf:'2026-02-30'}));
+ assert.throws(()=>validatePayload('scenario',{...UAT_SCENARIO,horizonYear:2020}));
+ assert.throws(()=>validatePayload('transition',{...UAT_TRANSITION('x','y'),carbonPrice:'-1'}));
+ const screened=validatePayload('physical',{...UAT_PHYSICAL('x','y'),screenScore:99999,financialLoss:100});
+ assert.equal(screened.screenScore,6);assert.equal(screened.financialLoss,undefined);
+ assert.equal(validatePayload('report_package',{periodStart:'2026-01-01',periodEnd:'2026-12-31',reportingBasis:'ojk_mapping_draft',contentScope:'Synthetic',evidenceIndex:'No evidence',dataQualityIssues:'Incomplete',modelLimitations:'Not validated',reviewNote:'Not sent',submissionStatus:'sent'}).submissionStatus,'internal_only_not_ojk_submission');
+});
+
+test('approved linked portfolio and scenario gate physical/transition screening; tenant and role isolation',async()=>{
+ const f=fixture();
+ let p=await create(f,'portfolio',UAT_PORTFOLIO,'maker');
+ let sc=await create(f,'scenario',UAT_SCENARIO,'factor-maker');
+ const premature=await call(f,'/records','risk-maker','POST',{kind:'physical',title:'Synthetic physical',payload:UAT_PHYSICAL(p.id,sc.id)});
+ assert.equal(premature.status,400);
+ p=await act(f,p,'submit','maker');p=await act(f,p,'check','checker');p=await act(f,p,'approve','approver');
+ sc=await act(f,sc,'submit','factor-maker');sc=await act(f,sc,'check','checker');sc=await act(f,sc,'approve','approver');
+ const references=(await call(f,'/references?kind=portfolio')).body.records;assert.equal(references.length,1);assert.equal(references[0].id,p.id);
+ let phys=await create(f,'physical',{...UAT_PHYSICAL(p.id,sc.id),screenScore:9999},'risk-maker');
+ assert.equal(phys.payload.screenScore,6);assert.equal(phys.payload.portfolioSnapshot.ead,'1200000.50');
+ let tran=await create(f,'transition',{...UAT_TRANSITION(p.id,sc.id),financialImpact:999999},'risk-maker');
+ assert.equal(tran.payload.financialImpact,'not_calculated_model_validation_required');
+ phys=await act(f,phys,'submit','risk-maker');phys=await act(f,phys,'check','checker');phys=await act(f,phys,'approve','approver');
+ assert.equal((await call(f,'/records/'+phys.id+'/export','auditor')).body.snapshot.history.length,4);
+ assert.equal((await call(f,'/records/'+phys.id+'/export','auditor')).body.snapshot.regulatoryReport,false);
+ assert.equal((await call(f,'/records','other','POST',{kind:'physical',title:'Cross tenant',payload:UAT_PHYSICAL(p.id,sc.id)},'bank-b')).status,403);
+ assert.equal((await call(f,'/records/'+phys.id,'other','GET',undefined,'bank-b')).status,404);
+ assert.equal((await call(f,'/records','viewer','POST',{kind:'scenario',title:'Not authorized',payload:UAT_SCENARIO})).status,403);
+ assert.equal((await call(f,'/summary')).body.counts.filter(v=>v.kind==='physical'&&v.status==='approved').length,1);
+ assert.throws(()=>f.db.sqlite.prepare('DELETE FROM gcx_domain_records WHERE id=?').run(phys.id));
+ assert.throws(()=>f.db.sqlite.prepare('UPDATE gcx_domain_versions SET status=?').run('draft'));
+ f.db.sqlite.close();
+});
+
+test('domain report packages remain internal and validated independent of typed HTML fields',async()=>{
+ const f=fixture();
+ const report=await create(f,'report_package',{periodStart:'2026-01-01',periodEnd:'2026-06-30',reportingBasis:'ojk_mapping_draft',contentScope:'Synthetic test only',evidenceIndex:'No OJK proof',dataQualityIssues:'Unverified source',modelLimitations:'No approved financial model',reviewNote:'Internal check'},'compliance');
+ assert.equal(report.payload.submissionStatus,'internal_only_not_ojk_submission');
+ assert.equal((await call(f,'/references?kind=report_package')).status,400);
+ assert.equal((await call(f,'/records?kind=report_package')).body.records.length,1);
+ const approved=await act(f,await act(f,await act(f,report,'submit','compliance'),'check','checker'),'approve','approver');
+ assert.equal(approved.status,'approved');assert.equal((await call(f,'/records/'+report.id+'/history')).body.versions.length,4);
+ f.db.sqlite.close();
+});
