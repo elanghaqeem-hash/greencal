@@ -19,7 +19,7 @@ function fixture(){
 }
 async function request(db,role,path,body,tenant='bank-a'){
  const req=new Request('https://uat.invalid/api/enterprise'+path,{method:body===undefined?'GET':'POST',headers:body===undefined?{}:{'content-type':'application/json'},body:body===undefined?undefined:JSON.stringify(body)});
- const r=await handleQuantApi(req,{GC_ENTERPRISE_QUANT_ENABLED:'true'},db,tenant,{subject:role,role:role==='maker'?'data_maker':role==='model'?'climate_model_analyst':role==='risk'?'risk_analyst':role==='compliance'?'compliance_reviewer':'executive_viewer'});
+ const r=await handleQuantApi(req,{GC_ENTERPRISE_QUANT_ENABLED:'true'},db,tenant,{subject:role,role:role==='maker'?'data_maker':role==='model'?'climate_model_analyst':role==='risk'?'risk_analyst':role==='compliance'?'compliance_reviewer':'executive_viewer'},path);
  return {status:r.status,body:await r.json()};
 }
 test('PCAF shares and scopes: no null-to-zero or fabricated denominators',()=>{
