@@ -101,6 +101,6 @@
  $('#tenant').onchange=async e=>{tenant=e.target.value;page=1;$('#detailDialog').close();$('#recordDialog').close();$('#detailBody').replaceChildren();await render();};
  document.querySelectorAll('[data-view]').forEach(b=>b.onclick=async()=>{view=b.dataset.view;page=1;document.body.classList.remove('navOpen');$('#menuToggle').setAttribute('aria-expanded','false');await render();});
  $('#menuSearch').oninput=e=>document.querySelectorAll('[data-view]').forEach(b=>b.hidden=!b.textContent.toLowerCase().includes(e.target.value.toLowerCase())||(b.dataset.view==='audit'&&!membership()?.permissions.audit));
- $('#menuToggle').onclick=()=>{const open=document.body.classList.toggle('navOpen');$('#menuToggle').setAttribute('aria-expanded',String(open));};
+ $('#menuToggle').onclick=()=>{if(window.matchMedia('(max-width:800px)').matches){document.body.classList.remove('navCollapsed');const open=document.body.classList.toggle('navOpen');$('#menuToggle').setAttribute('aria-expanded',String(open));}else{document.body.classList.remove('navOpen');const collapsed=document.body.classList.toggle('navCollapsed');$('#menuToggle').setAttribute('aria-expanded',String(!collapsed));}};
  $('#closeDialog').onclick=$('#cancelDialog').onclick=()=>$('#recordDialog').close();$('#closeDetail').onclick=()=>$('#detailDialog').close();$('#retry').onclick=start;start();
 })();
