@@ -48,7 +48,7 @@ export function convertCsvToBatches(csv,control){
   let count=Math.min(100,data.length-i),validated,payload;
   while(count){
    const exposures=data.slice(i,i+count),controlSum=exposures.reduce((n,x)=>n+scale(x.outstanding),0n);
-   payload={asOf:control.asOf,currency:control.currency,sourceSha256,sourceSystem:control.sourceSystem,glControlTotal:format(controlSum),glControlCount:count,controlReference:control.controlReference,exposures};
+   payload={asOf:control.asOf,currency:control.currency,sourceSha256,sourceSystem:control.sourceSystem,glControlTotal:format(controlSum),glControlCount:count,controlReference:control.controlReference+'-B'+String(batches.length+1).padStart(6,'0'),exposures};
    if(Buffer.byteLength(JSON.stringify(payload))<=29000){validated=reconcilePortfolio(payload);break;}
    count=Math.floor(count/2);
   }
