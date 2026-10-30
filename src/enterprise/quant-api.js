@@ -1,4 +1,5 @@
 import {ApiError} from './policy.js';
+import {handleAdvancedAnalytics} from './quant-v2-api.js';
 import {readJson} from './validation.js';
 import {reconcilePortfolio,interpolateScenario,physicalOverlay,creditTransmission,standardizedApproach,reconcileOjkDraft} from './quant.js';
 // Access identity, role and tenant membership have already been checked by handleEnterpriseApi.
@@ -35,6 +36,7 @@ async function batchReport(db,tenant,id){
 export async function handleQuantApi(request,env,db,tenant,actor,path){
  if(env.GC_ENTERPRISE_QUANT_ENABLED!=='true')throw new ApiError(503,'QUANT_DISABLED','Engine kuantitatif belum diaktifkan untuk lingkungan ini.');
  if(!roles.includes(actor.role))deny();
+ if(path.startsWith('/analytics/advanced/'))return handleAdvancedAnalytics(request,env,db,tenant,actor,path);
  if(path==='/analytics/import'&&request.method==='POST'){
   if(actor.role!=='data_maker')deny();
   const batch=reconcilePortfolio(await readJson(request)),id=crypto.randomUUID(),m=batch.metadata,now=new Date().toISOString();
