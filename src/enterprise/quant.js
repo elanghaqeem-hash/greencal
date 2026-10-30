@@ -6,11 +6,11 @@ const isObject=x=>x!==null&&typeof x==='object'&&!Array.isArray(x);
 const req=(x,k)=>{if(!isObject(x))reject('Objek input diperlukan.');return x[k];};
 const id=(v,name)=>{if(typeof v!=='string'||! /^[A-Za-z0-9_-]{1,100}$/.test(v))reject(name+' tidak valid.');return v;};
 const label=(v,name,max=240)=>{if(typeof v!=='string'||!v.trim()||v.length>max)reject(name+' tidak valid.');return v.trim();};
-const date=v=>{if(typeof v!=='string'||!/^\d{4}-\d{2}-\d{2}$/.test(v)||new Date(v).toISOString?.()===undefined)reject('Tanggal ISO diperlukan.');const d=new Date(v);if(!Number.isFinite(d.valueOf())||d.toISOString().slice(0,10)!==v)reject('Tanggal tidak valid.');return v;};
+const date=v=>{if(typeof v!=='string'||!/^\d{4}-\d{2}-\d{2}$/.test(v))reject('Tanggal ISO diperlukan.');const d=new Date(v);if(!Number.isFinite(d.valueOf())||d.toISOString().slice(0,10)!==v)reject('Tanggal tidak valid.');return v;};
 function dec(v,name,{signed=false}={}){if(typeof v!=='string'||!(signed?/^-?\d{1,15}(?:\.\d{1,6})?$/:/^\d{1,15}(?:\.\d{1,6})?$/).test(v))reject(name+' harus angka desimal string maksimum 6 dp.');const s=v.startsWith('-')?-1n:1n;const [a,b='']=v.replace('-','').split('.');return s*(BigInt(a)*SCALE+BigInt(b.padEnd(6,'0')));}
 function format(n){const neg=n<0n?'-':'';const v=n<0n?-n:n;return neg+(v/SCALE).toString()+(v%SCALE?'.'+(v%SCALE).toString().padStart(6,'0').replace(/0+$/,''):'');}
 function divide(a,b){if(b===0n)reject('Pembagi tidak boleh nol.');const n=a*SCALE;const q=n/b,r=n%b;return q+((r<0n?-r:r)*2n>=(b<0n?-b:b)?(q<0n?-1n:1n):0n);}
-function multiply(a,b){const x=a*b;return x/SCALE+(x%SCALE>=SCALE/2n?1n:0n);}
+function multiply(a,b){const x=a*b;const mag=x<0n?-x:x;const rounded=(mag+SCALE/2n)/SCALE;return x<0n?-rounded:rounded;}
 const decimalString=(v,name,opts)=>format(dec(v,name,opts));
 const score=v=>{if(!Number.isInteger(v)||v<1||v>5)reject('PCAF data-quality score harus 1–5.');return v;};
 export const ASSET_CLASSES=Object.freeze(['business_loans','listed_equity_corporate_bonds','project_finance','commercial_real_estate','mortgages','motor_vehicle_loans','sovereign_debt']);
@@ -71,6 +71,7 @@ export function physicalOverlay(input){
  const h=input.hazard;if(h.type!=='Polygon'||!Array.isArray(h.coordinates)||h.coordinates.length<1||h.coordinates.length>10)reject('GeoJSON Polygon diperlukan (maksimum 10 rings).');
  if(h.coordinates.some(r=>!Array.isArray(r)||r.length<4||r.length>10000))reject('Ring polygon invalid.');
  const intersects=insideRing(input.coordinates,h.coordinates[0])&&!h.coordinates.slice(1).some(r=>insideRing(input.coordinates,r));
+ if(!/^[a-f0-9]{64}$/i.test(input.datasetSha256||''))reject('SHA-256 dataset geospasial wajib valid.');
  const hazardScore=Number.isInteger(input.hazardScore)&&input.hazardScore>=1&&input.hazardScore<=5?input.hazardScore:null;if(hazardScore===null)reject('Skor hazard 1–5 dari dataset yang tervalidasi diperlukan.');
  return {facilityRef:id(input.facilityRef,'Fasilitas'),coordinates:[longitude,latitude],hazard:label(input.hazardName,'Hazard',120),dataset:label(input.dataset,'Dataset',180),datasetVersion:label(input.datasetVersion,'Versi',80),datasetSha256:label(input.datasetSha256,'Hash',64),insideHazard:intersects,hazardScore:intersects?hazardScore:null,method:'WGS84-point-in-polygon-screening-v1',financialLoss:null,status:'screening_only_not_validated'};
 }
