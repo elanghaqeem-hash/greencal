@@ -69,6 +69,8 @@ test('D1 import is tenant-isolated, immutable and GL-linked, unauthorized roles 
   const report=await request(db,'viewer','/analytics/batches/'+write.body.id);
   assert.equal(report.status,200);assert.equal(report.body.reportPreview.totalOutstanding,'40');
   assert.equal(report.body.reportPreview.financedTco2e,'52');
+  assert.deepEqual(report.body.reportPreview.scopeCoverage.scope3,{present:0,missing:2});
+  assert.equal(report.body.reportPreview.byAssetClass[0].knownFinancedTco2e,'52');
   await assert.rejects(()=>request(db,'viewer','/analytics/import',batch()),e=>e.code==='QUANT_ROLE_DENIED');
   await assert.rejects(()=>request(db,'maker','/analytics/import',batch()));
   const other=await request(db,'viewer','/analytics/batches/'+write.body.id,undefined,'bank-b');
