@@ -5,7 +5,7 @@ import {financedEmissions,reconcilePortfolio,interpolateScenario,physicalOverlay
 import {handleQuantApi} from '../src/enterprise/quant-api.js';
 const U='2026-09-30',hash='a'.repeat(64);
 const position=(facilityRef='FAC-01')=>({facilityRef,obligorRef:'OBL-01',assetClass:'business_loans',currency:'IDR',asOf:U,
- outstanding:'20',attributionDenominator:'100',denominatorBasis:'total_equity_and_debt',
+ outstanding:'20',attributionDenominator:'100',denominatorCurrency:'IDR',denominatorBasis:'total_equity_and_debt',
  emissions:{scope1:'100',scope2:'30',scope3:null},dataQualityScore:3,
  evidenceReference:'Synthetic fixture only',emissionSourceVintage:'2025'});
 const batch=()=>({asOf:U,currency:'IDR',sourceSha256:hash,sourceSystem:'SYNTHETIC_TEST_CBS',glControlTotal:'40',glControlCount:2,controlReference:'SYNTHETIC_GL_TEST',exposures:[position('FAC-01'),position('FAC-02')]});
