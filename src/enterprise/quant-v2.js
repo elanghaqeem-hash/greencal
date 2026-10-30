@@ -82,7 +82,7 @@ export function sourceManifest(input){
  const keys=new Set(),entries=input.entries.map(x=>{
  const source=name(x.sourceSystem,'Sistem sumber',100),dataset=name(x.dataset,'Dataset',100),asOf=iso(x.asOf),sha256=hash(x.sha256);
  if(keys.has(source+'|'+dataset+'|'+asOf))fail('Dataset duplikat untuk sistem dan tanggal sama.');keys.add(source+'|'+dataset+'|'+asOf);
- const rows=whole(x.rowCount);if(rows<1)fail('Source row count harus positif.');
+ const rows=x.rowCount;if(!Number.isSafeInteger(rows)||rows<1||rows>1000000000)fail('Row count di luar rentang.');if(rows<1)fail('Source row count harus positif.');
  return {sourceSystem:source,dataset,asOf,sha256,rowCount:rows,schemaVersion:name(x.schemaVersion,'Schema version',80),controlTotal:x.controlTotal===null?null:display(amount(x.controlTotal,'Control total')),approvalReference:name(x.approvalReference,'Source approval',200)};
  });
  return {entries,format:'bank-source-manifest-v1',status:'source_asserted_awaiting_independent_ingestion_verification'};
