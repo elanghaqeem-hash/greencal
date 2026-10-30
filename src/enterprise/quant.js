@@ -18,6 +18,7 @@ export function normalizeExposure(p){
  const assetClass=label(req(p,'assetClass'),'Kelas aset');
  if(!ASSET_CLASSES.includes(assetClass))reject('Kelas aset belum didukung engine ini.');
  const currency=label(p.currency,'Mata uang',3);if(!/^[A-Z]{3}$/.test(currency))reject('Gunakan kode mata uang ISO.');
+ const denominatorCurrency=label(p.denominatorCurrency,'Mata uang denominator',3);if(denominatorCurrency!==currency)reject('Outstanding dan denominator harus dalam mata uang sama; gunakan FX bersumber dan ber-tanggal sebelum impor.');
  const exposure=dec(p.outstanding,'Outstanding'),denominator=dec(p.attributionDenominator,'Denominator');
  if(denominator===0n||exposure>denominator)reject('Denominator atribusi harus positif dan tidak lebih kecil dari outstanding; tinjau nilai ekonomi/total proyek.');
  const sourceType=label(p.denominatorBasis,'Basis denominator',80);
@@ -27,7 +28,7 @@ export function normalizeExposure(p){
  if(Object.values(scope).every(x=>x===null))reject('Minimum satu scope emisi dari sumber teridentifikasi diperlukan.');
  const quality=score(p.dataQualityScore);
  const input={facilityRef:id(p.facilityRef,'Fasilitas anonim'),obligorRef:id(p.obligorRef,'Debitur anonim'),assetClass,currency,asOf:date(p.asOf),
-  outstanding:format(exposure),attributionDenominator:format(denominator),denominatorBasis:sourceType,emissions:scope,dataQualityScore:quality,
+  outstanding:format(exposure),attributionDenominator:format(denominator),denominatorCurrency,denominatorBasis:sourceType,emissions:scope,dataQualityScore:quality,
   evidenceReference:label(p.evidenceReference,'Referensi bukti',600),emissionSourceVintage:label(p.emissionSourceVintage,'Vintage emisi',60)};
  return input;
 }
@@ -69,13 +70,14 @@ export function physicalOverlay(input){
  if(!isObject(input)||!isObject(input.hazard)||!Array.isArray(input.coordinates)||input.coordinates.length!==2)reject('Lokasi dan hazard polygon GeoJSON diperlukan.');
  const [longitude,latitude]=input.coordinates;if(!Number.isFinite(longitude)||!Number.isFinite(latitude)||Math.abs(longitude)>180||Math.abs(latitude)>90)reject('WGS84 lon/lat invalid.');
  const h=input.hazard;if(h.type!=='Polygon'||!Array.isArray(h.coordinates)||h.coordinates.length<1||h.coordinates.length>10)reject('GeoJSON Polygon diperlukan (maksimum 10 rings).');
- if(h.coordinates.some(r=>!Array.isArray(r)||r.length<4||r.length>10000))reject('Ring polygon invalid.');
+ if(h.coordinates.some(r=>!Array.isArray(r)||r.length<4||r.length>10000||r[0][0]!==r.at(-1)[0]||r[0][1]!==r.at(-1)[1]))reject('Ring polygon harus tertutup.');
  const intersects=insideRing(input.coordinates,h.coordinates[0])&&!h.coordinates.slice(1).some(r=>insideRing(input.coordinates,r));
  if(!/^[a-f0-9]{64}$/i.test(input.datasetSha256||''))reject('SHA-256 dataset geospasial wajib valid.');
  const hazardScore=Number.isInteger(input.hazardScore)&&input.hazardScore>=1&&input.hazardScore<=5?input.hazardScore:null;if(hazardScore===null)reject('Skor hazard 1–5 dari dataset yang tervalidasi diperlukan.');
  return {facilityRef:id(input.facilityRef,'Fasilitas'),coordinates:[longitude,latitude],hazard:label(input.hazardName,'Hazard',120),dataset:label(input.dataset,'Dataset',180),datasetVersion:label(input.datasetVersion,'Versi',80),datasetSha256:label(input.datasetSha256,'Hash',64),insideHazard:intersects,hazardScore:intersects?hazardScore:null,method:'WGS84-point-in-polygon-screening-v1',financialLoss:null,status:'screening_only_not_validated'};
 }
 export function creditTransmission(input){
+ if(!isObject(input))reject('Asumsi model harus objek.');
  const basePD=dec(input.basePD,'PD'),baseLGD=dec(input.baseLGD,'LGD'),ead=dec(input.baseEAD,'EAD');
  const pdDelta=dec(input.pdDelta,'Perubahan PD',{signed:true}),lgdDelta=dec(input.lgdDelta,'Perubahan LGD',{signed:true}),eadDelta=dec(input.eadDelta,'Perubahan EAD',{signed:true});
  const limit=SCALE;
@@ -83,6 +85,7 @@ export function creditTransmission(input){
  const baseline=multiply(multiply(basePD,baseLGD),ead),stressed=multiply(multiply(basePD+pdDelta,baseLGD+lgdDelta),ead+eadDelta);
  const nii=dec(input.deltaNetIncome,'Perubahan pendapatan bersih',{signed:true}),opex=dec(input.deltaOperatingCost,'Perubahan biaya operasional',{signed:true});
  const delta=stressed-baseline;
+ if(!/^[A-Z]{3}$/.test(input.currency||''))reject('Kode mata uang tidak valid.');
  return {baseECL:format(baseline),stressedECL:format(stressed),incrementalECL:format(delta),netProfitImpact:format(nii-opex-delta),currency:label(input.currency,'Mata uang',3),modelReference:label(input.modelReference,'Referensi kalibrasi/validasi model',400),scenarioReference:label(input.scenarioReference,'Referensi skenario',400),method:'one-period-sensitivity-PD-LGD-EAD-ECL-not-PSAK71',status:'internal_sensitivity_only_not_capital_or_accounting'};
 }
 export function standardizedApproach(input){
