@@ -22,6 +22,31 @@ export function validatePayload(kind,p){
   return {book:integer(p.book,1,7,'Nomor buku'),officialTitle:text(p.officialTitle,'Judul resmi'),publicationDate:date(p.publicationDate,'Tanggal publikasi'),version:text(p.version,'Versi',80),sourceUrl:u,sha256:p.sha256,pageCount:integer(p.pageCount,1,100000,'Jumlah halaman'),verification:'declared-metadata-pending-source-review'};
  }
  if(kind==='requirement')return {documentId:text(p.documentId,'ID dokumen',80),chapter:text(p.chapter,'Bab'),section:text(p.section,'Bagian'),page:integer(p.page,1,100000,'Halaman'),requirement:text(p.requirement,'Persyaratan',4000),module:text(p.module,'Modul'),data:text(p.data,'Data',2000),businessRule:text(p.businessRule,'Aturan bisnis',4000),testCase:text(p.testCase,'Test case',2000),evidence:text(p.evidence,'Bukti',2000),implementationStatus:one(p.implementationStatus,['not_assessed','gap_identified','planned','in_development','implemented'],'Status implementasi'),acceptanceStatus:'not_validated'};
+ if(kind==='governance'){
+  const from=date(p.effectiveFrom,'Mulai berlaku'),review=date(p.reviewDate,'Tanggal review');
+  if(review<from)bad('Tanggal review harus setelah mulai berlaku.');
+  return {policyArea:one(p.policyArea,['strategy','risk_appetite','governance','sharia','disclosure'],'Area kebijakan'),owner:text(p.owner,'Pemilik kebijakan',200),riskAppetite:text(p.riskAppetite,'Kriteria / risk appetite',3000),controls:text(p.controls,'Pengendalian',3000),shariaConsiderations:text(p.shariaConsiderations,'Pertimbangan syariah',2000),approvalReference:text(p.approvalReference,'Referensi persetujuan internal',250),effectiveFrom:from,reviewDate:review,regulatoryStatus:'not_validated'};
+ }
+ if(kind==='portfolio'){
+  const ead=decimal(p.ead,'EAD'),outstanding=decimal(p.outstanding,'Outstanding');
+  if(!/^[A-Z]{3}$/.test(p.currency||''))bad('Mata uang harus kode ISO tiga huruf.');
+  const asOf=date(p.asOf,'Tanggal posisi'),maturity=date(p.maturityDate,'Jatuh tempo');
+  return {facilityRef:text(p.facilityRef,'Kode fasilitas anonim',120),obligorRef:text(p.obligorRef,'Kode debitur anonim',120),sector:text(p.sector,'Sektor/KBLI',200),region:text(p.region,'Wilayah',200),product:one(p.product,['murabahah','musyarakah','mudharabah','ijarah','sukuk','conventional_loan','other'],'Produk'),currency:p.currency,ead,outstanding,asOf,maturityDate:maturity,evidence:text(p.evidence,'Referensi sumber',1000),dataQuality:'operator_declared_pending_reconciliation'};
+ }
+ if(kind==='scenario'){
+  return {framework:one(p.framework,['NGFS','IPCC','bank_internal'],'Sumber skenario'),scenarioName:text(p.scenarioName,'Nama skenario',200),vintage:text(p.vintage,'Rilis / vintage',80),pathway:text(p.pathway,'Pathway',200),horizonYear:integer(p.horizonYear,2025,2100,'Horizon'),sourceUrl:url(p.sourceUrl),sourceVersion:text(p.sourceVersion,'Versi data',120),assumptions:text(p.assumptions,'Asumsi dan satuan',4000),limitations:text(p.limitations,'Batasan',3000),modelReadiness:'metadata_only_not_validated'};
+ }
+ if(kind==='physical'){
+  const hazardLevel=integer(p.hazardLevel,1,5,'Tingkat bahaya'),vulnerabilityLevel=integer(p.vulnerabilityLevel,1,5,'Tingkat kerentanan');
+  return {portfolioId:text(p.portfolioId,'ID portofolio',80),scenarioId:text(p.scenarioId,'ID skenario',80),hazard:one(p.hazard,['flood','drought','heat','landslide','coastal','storm','wildfire','other'],'Jenis bahaya'),hazardSource:text(p.hazardSource,'Dataset/lokasi sumber',1000),hazardLevel,vulnerabilityLevel,mitigation:text(p.mitigation,'Resiliensi/mitigasi',2000),evidence:text(p.evidence,'Rujukan validasi',1000),screenScore:hazardLevel*vulnerabilityLevel,screeningMethod:'ordinal-5x5-screening-only-not-a-financial-loss-model'};
+ }
+ if(kind==='transition'){
+  return {portfolioId:text(p.portfolioId,'ID portofolio',80),scenarioId:text(p.scenarioId,'ID skenario',80),driver:one(p.driver,['policy_legal','technology','market','reputation','mixed'],'Pendorong'),channel:text(p.channel,'Saluran transmisi',2000),carbonPrice:decimal(p.carbonPrice,'Asumsi harga karbon'),carbonPriceUnit:text(p.carbonPriceUnit,'Mata uang per tCO2e',80),shockAssumption:text(p.shockAssumption,'Asumsi dampak',3000),adaptation:text(p.adaptation,'Mitigasi transisi',2000),evidence:text(p.evidence,'Referensi asumsi',1000),financialImpact:'not_calculated_model_validation_required'};
+ }
+ if(kind==='report_package'){
+  const start=date(p.periodStart,'Awal periode'),end=date(p.periodEnd,'Akhir periode');if(start>end)bad('Periode pelaporan terbalik.');
+  return {periodStart:start,periodEnd:end,reportingBasis:one(p.reportingBasis,['management','internal_crms','ojk_mapping_draft'],'Basis laporan'),contentScope:text(p.contentScope,'Cakupan',2000),evidenceIndex:text(p.evidenceIndex,'Indeks bukti',4000),dataQualityIssues:text(p.dataQualityIssues,'Kesenjangan data',3000),modelLimitations:text(p.modelLimitations,'Batasan model',3000),reviewNote:text(p.reviewNote,'Catatan telaah',2000),submissionStatus:'internal_only_not_ojk_submission'};
+ }
  bad('Jenis record tidak didukung.');
 }
 function scaled(s){const [whole,fraction='']=s.split('.');return BigInt(whole)*1000000n+BigInt(fraction.padEnd(6,'0'));}
