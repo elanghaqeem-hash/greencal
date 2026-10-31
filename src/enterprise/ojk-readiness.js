@@ -23,7 +23,7 @@ const verified=(a,id)=>a?.controlId===id&&a.status==='verified'&&a.scope==='bank
  Array.isArray(a.reviewerSubjects)&&a.reviewerSubjects.length>=2&&
  new Set(a.reviewerSubjects).size===a.reviewerSubjects.length&&
  a.reviewerSubjects.every(s=>typeof s==='string'&&s.trim()&&!s.startsWith('SYNTHETIC'))&&
- typeof a.verifiedAt==='string'&&/^\\d{4}-\\d\\d-\\d\\dT\\d\\d:\\d\\d:\\d\\d/.test(a.verifiedAt)&&
+ typeof a.verifiedAt==='string'&&/^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d/.test(a.verifiedAt)&&
  Number.isFinite(Date.parse(a.verifiedAt))&&a.officialSourceVerified===true&&a.bankApproved===true;
 // Attestations MUST originate from verified server-side reviewer and source registries,
 // never browser requests, synthetic users, environment feature flags, or plain JSON claims.
