@@ -1,3 +1,5 @@
+import {createHmac} from 'node:crypto';
+import {isIP} from 'node:net';
 import {getPostgres} from '../src/vercel/postgres.js';
 import {handleEnterpriseApi} from '../src/enterprise/api.js';
 
@@ -14,9 +16,20 @@ export function resolveApiPath(query){
  if(!/^[a-zA-Z0-9/_-]{1,200}$/.test(path)||path.includes('//')||path.split('/').includes('..'))return null;
  return '/api/'+path.replace(/^\/+/,'');
 }
+export function publicNetworkScope(req,secret){
+ const raw=req.headers?.['x-vercel-forwarded-for']||req.headers?.['x-forwarded-for'];
+ const ip=(typeof raw==='string'?raw.split(',')[0].trim():'');
+ if(typeof secret!=='string'||secret.length<32||!isIP(ip))return null;
+ return createHmac('sha256',secret).update('greencal:vercel:v1:'+ip).digest('hex');
+}
 export async function handler(req,res){
  const path=resolveApiPath(req.query);
  if(!path)return send(res,404,{ok:false,code:'NOT_FOUND',message:'Endpoint tidak tersedia.'});
+ if(path==='/api/client-scope'&&req.method==='GET'){
+  const scope=publicNetworkScope(req,process.env.IP_SCOPE_SECRET);
+  return scope?send(res,200,{scope}):
+   blocked(res,'NETWORK_SCOPE_UNAVAILABLE','Identitas jaringan tidak tersedia; penyimpanan dinonaktifkan.');
+ }
  if(path==='/api/health'&&req.method==='GET'){
   const postgres=!!(process.env.DATABASE_URL_POOLED||process.env.GREENCAL_POSTGRES_URL||process.env.DATABASE_URL);
   const sso=!!(process.env.GC_ENTERPRISE_ACCESS_DOMAIN&&process.env.GC_ENTERPRISE_ACCESS_AUD);
