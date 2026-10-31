@@ -1,6 +1,8 @@
 import {ApiError} from './policy.js';
+import {verifyBankOidcIdentity} from '../vercel/oidc.js';
 const decode = s => Uint8Array.from(atob(s.replace(/-/g,'+').replace(/_/g,'/').padEnd(Math.ceil(s.length/4)*4,'=')),c=>c.charCodeAt(0));
 export async function verifyEnterpriseIdentity(request,env){
+ if(env.GC_ENTERPRISE_IDENTITY_MODE==='oidc')return verifyBankOidcIdentity(request,env);
  const domain=String(env.GC_ENTERPRISE_ACCESS_DOMAIN||'');
  const aud=env.GC_ENTERPRISE_ACCESS_AUD;
  if(!/^[a-z0-9-]+\.cloudflareaccess\.com$/.test(domain)||!aud)throw new ApiError(503,'ENTERPRISE_IDENTITY_NOT_CONFIGURED','Identitas enterprise belum dikonfigurasi.');
