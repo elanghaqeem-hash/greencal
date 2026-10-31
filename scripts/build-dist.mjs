@@ -25,7 +25,7 @@ for (const asset of required.slice(1)) {
 }
 await rm(dist, { recursive: true, force: true });
 await mkdir(dist, { recursive: true });
-const enterpriseAssets = ["enterprise.html", "assets/enterprise.css", "assets/enterprise.js", "assets/enterprise-analytics.js", "assets/enterprise-release.js"];
+const enterpriseAssets = ["enterprise.html", "assets/enterprise.css", "assets/enterprise.js", "assets/enterprise-analytics.js", "assets/enterprise-release.js", "assets/enterprise-book6.js"];
 for (const asset of [...required, ...enterpriseAssets]) {
   const target = join(dist, asset === "enterprise.html" ? "enterprise/index.html" : asset);
   await mkdir(dirname(target), { recursive: true });
