@@ -23,7 +23,7 @@ const groups={
  inventory:{ids:INVENTORY.map(i=>i.id),statuses:['unknown','available','partial','unavailable','na']},
  quality:{ids:QUALITY_TESTS.map(q=>q.id),statuses:['untested','pass','partial','fail','na']}
 };
-function validatePayload(input){
+export function validatePayload(input){
  if(!object(input))reject(400,'READINESS_INPUT_INVALID','Isian assessment tidak valid.');
  for(const name of Object.keys(input))if(!['scope','asOf','interviewer','notes',...Object.keys(groups)].includes(name))reject(400,'READINESS_UNKNOWN_FIELD','Field tidak dikenal: '+name);
  const p={
