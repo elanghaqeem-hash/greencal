@@ -58,7 +58,7 @@ test('Carbon cost uses full debtor Scope 1, never bank attribution or Scope 3',(
  assert.throws(()=>book3CarbonCost({...carbon(),includeScope3:true}),/Scope 3/);
  assert.throws(()=>book3CarbonCost({...carbon(),financedEmissions:'37861.25'}),/financed/);
  assert.throws(()=>book3CarbonCost({...carbon(),debtor:debtor({emissions:{scope1:null,scope2:'200',scope3:'100'}})}),/Scope 1/);
- assert.throws(()=>book3CarbonCost({...carbon(),includeScope2:true,scope2CarbonCostNotInEnergyTariff:false}),/bukti/);
+ assert.throws(()=>book3CarbonCost({...carbon(),includeScope2:true,scope2CarbonCostNotInEnergyTariff:false,scope2TariffExclusionEvidence:'SIMULASI - bukti pemisahan tarif'}),/bukti/);
  const s2=book3CarbonCost({...carbon(),includeScope2:true,scope2CarbonCostNotInEnergyTariff:true,
   scope2TariffExclusionEvidence:'Bukti bank/penyedia energi disetujui secara manual'});
  assert.equal(s2.carbonCostBaseTco2e,'908670');
