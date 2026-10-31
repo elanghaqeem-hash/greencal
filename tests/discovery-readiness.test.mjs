@@ -6,7 +6,7 @@ import {spawnSync} from 'node:child_process';
 
 const ready = ()=>{
  const dimensions=Object.fromEntries(DIMENSIONS.map(x=>[x.id,{score:3,evidenceRef:'synthetic:reviewed-evidence'}]));
- const topics=Object.fromEntries(TOPICS.map(x=>[x.id,{score:3,evidenceRef:'synthetic:reviewed-evidence'}]));
+ const topics=Object.fromEntries(TOPICS.map(x=>[x.id,{score:3,evidenceRef:'synthetic:reviewed-evidence',completenessPct:100}]));
  const answers=Object.fromEntries(QUESTIONS.map(x=>[x.id,{status:'yes',evidenceRef:'synthetic:approved-source'}]));
  const inventory=Object.fromEntries(INVENTORY.map(x=>[x.id,{status:'available',evidenceRef:'synthetic:approved-source'}]));
  const quality=Object.fromEntries(QUALITY_TESTS.map(x=>[x.id,{status:'pass',evidenceRef:'synthetic:approved-source'}]));
@@ -51,6 +51,8 @@ test('fully evidenced score 3 can proceed to controlled review only',()=>{
  assert.equal(result.topics.score,3);
  assert.equal(result.headline.coveragePct,100);
  assert.equal(result.topics.coveragePct,100);
+ assert.equal(result.topicCompleteness.averagePct,100);
+ assert.equal(result.topicCompleteness.assessed,12);
  assert.equal(result.indicativeNextStage,'eligible_for_controlled_bank_review');
  assert.match(result.note,/bukan kepatuhan OJK/);
 });
