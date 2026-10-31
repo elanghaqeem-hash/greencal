@@ -35,8 +35,13 @@ export function evaluateBankSchema({expectedDatabase,database,tables=[],triggerT
 }
 
 export async function inspectBankSchema(env=process.env){
- const url=env.DATABASE_URL_POOLED||env.GREENCAL_POSTGRES_URL||env.DATABASE_URL;
+ const url=env.GC_ENTERPRISE_DATABASE_URL_POOLED;
  const expected=env.GREENCAL_BANK_DB_NAME;
+ const publicUrl=env.DATABASE_URL_POOLED||env.GREENCAL_POSTGRES_URL||env.DATABASE_URL;
+ if(url && publicUrl){try{const a=new URL(url),b=new URL(publicUrl);
+  if(a.hostname===b.hostname&&a.pathname===b.pathname)
+   return {databaseVerified:false,schemaPresent:false,bankProductionReady:false,code:'BANK_DATABASE_NOT_ISOLATED'};
+ }catch{}}
  if(!/^postgres(?:ql)?:\/\//.test(url||'')||!expected)
   return {databaseVerified:false,schemaPresent:false,bankProductionReady:false,
    code:'BANK_DATABASE_OR_EXPECTED_NAME_MISSING'};
