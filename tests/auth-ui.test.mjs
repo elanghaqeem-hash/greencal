@@ -40,7 +40,8 @@ test("admin-only UI and key configuration are hidden in public mode",()=>{
 
 test("public calculator still has responsive branding and parses",()=>{
  assert.match(html,/Plus Jakarta Sans/);
- assert.match(html,/assets\/brks-syariah\.svg/);
+ assert.doesNotMatch(html,/assets\/brks-syariah\.svg/);
+ assert.match(html,/id="brandLogo"/);
  const script=html.slice(html.lastIndexOf("<script>")+8,html.indexOf("</script>", html.lastIndexOf("<script>")));
  assert.ok(script.length>100000);
  assert.doesNotThrow(()=>new Function(script));
