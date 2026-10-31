@@ -1,0 +1,39 @@
+name: OJK 2026 Book 5 Official Annex Import Gate
+on:
+  push:
+    paths:
+      - 'src/enterprise/book5.js'
+      - 'src/enterprise/book5-api.js'
+      - 'assets/enterprise-book5.js'
+      - 'migrations/vercel/0103_book5_postcodes.sql'
+      - 'scripts/book5/**'
+      - 'tests/book5-annex-*.test.mjs'
+      - '.github/workflows/book5-annex.yml'
+  pull_request:
+    paths:
+      - 'src/enterprise/book5.js'
+      - 'src/enterprise/book5-api.js'
+      - 'assets/enterprise-book5.js'
+      - 'migrations/vercel/0103_book5_postcodes.sql'
+      - 'scripts/book5/**'
+      - 'tests/book5-annex-*.test.mjs'
+      - '.github/workflows/book5-annex.yml'
+permissions:
+  contents: read
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Test source scoring, staging dry run and postcode permissions
+        run: node --test tests/book5-physical.test.mjs tests/book5-annex-source.test.mjs tests/book5-annex-import-dryrun.test.mjs
+      - name: Verify syntax and Vercel public asset only
+        run: |
+          node --check scripts/book5/import-official-annex.mjs
+          node --check src/enterprise/book5-api.js
+          node --check assets/enterprise-book5.js
+          node scripts/build-dist.mjs
+          test -s dist/assets/enterprise-book5.js

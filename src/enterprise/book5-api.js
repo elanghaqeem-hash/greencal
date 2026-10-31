@@ -13,10 +13,33 @@ export async function handleBook5Api(request,env,db,tenant,actor,path){
    const r=await db.prepare('SELECT id,version,sha256,status,created_at FROM gcx_book5_datasets WHERE tenant_id=? ORDER BY created_at DESC LIMIT 30').bind(tenant).all();
    datasets=r.results;
   }catch{datasetReadiness='migration_or_database_unavailable';}
+  let postcodeDatasets=[],postcodeReadiness='available';
+  try{const p=await db.prepare('SELECT id,source_version,status FROM gcx_book5_postcode_datasets WHERE tenant_id=? ORDER BY created_at DESC LIMIT 30').bind(tenant).all();postcodeDatasets=p.results;}
+  catch{postcodeReadiness='postcode_migration_or_database_unavailable';}
   return json({title:'OJK 2026 Buku 5 — Data Risiko Fisik',hazards:BOOK5_HAZARDS,assetLines:BOOK5_ASSET_LINES,
    scenarios:BOOK5_SCENARIOS,years:BOOK5_YEARS,scoreRange:[0,100],
-   interpretation:'0 valid; combined score is source-published; 50 has overlapping categories in PDF and must be reviewed',
-   datasets,datasetReadiness,officialSubmission:false});
+   interpretation:'0=low; 1–50=medium; >50=high per official Appendix 1 Cover; combined score source-published',
+   datasets,datasetReadiness,postcodeDatasets,postcodeReadiness,officialSubmission:false});
+ }
+ if(path==='/book5/postcodes'&&request.method==='GET'){
+  if(env.GC_ENTERPRISE_BOOK5_ENABLED!=='true')throw new ApiError(503,'BOOK5_DISABLED','Aktivasi Buku 5 belum tersedia.');
+  const q=new URL(request.url).searchParams;
+  const datasetId=q.get('datasetId'),mappingId=q.get('mappingId'),code=q.get('code');
+  if(!id(datasetId)||!id(mappingId)||!/^[0-9]{5}$/.test(code||''))
+   throw new ApiError(400,'BOOK5_POSTCODE_INPUT','Kode pos wajib tepat lima digit serta ID dataset valid.');
+  const validated=await db.prepare("SELECT id FROM gcx_book5_postcode_datasets WHERE tenant_id=? AND id=? AND status='validated'").bind(tenant,mappingId).first();
+  const scores=await db.prepare("SELECT id FROM gcx_book5_datasets WHERE tenant_id=? AND id=? AND status='validated'").bind(tenant,datasetId).first();
+  if(!validated||!scores)throw new ApiError(409,'BOOK5_SOURCE_NOT_VALIDATED','Dataset risiko dan mapping kode pos harus disahkan.');
+  const candidates=(await db.prepare(
+   "SELECT DISTINCT r.province,r.regency,r.district FROM gcx_book5_postcodes m " +
+   "JOIN gcx_book5_scores r ON r.tenant_id=m.tenant_id AND r.dataset_id=? " +
+   "AND r.province=m.province AND r.district=m.district " +
+   "WHERE m.tenant_id=? AND m.mapping_id=? AND m.postal_code=? " +
+   "ORDER BY r.province,r.regency,r.district LIMIT 101"
+  ).bind(datasetId,tenant,mappingId,code).all()).results;
+  if(candidates.length>100)throw new ApiError(409,'BOOK5_POSTCODE_TOO_MANY','Kode pos ambigu; tentukan lokasi lebih rinci.');
+  return json({code,candidates,requiresExplicitChoice:candidates.length!==1,
+   disclaimer:'Kode pos dapat mencakup beberapa kecamatan/kabupaten. Pilih lokasi menggunakan bukti alamat atau koordinat; tidak ada auto-first-match.'});
  }
  if(path==='/book5/locations'&&request.method==='GET'){
   if(env.GC_ENTERPRISE_BOOK5_ENABLED!=='true')throw new ApiError(503,'BOOK5_DISABLED','Aktivasi Buku 5 institusi belum tersedia.');

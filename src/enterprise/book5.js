@@ -33,8 +33,9 @@ export function book5Category(value){
  const n=score(value,'dampak');
  if(n===null)return {code:'missing',label:'Data tidak tersedia'};
  if(n===0)return {code:'low',label:'Rendah'};
- if(n===50)return {code:'boundary_review',label:'Perlu review batas 50'};
- if(n<50)return {code:'medium',label:'Menengah'};
+ // Official Appendix 1 Cover states High >50, Medium 0-50 and Low = 0.
+ // Resolve the PDF's overlapping boundary by using the workbook's explicit >50 rule.
+ if(n<=50)return {code:'medium',label:'Menengah'};
  return {code:'high',label:'Tinggi'};
 }
 export function book5ValidateScores(scores){

@@ -20,13 +20,34 @@ window.GreenCalBook5={async render(root,{api,notice}){
  const catalog=await api('/book5/catalog');
  const intro=E('section',undefined,'panel');intro.append(E('h2','Buku 5 OJK 2026 · Risiko Fisik'));
  explain(intro,'Data kecamatan × 4 lini agunan × 3 skenario NGFS Phase 5 × 2020/2030/2040/2050. Nilai 0 valid; nilai kosong tidak dianggap 0. Skor gabungan tidak dihitung ulang dari skor bahaya.');
- explain(intro,'Skor dampak bukan persen kerusakan atau haircut otomatis. Penyesuaian PD/LGD/CKPN memerlukan kalibrasi dan persetujuan terpisah. Batas skor 50 dalam PDF beririsan sehingga ditandai untuk review.');
+ explain(intro,'Skor dampak bukan persen kerusakan atau haircut otomatis. Penyesuaian PD/LGD/CKPN memerlukan kalibrasi dan persetujuan terpisah. Kategori mengikuti Cover Lampiran 1: 0 rendah, 1–50 menengah, >50 tinggi.');
  explain(intro,'Dataset resmi Excel dan pemetaan kode pos merupakan lampiran terpisah dari PDF. Tanpa verifikasi data yang diimpor, modul tidak akan menghasilkan skor.');
  root.append(intro);
  const panel=E('section',undefined,'panel');panel.append(E('h2','Screening lokasi agunan / fasilitas'));
  const ds=label(panel,'Versi data resmi yang sudah diverifikasi','select');
  for(const s of catalog.datasets.filter(x=>x.status==='validated'))option(ds,s.id,s.version+' · '+s.id+' · SHA '+s.sha256.slice(0,12));
  if(!ds.options.length){panel.append(E('p','Belum ada dataset Buku 5 berstatus validated untuk institusi ini. Admin data perlu memuat lampiran XLSX OJK yang sah, memvalidasi cakupan dan versi, serta mengaktifkan modul.','empty'));root.append(panel);notice('Buku 5: dataset terverifikasi belum tersedia.');return;}
+ const mappings=catalog.postcodeDatasets.filter(x=>x.status==='validated');
+ if(mappings.length){
+  const mapping=label(panel,'Dataset pemetaan kode pos terverifikasi','select');
+  mappings.forEach(x=>option(mapping,x.id,x.source_version+' · '+x.id));
+  const code=label(panel,'Kode pos (5 digit, tidak otomatis memilih kecamatan)');
+  code.maxLength=5;code.placeholder='Contoh: 16431';
+  const postcodeLookup=E('button','Cari berdasarkan kode pos');postcodeLookup.type='button';panel.append(postcodeLookup);
+  postcodeLookup.onclick=async()=>{
+   postcodeLookup.disabled=true;
+   try{
+    const x=await api('/book5/postcodes?datasetId='+encodeURIComponent(ds.value)+
+     '&mappingId='+encodeURIComponent(mapping.value)+'&code='+encodeURIComponent(code.value));
+    region.replaceChildren();
+    x.candidates.forEach(loc=>{
+     const o=E('option',loc.province+' · '+loc.regency+' · '+loc.district);
+     o.value=JSON.stringify(loc);region.append(o);
+    });
+    notice(x.candidates.length?('Kode pos menghasilkan '+x.candidates.length+' kandidat. Verifikasi dan pilih lokasi secara eksplisit.'):'Tidak ada kecamatan cocok; gunakan pencarian nama lokasi.');
+   }catch(e){notice(e.message,true);}finally{postcodeLookup.disabled=false;}
+  };
+ }
  const q=label(panel,'Cari kecamatan, kabupaten atau provinsi (tanpa alamat nasabah)');
  q.placeholder='Ketik nama kecamatan atau wilayah';const lookup=E('button','Cari wilayah');lookup.type='button';panel.append(lookup);
  const region=label(panel,'Pilih wilayah dari dataset','select');
