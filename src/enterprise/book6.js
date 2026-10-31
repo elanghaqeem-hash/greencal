@@ -143,7 +143,17 @@ export function book6Preview(doc){
  if(answered<BOOK6_QUESTIONS.length)warnings.push('Tanggapan kualitatif belum lengkap: '+answered+'/'+BOOK6_QUESTIONS.length+'.');
  for(const s of sections)if(s.figures===0&&s.section!=='I')warnings.push('Tidak ada angka yang dicatat untuk Bagian '+s.section+'.');
  if(!doc.bonds.length)warnings.push('Bagian H belum memiliki inventaris obligasi; konfirmasi status nil/exposure dengan bank.');
+ const missingQuestions=BOOK6_QUESTIONS.filter(q=>!doc.answers[q.id]?.text).map(q=>q.id);
+ const answeredWithoutEvidence=BOOK6_QUESTIONS.filter(q=>doc.answers[q.id]?.text&&!doc.answers[q.id]?.evidence?.length).map(q=>q.id);
+ const missingQuantitativeSections=sections.filter(s=>s.figures===0&&s.section!=='I').map(s=>s.section);
+ const qualitative={required:BOOK6_QUESTIONS.length,answered,missingQuestionIds:missingQuestions,
+  answeredMissingEvidenceIds:answeredWithoutEvidence};
+ const quantitative={rows:doc.figures.length,
+  distinctSourceHashClaims:new Set(doc.figures.map(f=>f.sourceSha256)).size,
+  missingSections:missingQuantitativeSections,sourceBytesVerified:false,
+  glCkpnReconciled:false,officialWorkbookCellParity:false};
+ if(answeredWithoutEvidence.length)warnings.push('Jawaban tanpa referensi bukti: '+answeredWithoutEvidence.length+'.');
  warnings.push('Sumber SHA-256 hanya deklarasi pengguna; belum diverifikasi ke dokumen/GL asli.');
  warnings.push('Workbook .xlsx OJK asli belum tersedia: struktur sel, rumus dan integritas format tidak bisa dinyatakan cocok.');
- return {questionCount:BOOK6_QUESTIONS.length,answeredCount:answered,sectionCounts:sections,warnings,officialSubmission:false,templateParity:'unverified',readyForBankUse:false};
+ return {questionCount:BOOK6_QUESTIONS.length,answeredCount:answered,sectionCounts:sections,qualitative,quantitative,warnings,officialSubmission:false,templateParity:'unverified',readyForBankUse:false};
 }
