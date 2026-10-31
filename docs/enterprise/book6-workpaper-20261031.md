@@ -1,5 +1,5 @@
 # OJK Buku 6 2026 → GreenCal CRMS Enterprise (internal implementation dossier)
-**Date**: 31 October 2026. **Source**: user-supplied 81-page PDF, *Buku 6 Kertas Kerja CRMS Perbankan 2026*, OJK, and OJK's 6 October 2026 publication page. Page references below use **printed** page numbers. The separate official Excel file referenced by QR on p. 69 was **not provided**. This release does **not** create, fill or modify that official .xlsx.
+**Date**: 31 October 2026. **Source**: user-supplied 81-page PDF, *Buku 6 Kertas Kerja CRMS Perbankan 2026*, OJK, and OJK's 6 October 2026 publication page. Page references below use **printed** page numbers. An additional .xlsx named *OJK_Kertas Kerja Perlaporan Buku 6 2026.xlsx* was provided in the conversation on 31 October 2026 (236,032 bytes), along with an unlock password. **Its contents, authenticity, cells, formulas and hash have not yet been verified** because the local file processing runtime failed and the text extraction service returned no readable content. Do not equate receipt with a verified OJK original. The password is not recorded in this repository. This release does **not** create, fill or modify that official .xlsx.
 
 ## Implementation map
 | OJK Buku 6 | Page(s) | GreenCal representation | Status |
@@ -27,7 +27,7 @@
 - **Compatibility**: existing calculations, Book 7, public GreenCal and auth paths remain untouched. No AI-generated figures. Every missing value stays missing; explicit zero is preserved.
 
 ### Important source-control and methodological boundaries
-1. The PDF's instruction (p. 6) says only blue cells may be entered; formula and total cells, sheet order, row/column counts and formatting must not be modified, except additional rows allowed on H. This requirement **cannot be validated without the separately distributed original OJK .xlsx**. Do not invent cell addresses or ship a self-designed workbook as official.
+1. The PDF's instruction (p. 6) says only blue cells may be entered; formula and total cells, sheet order, row/column counts and formatting must not be modified, except additional rows allowed on H. The candidate source .xlsx has since been received, but its structure is **not yet inspected or approved**. Do not invent cell addresses or ship a self-designed workbook as official.
 2. The schema's 81 qualitative questions use brief **topic prompts**, not verbatim OJK questions; for legally significant replies consult the PDF and exact future workbook. There are 14 general, 30 A.1, 14 A.2 and 23 A.3 questions. Each response permits references, but links need independent evidence inspection.
 3. B is Bank RBB-based actual t + baseline t+1..t+3 before climate stress (p.24); C–E are **different scenario** projections. Do not confuse the baseline RBB with `Current Policies`.
 4. PD/LGD are outstanding-weighted sector rates, CKPN is computed debtor-level and aggregated sector-level, LGD captures physical + transition effects, and the largest-10 counterparty requirement applies to **each of six non-retail sectors**. Reference engine outputs must be consistent with these exact dimensions.
@@ -36,9 +36,31 @@
 7. For BUS/UUS, finance/Islamic banking parameterization and LCR or financing-to-deposit distinction must be reviewed by bank and regulator. This implementation retains source nomenclature "Loan to Deposit" and does not silently relabel a regulatory formula.
 
 ### Release gates still required
-- Obtain and SHA-256 verify the original **Buku 6 2026 OJK Excel workbook**. Map blue inputs, locked/formula cells, valid ranges, H variable rows and sheet order; test pixel/roundtrip and formula values in Excel.
+- Decrypt/open and SHA-256 verify the provided candidate **Buku 6 2026 OJK Excel workbook**, and confirm provenance against OJK. Map blue inputs, locked/formula cells, valid ranges, H variable rows and sheet order; test pixel/roundtrip and formula values in Excel.
 - Complete each table/metric and conditional sub-grid: stage/collectibility, weighted PD/LGD, top 10 by each NR sector, district and property category coverage, total market ATMR, security change and capital bridge, detailed LCR HQLA/outflow/inflow/LTD. This release is an **input/draft foundation**, not full automatic population.
 - Ingest actual portfolio/GL/CKPN/securities and official NGFS + geospatial datasets with approved data license, effective date, source digest, control totals and two-line reconciliation.
 - Independent validation of Books 2, 4, 5, and 7 quantitative engines, including result parity against approved OJK examples and bank challenger controls. Complete stress transmission to stage/CKPN, cash flow, market/capital and operational losses.
 - Sign-off by Risk, Finance, Compliance, IT and independent model validator; Access institution enrollment, independent enterprise D1, test migration, backup/restore, full bank UAT, and deployment approval.
 - No official filing or OJK submission API. **Regulatory production readiness remains BLOCKED**, even if GitHub CI passes and code reaches the Worker with flags disabled.
+
+
+## Candidate official workbook intake — 31 October 2026
+
+- User has supplied an Excel candidate file (236,032 bytes) and an unlock password. Treat both as sensitive; the password **must not** appear in Git history, CI logs, issues, or database fields. The attachment and password are **not** copied into this repository, and file contents remain unverified.
+- Added `scripts/book6/inspect_official_workbook.py` as a **read-only offline inspector**: it supports standard ZIP XLSX and encrypted Office XLSX, using a password from the environment variable named `BOOK6_XLSX_PASSWORD` only when Office encryption is detected. Sheet protection is inspected, not removed or bypassed.
+- The inspector outputs a JSON metadata report with source SHA-256, sheet order, dimensions, formula counts/fingerprints, protected/locked cells, style and color signatures, available input addresses, and merged/data-validation ranges. It intentionally **never emits actual cell values, formula strings, or passwords**. The source workbook is not modified.
+- It intentionally does **not** decide which cells are official editable blue fields. Excel theme/conditional colors and sheet design require source-level visual and banking reviewer confirmation. An optional approved mapping is rejected if it targets a locked/formula cell, changes a style ID, duplicates a key/cell, or lacks explicit blue-cell confirmation.
+- Synthetic fixture tests exercise workbook fingerprinting, locked/formula rejection, map hash binding, secrecy of cell values, and immutability. These tests **do not** prove parity with the received workbook.
+
+### Secure local intake (bank-controlled environment)
+
+```bash
+python -m pip install -r scripts/book6/requirements.txt
+# Set BOOK6_XLSX_PASSWORD securely from a password manager or interactive prompt;
+# do not put its literal value in shell history, source files, issue text, or CI variables.
+python scripts/book6/inspect_official_workbook.py \\
+  --workbook /secure/input/OJK_Kertas_Kerja_Buku6_2026.xlsx \\
+  --output /secure/review/book6-inspection.json
+```
+
+Next steps: independent reviewers verify file origin/hash and blue cells; perform exact field/formula/denominator mapping for General/A–I, execute zero-change Excel roundtrip tests with independent Excel calculation, then build a protected offline export/import service that uses only approved cells. No production flag is changed by this inspection tooling.
