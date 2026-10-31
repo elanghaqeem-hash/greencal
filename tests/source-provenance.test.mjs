@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {createHash} from 'node:crypto';
 import {enterpriseDb} from './support/enterprise-db.mjs';
-import {validateBankConnection,retrieveApprovedBankSource,prepareBankPackage} from '../scripts/bank-secure-fetch.mjs';
+import {validateBankConnection,retrieveApprovedBankSource,prepareBankPackage,parseGlSource} from '../scripts/bank-secure-fetch.mjs';
 import {validateGeoJsonSource,validateNgfsApprovedExtract} from '../scripts/climate-source-validation.mjs';
 import {handleSourceRegistry} from '../src/enterprise/source-registry.js';
 const sha=x=>createHash('sha256').update(x).digest('hex');
@@ -32,6 +32,15 @@ test('CBS+GL and CKPN verified bytes reconcile, but cannot post accounting resul
  });
  assert.equal(pkg.portfolio.glControlTotal,'20');assert.equal(pkg.ckpn.totalVariance,'0');assert.equal(pkg.regulatedPostingAllowed,false);
  assert.throws(()=>prepareBankPackage({cbs:{source:'CBS',text:bankCsv,sha256:'0'.repeat(64)},glControl:{glControlTotal:'20',controlReference:'GL'},ckpn:{source:'CKPN',text:ckpnCsv,sha256:sha(ckpnCsv)}}),/source bytes changed/);
+});
+test('GL independently delivered signed CSV must match full bank source control; absent GL forbidden for operational path',()=>{
+ const csv='asOf,currency,sourceSystem,glControlTotal,glControlCount,controlReference\\n2026-09-30,IDR,CBS_BANK_UAT,20,1,GL-TEST\\n'.replaceAll('\\n','\n');
+ const gl={source:'GL',text:csv,sha256:sha(csv)};
+ assert.equal(parseGlSource(gl).glControlTotal,'20');
+ const pkg=prepareBankPackage({cbs:{source:'CBS',text:bankCsv,sha256:sha(bankCsv)},gl,ckpn:{source:'CKPN',text:ckpnCsv,sha256:sha(ckpnCsv)},ckpnControl:{asOf:'2026-09-30',currency:'IDR',rowCount:1,glCkpnControlTotal:'5',approvedTolerance:'0'},eclResults:[{facilityRef:'FAC-01',stage:1,currency:'IDR',expectedCreditLoss:'5'}],requireSourceGL:true});
+ assert.equal(pkg.sources.GL,sha(csv));assert.equal(pkg.portfolio.glControlTotal,'20');
+ assert.throws(()=>parseGlSource({...gl,text:csv.replace('20,1','21,1')}),/bytes changed/);
+ assert.throws(()=>prepareBankPackage({cbs:{source:'CBS',text:bankCsv,sha256:sha(bankCsv)},ckpn:{source:'CKPN',text:ckpnCsv,sha256:sha(ckpnCsv)},requireSourceGL:true}),/independent byte-verified GL/);
 });
 test('official GeoJSON WGS84 and NGFS IAMC values must match whole-file SHA; no inferred approvals',()=>{
  const geo=validateGeoJsonSource(geodata,{sourceUrl:'https://gis.bnpb.go.id/server/rest/services/inarisk',expectedSha256:sha(geodata),crs:'EPSG:4326',version:'BNPB-UAT-v1',hazard:'flood',licenseReference:'SYNTHETIC UAT review no license granted'});
