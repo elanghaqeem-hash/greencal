@@ -1,0 +1,29 @@
+name: GreenCal Vercel PostgreSQL migration safeguards
+on:
+  pull_request:
+    paths:
+      - 'scripts/migrate-d1-to-postgres.py'
+      - 'tests/test_migrate_d1_to_postgres.py'
+      - '.github/workflows/vercel-postgres-migration.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/migrate-d1-to-postgres.py'
+      - 'tests/test_migrate_d1_to_postgres.py'
+      - '.github/workflows/vercel-postgres-migration.yml'
+permissions:
+  contents: read
+jobs:
+  synthetic-migration:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Compile migration utility
+        run: python -m py_compile scripts/migrate-d1-to-postgres.py
+      - name: Synthetic SQLite export, field fingerprints and fail-closed tests
+        run: python -m unittest discover -s tests -p test_migrate_d1_to_postgres.py -v
+# CI intentionally never receives production dumps or Postgres credentials.
