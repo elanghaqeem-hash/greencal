@@ -1,8 +1,8 @@
 // Tenant-guarded OJK Buku 3 simulation: no bank-data persistence, source claims or regulatory submission.
 import {ApiError} from './policy.js';
 import {readJson} from './validation.js';
-import {BOOK3_ASSETS,book3Debtor,book3Financed,book3CarbonCost,book3Activity} from './book3.js';
-const fns=Object.freeze({debtor:book3Debtor,financed:book3Financed,carbon_cost:book3CarbonCost,activity:book3Activity});
+import {BOOK3_ASSETS,book3Debtor,book3Financed,book3CarbonCost,book3Activity,book3GasActivity} from './book3.js';
+const fns=Object.freeze({debtor:book3Debtor,financed:book3Financed,carbon_cost:book3CarbonCost,activity:book3Activity,gas_activity:book3GasActivity});
 const writers=new Set(['data_maker','risk_analyst','climate_model_analyst','compliance_reviewer','crms_project_administrator','risk_management_head']);
 const json=(x,s=200)=>new Response(JSON.stringify(x),{status:s,headers:{'content-type':'application/json; charset=utf-8','cache-control':'no-store','x-content-type-options':'nosniff'}});
 export async function handleBook3Api(request,env,db,tenant,actor,path){
