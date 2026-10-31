@@ -31,8 +31,12 @@ export async function verifyPersistedDemo(env=process.env){
  if(!/^postgres(?:ql)?:\/\//.test(dsn||''))
   return summarizeDemoVerification();
  const {Client}=await import('pg');
+ const parsed=new URL(dsn);
+ const localCi=env.CI==='true'&&env.GC_DEMO_LOCAL_CI_ONLY==='true'&&
+  ['127.0.0.1','localhost'].includes(parsed.hostname)&&
+  parsed.pathname==='/greencal_ci';
  const client=new Client({connectionString:dsn,
-  connectionTimeoutMillis:7000,ssl:{rejectUnauthorized:true},
+  connectionTimeoutMillis:7000,ssl:localCi?false:{rejectUnauthorized:true},
   application_name:'greencal-persisted-demo-verification'});
  try{
   await client.connect();
