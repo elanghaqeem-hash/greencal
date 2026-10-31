@@ -6,7 +6,10 @@ import {validatePayload} from '../src/enterprise/discovery-api.js';
 const ready = ()=>{
  const dimensions=Object.fromEntries(DIMENSIONS.map(x=>[x.id,{score:3,evidenceRef:'synthetic:reviewed-evidence'}]));
  const topics=Object.fromEntries(TOPICS.map(x=>[x.id,{score:3,evidenceRef:'synthetic:reviewed-evidence'}]));
- return {dimensions,topics,answers:{},inventory:{},quality:{}};
+ const answers=Object.fromEntries(QUESTIONS.map(x=>[x.id,{status:'yes',evidenceRef:'synthetic:approved-source'}]));
+ const inventory=Object.fromEntries(INVENTORY.map(x=>[x.id,{status:'available',evidenceRef:'synthetic:approved-source'}]));
+ const quality=Object.fromEntries(QUALITY_TESTS.map(x=>[x.id,{status:'pass',evidenceRef:'synthetic:approved-source'}]));
+ return {dimensions,topics,answers,inventory,quality};
 };
 test('catalogue transcribes uploaded workbook scope and weights',()=>{
  assert.equal(QUESTIONS.length,111);
@@ -49,6 +52,14 @@ test('fully evidenced score 3 can proceed to controlled review only',()=>{
  assert.equal(result.topics.coveragePct,100);
  assert.equal(result.indicativeNextStage,'eligible_for_controlled_bank_review');
  assert.match(result.note,/bukan kepatuhan OJK/);
+});
+test('questionnaire, data and quality gaps stop premature readiness release',()=>{
+ const p=ready();p.answers.A1={status:'unknown'};
+ const r=analyzeReadiness(p);
+ assert.ok(r.evidenceCoverage.questionnaire.coveragePct<100);
+ assert.equal(r.indicativeNextStage,'remediation_or_assessment_required');
+ p.answers.A1={status:'yes'};
+ assert.equal(analyzeReadiness(p).indicativeNextStage,'remediation_or_assessment_required');
 });
 test('blockers override high headline and topic scores',()=>{
  const p=ready();
