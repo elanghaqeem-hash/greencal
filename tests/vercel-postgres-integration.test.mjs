@@ -2,13 +2,13 @@
 // Never point at bank databases or commit real institution details.
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {Pool} from 'pg';
 import {REQUIRED_TABLES,GUARDED_TABLES,evaluateBankSchema} from '../scripts/vercel/verify-bank-schema.mjs';
 
 const url=process.env.GREENCAL_TEST_PG_URL;
 test('PostgreSQL D1 migration parity: real FK, revision, immutable evidence, tenant scope',async(t)=>{
  if(!url){t.skip('Requires disposable GREENCAL_TEST_PG_URL; never contact production');return;}
  if(!url.includes('/greencal_ci'))throw Error('TEST_DATABASE_NAME_MUST_BE_GREENCAL_CI');
+ const {Pool}=await import('pg');
  const db=new Pool({connectionString:url,max:2});
  const q=(sql,p=[])=>db.query(sql,p);
  try{
