@@ -29,16 +29,13 @@ test('import rejects unexpected record type and prototype poison, never changes 
  for(const value of [
   {entries:'not_array'},
   {entries:[null]},
-  {entries:[{id:'a',__proto_hack:'x',constructor:'danger'}]},
-  {entries:[{nested:{'__proto__':{polluted:true}}}]},
+  {entries:[{id:'a',constructor:'danger'}]},
   {settings:{users:['admin']}},
   {entries:[1]},
   []
- ]){
-  if(JSON.stringify(value).includes('"__proto__"')){
-    assert.throws(()=>normalizeJson(JSON.stringify(value)));
-  }else assert.throws(()=>normalize(value));
- }
+ ])assert.throws(()=>normalize(value));
+ // JSON (unlike JavaScript object literals) retains the own "__proto__" key.
+ assert.throws(()=>normalizeJson('{"entries":[{"nested":{"__proto__":{"polluted":true}}}]}'));
 });
 test('file must fit bounded local storage and exclude secret-bearing admin state',()=>{
  const obj={entries:[{id:'test',notes:'x'.repeat(1900100)}]};
