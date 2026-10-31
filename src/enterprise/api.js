@@ -7,6 +7,7 @@ import {handleDiscoveryApi} from './discovery-api.js';
 import {handleSourceRegistry} from './source-registry.js';
 import {handleBooks124Api} from './books124-api.js';
 import {handleBook3Api} from './book3-api.js';
+import {handleBook5Api} from './book5-api.js';
 import {readJson,validatePayload,calculateEmission,text} from './validation.js';
 const json=(data,status=200)=>new Response(JSON.stringify(data),{status,headers:{'content-type':'application/json; charset=utf-8','cache-control':'no-store','x-content-type-options':'nosniff','referrer-policy':'no-referrer'}});
 const conflict=()=>{throw new ApiError(409,'REVISION_CONFLICT','Data berubah. Muat ulang data sebelum menyimpan.');};
@@ -55,6 +56,7 @@ export async function handleEnterpriseApi(request,env){
   }
   if(path.startsWith('/books124/'))return handleBooks124Api(request,env,db,tenant,actor,path);
   if(path.startsWith('/book3/'))return handleBook3Api(request,env,db,tenant,actor,path);
+  if(path.startsWith('/book5/'))return handleBook5Api(request,env,db,tenant,actor,path);
   if(path.startsWith('/discovery/'))return handleDiscoveryApi(request,env,db,tenant,actor,path);
   if(path.startsWith('/book6/'))return handleBook6Api(request,env,db,tenant,actor,path);
   if(path.startsWith('/source-registry'))return handleSourceRegistry(request,env,db,tenant,actor,path);
