@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {toPgSql,d1Compatibility,getPostgres} from '../src/vercel/postgres.js';
-import {handler,resolveApiPath} from '../api/bridge.js';
+import {handler,resolveApiPath,publicNetworkScope} from '../api/bridge.js';
 
 test('SQL placeholders do not rewrite literal/question mark or SQL comments',()=>{
  const q=toPgSql("SELECT '?' AS literal, col FROM items WHERE a=? AND b=? -- ? in comment");
@@ -67,4 +67,23 @@ test('invalid endpoint paths and arbitrary endpoints never impersonate a live AP
  const res=mockRes();
  await handler({query:{path:'auth/login'},method:'POST',headers:{}},res);
  assert.equal(res.code,503);
+});
+
+test('network scope HMAC is stable by IP, opaque, and not browser-provided',()=>{
+ const secret='very-long-only-in-test-synthetic-secret-37-chars';
+ const a=publicNetworkScope({headers:{'x-vercel-forwarded-for':'203.0.113.42'}},secret);
+ const b=publicNetworkScope({headers:{'x-vercel-forwarded-for':'203.0.113.42'}},secret);
+ const c=publicNetworkScope({headers:{'x-vercel-forwarded-for':'203.0.113.43'}},secret);
+ assert.match(a,/^[0-9a-f]{64}$/);
+ assert.equal(a,b);
+ assert.notEqual(a,c);
+ assert.equal(publicNetworkScope({headers:{'x-vercel-forwarded-for':'bad_ip'}},secret),null);
+ assert.equal(publicNetworkScope({headers:{'x-vercel-forwarded-for':'203.0.113.42'}},'short'),null);
+});
+test('public scope endpoint refuses untrusted or absent proxy context',async()=>{
+ const req={query:{path:'client-scope'},method:'GET',headers:{}};
+ const res=mockRes();
+ await handler(req,res);
+ assert.equal(res.code,503);
+ assert.equal(res.data.code,'NETWORK_SCOPE_UNAVAILABLE');
 });
