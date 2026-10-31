@@ -23,7 +23,7 @@ function meta(p){if(!p||typeof p!=='object'||Array.isArray(p))fail('Payload obje
 export const SECTORS=Object.freeze(['pertanian_kehutanan','pertambangan_penggalian','konstruksi','transportasi_pergudangan','industri_pengolahan','listrik_gas_uap_pendingin','lainnya_non_intensif']);
 export function book7BorrowerMapping(p){
  const kbliCode=text(p.kbliCode,'KBLI');
- if(!/^\\d{5}$/.test(kbliCode))fail('Kode KBLI 5 digit wajib diisi.');
+ if(!/^\d{5}$/.test(kbliCode))fail('Kode KBLI 5 digit wajib diisi.');
  if(!SECTORS.includes(p.sectorGroup))fail('Kelompok sektor Buku 7 harus berasal dari crosswalk KBLI yang diverifikasi Bank.');
  const sale=p.annualSales===null||p.annualSales===undefined?null:nonnegative(p.annualSales,'Penjualan tahunan');
  const assets=p.totalAssets===null||p.totalAssets===undefined?null:nonnegative(p.totalAssets,'Aset');
