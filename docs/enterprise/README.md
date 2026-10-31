@@ -35,3 +35,7 @@ The public GreenCal is preserved. Its client-side outputs and IP-scoped browser 
 ## Lampiran C Buku 3 — workbook Excel terenkripsi
 
 [Hasil inventaris 35 sheet, faktor GWP AR5, adapter emisi per gas, pengujian dan isu atribusi Scope 3 Cat 15](ojk-book3-annex-c-audit.md). **Terbatas pada sandbox**; faktor/vintage dan seluruh formula workbook belum diotorisasi untuk pelaporan bank.
+
+## Buku 3 Lampiran C — 35-sheet reconciliation (31 October 2026)
+
+[Workbook-wide inventory, 6,900 formula-cell register, 2,087 reference numeric/formula cells and 10 unresolved control issues](book3-35-sheet-reconciliation-20261031.md). **Only 249 formulas were independently recomputed and matched; 6,651 remain unverified.** Do not enable Bank/official reporting or bulk import factors based on this audit alone.
