@@ -15,7 +15,7 @@ test('OJK annex PDF tables present complete expected row counts and exact unique
  }
  for(const rows of [C.A3,C.A6,C.A5,M.B5,M.B2])for(const r of rows){
   const numbers=r.at(-2);assert.equal(numbers.length,9);
-  for(const n of numbers)assert.match(n,/^\\d+(?:\\.\\d{4})$/);
+  for(const n of numbers)assert.match(n,/^\d+(?:\.\d{4})$/);
  }
  assert.equal(STATUS.sourcePrecision,'PDF_PUBLISHED_ROUNDED');
  assert.equal(STATUS.fullPrecisionWorkbookVerified,undefined);
