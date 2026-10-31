@@ -86,3 +86,35 @@ test('Book3 API is tenant-auth inherited, role and feature gated; no persistence
   {role:'external_auditor'},'/book3/catalog');
  assert.equal((await r.json()).methods.length,4);
 });
+
+test('Tier 4 peer provenance is retained through the financed-emissions audit response',()=>{
+ const peer=debtor({sourceMethod:'peer_proxy',ojkTier:4,
+  peerSector:'pertanian/perkebunan',peerBusinessModel:'produksi sejenis',
+  scalingBasis:'total assets of debtor and benchmark',
+  scalingEvidence:'SIMULASI: reference and normalization worksheet'});
+ const d=book3Debtor(peer);
+ assert.deepEqual(d.debtor.peerProxy,{
+  peerSector:'pertanian/perkebunan',peerBusinessModel:'produksi sejenis',
+  scalingBasis:'total assets of debtor and benchmark',
+  scalingEvidence:'SIMULASI: reference and normalization worksheet'
+ });
+ const f=book3Financed({...financed(),debtor:peer});
+ assert.equal(f.debtorSource.peerProxy.scalingBasis,'total assets of debtor and benchmark');
+ assert.equal(f.attributionInputs.outstanding,'500000000000');
+ assert.equal(f.attributionInputs.attributionDenominator,'12000000000000');
+ assert.equal(f.attributionInputs.denominatorBasis,'equity_plus_debt');
+});
+test('Sub-milligram activity units round exactly once after kg-to-tonne conversion',()=>{
+ const p={activityQuantity:'0.000001',activityUnit:'unit',factorKgCO2ePerUnit:'499.7',
+  factorActivityUnit:'unit',scope:'scope1',reportingYear:'2025',factorYear:'2025',
+  factorSourceTier:'national',factorSource:'SIMULASI',factorVersion:'sim',
+  factorEvidence:'SIMULASI TEST'};
+ assert.equal(book3Activity(p).estimatedTco2e,'0');
+ assert.equal(book3Activity({...p,factorKgCO2ePerUnit:'500.3'}).estimatedTco2e,'0.000001');
+});
+test('Carbon cost uses unrounded scenario emission gap while presenting rounded gap separately',()=>{
+ const x=book3CarbonCost({...carbon(),debtor:debtor({emissions:{scope1:'0.000001',scope2:'0',scope3:null}}),
+   reductionFraction:'0.4997'});
+ assert.equal(x.emissionGapTco2e,'0');
+ assert.equal(x.carbonCostIDR,'0.39976');
+});
