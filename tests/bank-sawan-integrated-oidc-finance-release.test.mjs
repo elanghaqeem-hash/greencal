@@ -79,8 +79,16 @@ test('Bank Sawan full integration: signed RS256 SSO, CBS/GL/CKPN, independent mo
   if(method==='POST'){headers['content-type']='application/json';headers['origin']=origin;headers['sec-fetch-site']='same-origin';}
   const req=new Request(origin+'/api/enterprise'+path,{method,headers,
    body:body===undefined?undefined:JSON.stringify(body)});
-  const res=await handleEnterpriseApi(req,env);
-  return {status:res.status,payload:await res.json()};
+  // Internal handler uses typed ApiError rejections; external Vercel bridge translates them.
+  // Test the documented status/code while retaining unknown exceptions as test failures.
+  try{
+   const res=await handleEnterpriseApi(req,env);
+   return {status:res.status,payload:await res.json()};
+  }catch(e){
+   if(Number.isInteger(e?.status)&&typeof e?.code==='string')
+    return {status:e.status,payload:{code:e.code,message:e.message}};
+   throw e;
+  }
  }
  try{
   // Verify real crypto (not trusted headers), exact audience, expiry and tenant memberships.
