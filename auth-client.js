@@ -11,6 +11,78 @@
   const storageKey=name=>scopeReady&&scopedStore&&EXTRA_SCOPE_KEYS.includes(name)?scopedStore+":"+name:null;
   // Older unscoped data must never load automatically after network isolation is enabled.
   // Keep legacy keys for explicit backup/migration; never read into a network-scoped session. 
+  // Cross-origin localStorage cannot be copied by a server. The user can
+  // explicitly import their OWN JSON backup from the old Cloudflare origin.
+  // Never allow an imported file to change admin parameters, users, AI keys,
+  // bank membership, or enterprise database state.
+  const safeJsonTree=(v,depth=0)=>{
+    if(depth>14)return false;
+    if(v===null)return true;
+    if(typeof v==="string")return v.length<=100000;
+    if(typeof v==="boolean")return true;
+    if(typeof v==="number")return Number.isFinite(v);
+    if(Array.isArray(v))return v.length<=50000&&v.every(x=>safeJsonTree(x,depth+1));
+    if(!v||typeof v!=="object"||Object.getPrototypeOf(v)!==Object.prototype)return false;
+    const keys=Object.keys(v);
+    return keys.length<=250&&keys.every(k=>k.length<=160&&
+      !["__proto__","prototype","constructor"].includes(k)&&safeJsonTree(v[k],depth+1));
+  };
+  function normalizePublicBackup(data){
+    if(!data||typeof data!=="object"||Array.isArray(data))throw Error("Struktur cadangan tidak valid");
+    const fields=["entries","exposures","offsets"];
+    if(!fields.some(k=>Array.isArray(data[k])) &&
+      (!data.narrativeDrafts||typeof data.narrativeDrafts!=="object"))
+      throw Error("File bukan cadangan data publik GreenCal");
+    const out={};
+    for(const key of fields){
+      const records=data[key]??[];
+      if(!Array.isArray(records)||records.length>50000||
+        records.some(x=>!x||typeof x!=="object"||Array.isArray(x))||
+        !safeJsonTree(records))throw Error("Format "+key+" tidak valid");
+      out[key]=records;
+    }
+    const drafts=data.narrativeDrafts??{};
+    if(!drafts||typeof drafts!=="object"||Array.isArray(drafts)||
+       !safeJsonTree(drafts))throw Error("Draf narasi tidak valid");
+    out.narrativeDrafts=drafts;
+    out.updatedAt=new Date().toISOString();
+    if(JSON.stringify(out).length>1900000)throw Error("Data melebihi batas penyimpanan");
+    return out;
+  }
+  function installPublicBackupImport(){
+    const button=get("btnBackupJson"),parent=button?.parentElement;
+    if(!parent||get("gcImportPublicBackup"))return;
+    const label=document.createElement("label");
+    label.id="gcImportPublicBackup";
+    label.className="btn sm";
+    label.style.cursor="pointer";
+    label.title="Pulihkan cadangan pribadi yang sebelumnya diunduh dari Cloudflare. File tidak diunggah ke server.";
+    label.textContent="Impor Cadangan dari Cloudflare";
+    const input=document.createElement("input");
+    input.type="file";
+    input.accept=".json,application/json";
+    input.style.display="none";
+    label.appendChild(input);
+    parent.appendChild(label);
+    input.onchange=async ev=>{
+      const file=ev.target.files?.[0];if(!file)return;
+      try{
+        if(!scopeReady||!scopedStore)throw Error("Verifikasi jaringan belum tersedia");
+        if(file.size>1900000)throw Error("Ukuran berkas terlalu besar");
+        const parsed=normalizePublicBackup(JSON.parse(await file.text()));
+        const current=read();
+        if(current&&(current.entries.length||current.exposures.length||
+          current.offsets.length||Object.keys(current.narrativeDrafts||{}).length)){
+          if(!window.confirm("Impor akan menggantikan data pada browser/jaringan ini. Cadangkan data yang sudah ada terlebih dahulu. Lanjutkan?"))return;
+        }
+        clearTimeout(debounce);
+        scopeGeneration++;
+        localStorage.setItem(scopedStore,JSON.stringify(parsed));
+        location.reload();
+      }catch(err){window.alert(err?.message||"Cadangan tidak dapat dipulihkan");}
+      finally{input.value="";}
+    };
+  }
   const guest=Object.freeze({role:"public",email:null,permissions:{viewDashboard:true,manageAiKeys:false,viewUsers:false,manageParameters:false}});
   let debounce=null;
   const get=id=>document.getElementById(id);
@@ -26,6 +98,7 @@
     const users=get("view-users");if(users)users.hidden=true;
     const backup=get("gcBackupDescription");
     if(backup)backup.textContent="Data kalkulasi tersimpan hanya di browser perangkat ini, bukan di database bersama. Gunakan Unduh Cadangan untuk menyimpan salinan Anda. Jangan masukkan informasi rahasia debitur atau data pribadi.";
+    installPublicBackupImport();
   };
   function read(){
     try{
