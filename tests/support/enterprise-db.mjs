@@ -9,6 +9,7 @@ export function enterpriseDb(){
  sqlite.exec(readFileSync(new URL('../../migrations/enterprise/0005_portfolio_source_controls.sql',import.meta.url),'utf8'));
  sqlite.exec(readFileSync(new URL('../../migrations/enterprise/0006_release_authorization.sql',import.meta.url),'utf8'));
  sqlite.exec(readFileSync(new URL('../../migrations/enterprise/0007_dataset_provenance.sql',import.meta.url),'utf8'));
+ sqlite.exec(readFileSync(new URL('../../migrations/enterprise/0008_book6_workpapers.sql',import.meta.url),'utf8'));
  const db={sqlite,async batch(statements){sqlite.exec('BEGIN');try{const result=[];for(const statement of statements)result.push(await statement.run());sqlite.exec('COMMIT');return result;}catch(error){sqlite.exec('ROLLBACK');throw error;}},prepare(sql){return {bind(...args){const statement=sqlite.prepare(sql);return {
   async first(){return statement.get(...args)||null;},
   async all(){return {results:statement.all(...args)};},
