@@ -46,8 +46,10 @@ export async function retrieveApprovedBankSource(config,{fetchImpl=fetch,secrets
 }
 export function prepareBankPackage({cbs,glControl,ckpn,ckpnControl,eclResults}){
  if(!cbs||cbs.source!=='CBS'||!cbs.text||!HEX.test(cbs.sha256||''))throw Error('Byte-verified CBS source required');
+ if(createHash('sha256').update(cbs.text).digest('hex')!==cbs.sha256.toLowerCase())throw Error('CBS source bytes changed after retrieval');
  if(!glControl||typeof glControl!=='object'||!glControl.controlReference||!glControl.glControlTotal)throw Error('Approved GL control required');
  if(!ckpn||ckpn.source!=='CKPN'||!ckpn.text||!HEX.test(ckpn.sha256||''))throw Error('Byte-verified CKPN source required');
+ if(createHash('sha256').update(ckpn.text).digest('hex')!==ckpn.sha256.toLowerCase())throw Error('CKPN source bytes changed after retrieval');
  const portfolio=convertCsvToBatches(cbs.text,glControl);
  if(portfolio.manifest.sourceSha256!==cbs.sha256)throw Error('CBS source bytes changed after retrieval');
  const accounting=reconcileCkpn(ckpn.text,eclResults,ckpnControl);
