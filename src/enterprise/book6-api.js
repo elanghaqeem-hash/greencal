@@ -1,13 +1,25 @@
 // Protected, tenant-isolated internal OJK Buku 6 drafts. No official OJK submission.
 import {ApiError} from './policy.js';
-import {readJson} from './validation.js';
 import {book6Catalog,book6Preview,validateBook6Draft} from './book6.js';
 const out=(v,s=200)=>new Response(JSON.stringify(v),{status:s,headers:{'content-type':'application/json; charset=utf-8','cache-control':'no-store','x-content-type-options':'nosniff'}});
 const idPattern=/^[a-zA-Z0-9_-]{1,80}$/;
 const editors=new Set(['data_maker','risk_analyst','climate_model_analyst','crms_project_administrator','compliance_reviewer']);
 const sha=async s=>Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(s))),n=>n.toString(16).padStart(2,'0')).join('');
 const notFound=()=>{throw new ApiError(404,'BOOK6_NOT_FOUND','Kertas kerja tidak ditemukan.');};
+const readDocument=async request=>{
+ if((request.headers.get('content-type')||'').split(';')[0].trim().toLowerCase()!=='application/json')throw new ApiError(415,'BOOK6_CONTENT_TYPE','Gunakan application/json.');
+ const reader=request.body?.getReader();if(!reader)throw new ApiError(400,'BOOK6_EMPTY','Body kosong.');
+ const decoder=new TextDecoder();let data='',size=0;
+ while(true){const {done,value}=await reader.read();if(done)break;size+=value.byteLength;
+  if(size>1800000){await reader.cancel();throw new ApiError(413,'BOOK6_TOO_LARGE','Kertas kerja maksimum 1,8 MB.');}
+  data+=decoder.decode(value,{stream:true});
+ }
+ data+=decoder.decode();
+ try{const parsed=JSON.parse(data);if(!parsed||typeof parsed!=='object'||Array.isArray(parsed))throw Error('type');return parsed;}
+ catch{throw new ApiError(400,'BOOK6_BAD_JSON','Body JSON tidak valid.');}
+};
 export async function handleBook6Api(request,env,db,tenant,actor,path){
+ if(actor.role==='external_auditor')throw new ApiError(403,'BOOK6_EXTERNAL_DENIED','Kertas kerja draf tidak dapat dibaca auditor eksternal.');
  if(env.GC_ENTERPRISE_BOOK6_ENABLED!=='true')throw new ApiError(503,'BOOK6_DISABLED','Kertas Kerja Buku 6 belum diaktifkan untuk institusi.');
  const method=request.method,url=new URL(request.url);
  if(path==='/book6/catalog'&&method==='GET')return out(book6Catalog());
@@ -17,7 +29,7 @@ export async function handleBook6Api(request,env,db,tenant,actor,path){
  }
  if(path==='/book6/workpapers'&&method==='POST'){
   if(!editors.has(actor.role))throw new ApiError(403,'BOOK6_ROLE_DENIED','Role tidak dapat membuat kertas kerja.');
-  const doc=validateBook6Draft(await readJson(request)),id=crypto.randomUUID(),now=new Date().toISOString();
+  const doc=validateBook6Draft(await readDocument(request)),id=crypto.randomUUID(),now=new Date().toISOString();
   await db.prepare('INSERT INTO gcx_book6_workpapers(tenant_id,id,reporting_year,bank_code,payload_json,created_by,updated_by,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?,?)')
    .bind(tenant,id,doc.reportingYear,doc.bank.code,JSON.stringify(doc),actor.subject,actor.subject,now,now).run();
   return out({id,revision:1,status:'draft',preview:book6Preview(doc),officialSubmission:false},201);
@@ -39,7 +51,7 @@ export async function handleBook6Api(request,env,db,tenant,actor,path){
  }
  if(!action&&method==='PATCH'){
   if(!editors.has(actor.role))throw new ApiError(403,'BOOK6_ROLE_DENIED','Role tidak dapat memperbarui kertas kerja.');
-  const body=await readJson(request);
+  const body=await readDocument(request);
   if(!Number.isInteger(body.revision)||body.revision!==row.revision)throw new ApiError(409,'BOOK6_REVISION_CONFLICT','Kertas kerja sudah diperbarui. Muat ulang sebelum menyimpan.');
   if(actor.subject!==row.created_by&&!['crms_project_administrator','compliance_reviewer'].includes(actor.role))
    throw new ApiError(403,'BOOK6_OWNER_DENIED','Hanya pembuat atau pengelola CRMS resmi institusi boleh mengedit.');
