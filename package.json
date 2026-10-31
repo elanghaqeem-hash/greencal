@@ -8,7 +8,7 @@
   },
   "scripts": {
     "build": "node scripts/build-dist.mjs",
-    "test:vercel": "node --test tests/vercel-runtime.test.mjs"
+    "test:vercel": "node --test tests/vercel-runtime.test.mjs tests/vercel-bank-schema.test.mjs"
   },
   "dependencies": {
     "pg": "8.23.1"
