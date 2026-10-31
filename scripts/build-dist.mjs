@@ -9,7 +9,6 @@ const required = [
   "index.html",
   "auth-client.js",
   "assets/guide-learning.js",
-  "assets/brks-syariah.svg",
 ];
 const html = await readFile(join(root, "index.html"), "utf8");
 for (const asset of required.slice(1)) {
