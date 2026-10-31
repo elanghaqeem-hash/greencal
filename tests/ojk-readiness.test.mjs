@@ -14,22 +14,23 @@ test('Production health cannot claim OJK readiness from existing build or synthe
  assert.equal(x.book3Reconciliation.independentlyRecalculated+x.book3Reconciliation.notRecalculated,x.book3Reconciliation.formulasTotal);
 });
 test('Partial bank evidence can never be promoted to BOOK PASS',()=>{
- const x=evaluateOjk2026({attestations:[fake('B1_REQUIREMENTS')]});
+ const x=evaluateOjk2026({attestations:[fake('B1_REQUIREMENTS')],verifyAttestation:()=>true});
  assert.equal(x.books[0].status,'PARTIAL');assert.equal(x.status,'NOT_READY');
 });
 test('Duplicate, synthetic and unverifiable source claims are not accepted as verified',()=>{
  for(const changes of [{reviewerSubjects:['risk','risk']},{reviewerSubjects:['SYNTHETIC_RISK','auditor']},
    {sourceSha256:'z'.repeat(64)},{scope:'preview'},{officialSourceVerified:false},{bankApproved:false}]){
-  const x=evaluateOjk2026({attestations:[{...fake('B1_REQUIREMENTS'),...changes}]});
+  const x=evaluateOjk2026({attestations:[{...fake('B1_REQUIREMENTS'),...changes}],verifyAttestation:()=>true});
   assert.equal(x.books[0].verified,0);
  }
- assert.equal(evaluateOjk2026({attestations:[fake('B1_REQUIREMENTS'),fake('B1_REQUIREMENTS')]}).books[0].verified,0);
+ assert.equal(evaluateOjk2026({attestations:[fake('B1_REQUIREMENTS'),fake('B1_REQUIREMENTS')],verifyAttestation:()=>true}).books[0].verified,0);
 });
 test('Passing 7 books is not sufficient without all global controls and signed bank release',()=>{
  const books=OJK_2026_BOOK_CONTROLS.flatMap(b=>b.controls.map(c=>fake(c.id)));
+ assert.equal(evaluateOjk2026({attestations:books}).counts.booksPassed,0); // Untrusted claim cannot pass
  const global=OJK_2026_GLOBAL_CONTROLS.map(c=>fake(c.id));
- assert.equal(evaluateOjk2026({attestations:books}).status,'NOT_READY');
- assert.equal(evaluateOjk2026({attestations:[...books,...global]}).status,'NOT_READY');
- const proof=evaluateOjk2026({attestations:[...books,...global],bankReleaseAuthorized:true});
+ assert.equal(evaluateOjk2026({attestations:books,verifyAttestation:()=>true}).status,'NOT_READY');
+ assert.equal(evaluateOjk2026({attestations:[...books,...global],verifyAttestation:()=>true}).status,'NOT_READY');
+ const proof=evaluateOjk2026({attestations:[...books,...global],bankReleaseAuthorized:true,verifyAttestation:()=>true,verifyBankRelease:()=>true});
  assert.equal(proof.status,'PASS');assert.equal(proof.officialOjkCertification,false);
 });
