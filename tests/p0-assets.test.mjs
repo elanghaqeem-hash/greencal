@@ -4,12 +4,13 @@ import { readFileSync, statSync } from "node:fs";
 import { join, resolve } from "node:path";
 
 const root = resolve(import.meta.dirname, "..");
-const expected = ["index.html", "auth-client.js", "assets/guide-learning.js", "assets/brks-syariah.svg"];
+const expected = ["index.html", "auth-client.js", "assets/guide-learning.js"];
 const sourceHtml = readFileSync(join(root, "index.html"), "utf8");
 const builtHtml = readFileSync(join(root, "dist/index.html"), "utf8");
 
 test("Cloudflare deploy bundle contains every referenced source asset unchanged", () => {
   assert.equal(builtHtml, sourceHtml);
+  assert.doesNotMatch(builtHtml,/assets\/brks-syariah\.svg/);
   for (const asset of expected) {
     const source = readFileSync(join(root, asset));
     const output = readFileSync(join(root, "dist", asset));

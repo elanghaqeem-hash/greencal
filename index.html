@@ -1915,49 +1915,23 @@ dialog.modal-sheet .modal-foot { background:var(--surface); }
     [data-theme="dark"] .emission-panel {background:linear-gradient(145deg,#102a22,var(--surface) 46%);box-shadow:none}
     [data-theme="dark"] #scopeDonut .carbon-ring-svg {filter:none}
     @media(prefers-reduced-motion:reduce){#scopeDonut .carbon-source,#scopeDonut .carbon-ring-svg circle{transition:none}}
-
-    /* Bank Riau Kepri Syariah official user-supplied wordmark; isolated on white for dark mode. */
-    .brks-logo-wrap {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      width: 178px;
-      height: 48px;
-      flex: 0 0 178px;
-      padding: 4px 7px;
-      background: #ffffff;
-      border: 1px solid #e5ece7;
-      border-radius: 10px;
-      box-shadow: 0 1px 3px rgba(12, 53, 37, .05);
-    }
-    .brks-logo-img { display:block; width:100%; height:100%; object-fit:contain; }
     .brand-block { gap: 12px; max-width: 100%; }
     .brand-info { min-width: 0; }
     .brand-sub { max-width: 100%; }
     @media (min-width: 860px) {
-      .brks-logo-wrap { width: 190px; flex-basis: 190px; height: 52px; }
       .header-inner { height: max(var(--header-h), 72px); }
     }
     @media (min-width: 621px) and (max-width: 859px) {
-      .brks-logo-wrap { width: 158px; flex-basis: 158px; height: 44px; }
       .brand-title { font-size: 15px; }
       .brand-block { gap: 9px; }
     }
     @media (max-width: 620px) {
-      .brks-logo-wrap {
-        width: clamp(114px, 37vw, 152px);
-        flex-basis: clamp(114px, 37vw, 152px);
-        height: 43px;
-        padding: 3px 5px;
-        border-radius: 9px;
-      }
       .brand-block { gap: 8px; overflow: hidden; }
       .brand-info { overflow: hidden; }
       .brand-title { font-size: clamp(13.5px, 3.8vw, 16px); line-height: 1.25; }
       .brand-sub { font-size: 10.5px; }
     }
     @media (max-width: 359px) {
-      .brks-logo-wrap { width: 112px; flex-basis: 112px; height: 40px; }
       .brand-title { white-space: normal; font-size: 13px; line-height: 1.18; }
       .brand-sub { font-size: 10px; }
     }
@@ -2164,9 +2138,8 @@ dialog.modal-sheet .modal-foot { background:var(--surface); }
 /* GC mobile dashboard polish / 2026-10-18 */
 @media(max-width:620px){
   header.app-header .header-inner{row-gap:7px;padding-top:9px;padding-bottom:8px;min-height:0}
-  header.app-header .brand-block{display:grid;grid-template-columns:clamp(82px,25vw,108px) minmax(0,1fr);gap:9px;min-width:0;overflow:visible;align-items:center}
-  header.app-header .brks-logo-wrap{grid-column:1;width:100%;height:38px;flex-basis:auto;padding:3px 5px;border-radius:9px}
-  header.app-header .brand-info{grid-column:2;min-width:0;overflow:visible}
+  header.app-header .brand-block{display:grid;grid-template-columns:minmax(0,1fr);gap:9px;min-width:0;overflow:visible;align-items:center}
+  header.app-header .brand-info{grid-column:1;min-width:0;overflow:visible}
   header.app-header .brand-title{font-size:clamp(14px,3.9vw,17px);line-height:1.25;white-space:normal;overflow:visible;overflow-wrap:normal}
   header.app-header .brand-sub{font-size:clamp(10.5px,2.7vw,11.5px);line-height:1.35;margin-top:3px;white-space:normal;overflow:visible;text-overflow:clip;overflow-wrap:break-word;max-width:none}
   header.app-header .year-select-wrap{min-height:36px;padding:5px 12px}
@@ -2298,10 +2271,9 @@ dialog.modal-sheet .modal-foot { background:var(--surface); }
   #breakdownTableWrap {display:none;margin-top:10px;}
   #breakdownTableWrap.is-expanded {display:block;}
   #breakdownTableWrap table {min-width:620px;}
-  /* Shorten the tall brand header without harming logo legibility. */
+  /* Keep the compact, bank-neutral brand header. */
   .app-header {box-shadow:0 4px 16px rgba(8,40,30,.045);}
   .header-inner {min-height:0;row-gap:5px;padding-top:8px;padding-bottom:8px;}
-  .brks-logo-wrap {height:40px;width:clamp(105px,34vw,139px);flex-basis:clamp(105px,34vw,139px);}
   .brand-title {font-size:clamp(13px,3.8vw,15px);}
   .brand-sub {font-size:10px;}
   .year-select-wrap {min-height:34px;padding:4px 10px;}
@@ -2901,7 +2873,7 @@ dialog.modal-sheet .modal-foot { background:var(--surface); }
 }
 
 
-/* GC_BRAND_LEFT_ALIGN_20261018: desktop logo/title immediately follow sidebar toggle */
+/* GC_BRAND_LEFT_ALIGN_20261018: desktop GreenCal title follows sidebar toggle */
 @media (min-width: 860px) {
   header.app-header .header-inner {
     justify-content: flex-start;
@@ -2925,7 +2897,6 @@ dialog.modal-sheet .modal-foot { background:var(--surface); }
   header.app-header .header-actions { margin-left: 0; flex: 0 0 auto; }
 }
 @media (min-width: 860px) and (max-width: 1080px) {
-  header.app-header .brks-logo-wrap {width: 158px; flex-basis: 158px; height: 44px;}
   header.app-header .brand-title {font-size: clamp(15px, 1.8vw, 18px);}
   header.app-header .brand-sub {font-size: 11px;}
   header.app-header .brand-block {max-width: calc(100% - 198px);}
@@ -3433,7 +3404,7 @@ dialog.modal-sheet .modal-foot { background:var(--surface); }
 }
 
 
-/* GreenCal mobile header alignment v2: one-row menu / BRKS / year.
+/* GreenCal mobile header alignment v2: one-row menu / title / year.
    Override the legacy two-row 'brand theme / year year' grid. */
 .gc-brand-title-short{display:none}
 .gc-mobile-theme-btn{display:none}
@@ -3466,14 +3437,6 @@ dialog.modal-sheet .modal-foot { background:var(--surface); }
     gap:7px;width:100%;min-width:0;min-height:40px;
     margin:0;padding:0;overflow:hidden;
   }
-  header.app-header .brks-logo-wrap{
-    display:flex;align-items:center;justify-content:center;
-    flex:0 0 clamp(66px,20vw,91px)!important;
-    width:clamp(66px,20vw,91px)!important;
-    height:37px;min-height:37px;
-    padding:3px 4px;border-radius:9px;
-  }
-  header.app-header .brks-logo-img{max-width:100%;max-height:100%;object-fit:contain}
   header.app-header .brand-info{
     display:block;flex:1 1 auto;min-width:0;max-width:100%;
     overflow:hidden;line-height:1.1;
@@ -3529,9 +3492,6 @@ dialog.modal-sheet .modal-foot { background:var(--surface); }
 @media (max-width:360px){
   header.app-header .header-inner{column-gap:6px}
   header.app-header .brand-block{gap:5px}
-  header.app-header .brks-logo-wrap{
-    width:64px!important;flex-basis:64px!important;
-  }
   header.app-header .brand-title{font-size:11.5px}
   header.app-header .year-select-wrap{min-width:75px;max-width:89px;padding:0 5px}
   header.app-header .year-select-wrap svg{width:14px;height:14px;flex-basis:14px}
@@ -3578,9 +3538,8 @@ dialog.modal-sheet .modal-foot { background:var(--surface); }
           </svg>
         </button>
         <a href="#" class="brand-block" id="brandLogo">
-          <span class="brks-logo-wrap">
-            <img class="brks-logo-img" src="./assets/brks-syariah.svg" width="360" height="79" alt="BRK Syariah — berkah untuk semua" fetchpriority="high">
-          </span>
+
+
           <div class="brand-info">
             <h1 class="brand-title">
               <span class="gc-brand-title-long">Green Calculator</span><span class="gc-brand-title-short">GreenCal</span>
@@ -4581,7 +4540,7 @@ const BASE = JSON.parse(document.getElementById("baseline").textContent);
 const STORAGE_KEY = "green_calc_storage_v1";
 
 const DEFAULT_SETTINGS = {
-  orgName: "PT Bank Riau Kepri Syariah (Perseroda)",
+  orgName: "Kalkulator Emisi OJK & PCAF",
   paramVersion: "Buku 3 CRMS 2026 (OJK)",
   paramEffective: "2026-10-18",
   years: [2024, 2025, 2026],
@@ -5557,7 +5516,7 @@ function renderAll() {
   if (!S.year) S.year = st().defaultYear || years().slice(-1)[0];
   if (!S.method) S.method = st().scope2Method || "spasial";
 
-  $("#orgName").textContent = st().orgName || "Bank Riau Kepri Syariah";
+  $("#orgName").textContent = st().orgName || "Kalkulator Emisi OJK & PCAF";
   fillYear($("#dashYear"), S.year);
 
   // Update scope 2 button state
