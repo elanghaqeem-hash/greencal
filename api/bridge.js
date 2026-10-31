@@ -44,7 +44,7 @@ export async function handler(req,res){
    enterpriseEnabled:enabled&&postgres&&sso,bankProductionReady:false,
    regulatoryReportingApproved:false,
    book7CatalogIncluded:true,book7ParametersPdfRounded:true,
-   modulesConfigured:{book6:process.env.GC_ENTERPRISE_BOOK6_ENABLED==='true',book7:process.env.GC_ENTERPRISE_BOOK7_ENABLED==='true',quantitative:process.env.GC_ENTERPRISE_QUANT_ENABLED==='true',advanced:process.env.GC_ENTERPRISE_ADVANCED_ENABLED==='true',sourceReview:process.env.GC_ENTERPRISE_SOURCE_REVIEW_ENABLED==='true',releaseApproval:process.env.GC_ENTERPRISE_RELEASE_ENABLED==='true'}});
+   modulesConfigured:{book5:process.env.GC_ENTERPRISE_BOOK5_ENABLED==='true',book6:process.env.GC_ENTERPRISE_BOOK6_ENABLED==='true',book7:process.env.GC_ENTERPRISE_BOOK7_ENABLED==='true',quantitative:process.env.GC_ENTERPRISE_QUANT_ENABLED==='true',advanced:process.env.GC_ENTERPRISE_ADVANCED_ENABLED==='true',sourceReview:process.env.GC_ENTERPRISE_SOURCE_REVIEW_ENABLED==='true',releaseApproval:process.env.GC_ENTERPRISE_RELEASE_ENABLED==='true'}});
  }
  // Public AI has its own PostgreSQL quota database; never reuse bank data storage.
  if(path==='/api/ai/status'||path==='/api/ai/analyze'){
@@ -121,6 +121,7 @@ export async function handler(req,res){
       GC_ENTERPRISE_BOOK6_ENABLED:process.env.GC_ENTERPRISE_BOOK6_ENABLED==='true'?'true':'false',
       GC_ENTERPRISE_BOOK124_ENABLED:process.env.GC_ENTERPRISE_BOOK124_ENABLED==='true'?'true':'false',
        GC_ENTERPRISE_BOOK3_ENABLED:process.env.GC_ENTERPRISE_BOOK3_ENABLED==='true'?'true':'false',
+      GC_ENTERPRISE_BOOK5_ENABLED:process.env.GC_ENTERPRISE_BOOK5_ENABLED==='true'?'true':'false',
       GC_ENTERPRISE_ADVANCED_ENABLED:process.env.GC_ENTERPRISE_ADVANCED_ENABLED==='true'?'true':'false',
       GC_ENTERPRISE_SOURCE_REVIEW_ENABLED:process.env.GC_ENTERPRISE_SOURCE_REVIEW_ENABLED==='true'?'true':'false',
       GC_ENTERPRISE_RELEASE_ENABLED:process.env.GC_ENTERPRISE_RELEASE_ENABLED==='true'?'true':'false',
