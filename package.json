@@ -8,7 +8,7 @@
   },
   "scripts": {
     "build": "node scripts/build-dist.mjs",
-    "test:vercel": "node --test tests/vercel-runtime.test.mjs tests/vercel-bank-schema.test.mjs tests/vercel-cloudflare-cutover.test.mjs tests/vercel-migration-inventory.test.mjs",
+    "test:vercel": "node --test tests/vercel-runtime.test.mjs tests/vercel-bank-schema.test.mjs tests/vercel-cloudflare-cutover.test.mjs tests/vercel-migration-inventory.test.mjs tests/vercel-browser-backup-migration.test.mjs",
     "test:postgres": "node --test tests/vercel-postgres-integration.test.mjs"
   },
   "dependencies": {
