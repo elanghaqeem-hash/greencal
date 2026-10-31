@@ -36,4 +36,13 @@ for (const asset of [...required, ...enterpriseAssets]) {
   }
   console.log("P0 asset:", asset, copied.size, "bytes");
 }
-console.log("GreenCal dist is complete; Cloudflare can deploy ./dist.");
+console.log("GreenCal dist is complete; assets are compatible with Vercel and Cloudflare.");
+// One-time Preview-only target verification; no rows or connection strings leave Vercel.
+// This is deliberately NOT a schema migration or a bank production release gate.
+if (process.env.GC_MIGRATION_READONLY_PROBE === "true" &&
+    process.env.VERCEL_ENV === "preview") {
+  const {inspectDestinationDatabase} = await import("./vercel/inspect-db-on-build.mjs");
+  const summary=await inspectDestinationDatabase();
+  console.log("GREENCAL_READONLY_MIGRATION_PROBE", JSON.stringify(summary));
+}
+
