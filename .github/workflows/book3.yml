@@ -1,0 +1,55 @@
+name: OJK CRMS Buku 3 Emissions
+on:
+  pull_request:
+    paths:
+      - 'src/enterprise/book3.js'
+      - 'src/enterprise/book3-api.js'
+      - 'src/enterprise/quant.js'
+      - 'src/enterprise/quant-api.js'
+      - 'src/enterprise/api.js'
+      - 'assets/enterprise-book3.js'
+      - 'assets/enterprise.js'
+      - 'enterprise.html'
+      - 'api/bridge.js'
+      - 'scripts/build-dist.mjs'
+      - 'tests/book3.test.mjs'
+      - '.github/workflows/book3.yml'
+  push:
+    paths:
+      - 'src/enterprise/book3.js'
+      - 'src/enterprise/book3-api.js'
+      - 'src/enterprise/quant.js'
+      - 'src/enterprise/quant-api.js'
+      - 'src/enterprise/api.js'
+      - 'assets/enterprise-book3.js'
+      - 'assets/enterprise.js'
+      - 'enterprise.html'
+      - 'api/bridge.js'
+      - 'scripts/build-dist.mjs'
+      - 'tests/book3.test.mjs'
+      - '.github/workflows/book3.yml'
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: JavaScript syntax
+        run: |
+          node --check src/enterprise/book3.js
+          node --check src/enterprise/book3-api.js
+          node --check src/enterprise/quant.js
+          node --check src/enterprise/quant-api.js
+          node --check assets/enterprise-book3.js
+          node --check assets/enterprise.js
+      - name: Buku 3 and portfolio regression tests
+        run: |
+          node --test tests/book3.test.mjs tests/quant-engines.test.mjs tests/books124.test.mjs
+      - name: Enterprise build packaging
+        run: |
+          node scripts/build-dist.mjs
+          test -s dist/assets/enterprise-book3.js

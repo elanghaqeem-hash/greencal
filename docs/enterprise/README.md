@@ -27,3 +27,7 @@ The public GreenCal is preserved. Its client-side outputs and IP-scoped browser 
 ## Discovery Readiness increment — 31 October 2026
 
 [Discovery Readiness workbook-derived questionnaire, scoring, data inventory, quality tests, evidence references, RBAC and migration gates](discovery-readiness.md). The module requires dedicated enterprise D1 migration, actual bank identity and access configuration; it is not a declaration that CRMS enterprise is bank-production-ready.
+
+## OJK CRMS Buku 3 — 31 October 2026
+
+[Methodology, exact-decimal financed emissions, Scope 3 separation, Tier 1–4, CRSA carbon cost, traceability and release gates](ojk-book3-20261031.md). Internal feature-gated implementation; official Annex C Excel calculator and independent bank UAT remain pending.

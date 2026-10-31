@@ -27,15 +27,24 @@ export function normalizeExposure(p){
  const scope={};for(const k of ['scope1','scope2','scope3'])scope[k]=p.emissions?.[k]===null||p.emissions?.[k]===undefined?null:decimalString(p.emissions[k],k);
  if(Object.values(scope).every(x=>x===null))reject('Minimum satu scope emisi dari sumber teridentifikasi diperlukan.');
  const quality=score(p.dataQualityScore);
+ const sourceMethods={borrower_report:[1,2],activity_calculator:[3],peer_proxy:[4]};
+ const ojkTier=p.ojkTier===undefined?null:p.ojkTier;
+ const sourceMethod=p.emissionSourceMethod===undefined?null:p.emissionSourceMethod;
+ if(ojkTier!==null&&(!Number.isInteger(ojkTier)||ojkTier<1||ojkTier>4||!sourceMethods[sourceMethod]?.includes(ojkTier)))reject('Tier OJK 1–4 dan sumber data harus sesuai Buku 3 / Buku 2.');
+ if(ojkTier===null&&sourceMethod!==null)reject('Sumber data emisi memerlukan deklarasi Tier OJK.');
  const input={facilityRef:id(p.facilityRef,'Fasilitas anonim'),obligorRef:id(p.obligorRef,'Debitur anonim'),assetClass,currency,asOf:date(p.asOf),
-  outstanding:format(exposure),attributionDenominator:format(denominator),denominatorCurrency,denominatorBasis:sourceType,emissions:scope,dataQualityScore:quality,
+  outstanding:format(exposure),attributionDenominator:format(denominator),denominatorCurrency,denominatorBasis:sourceType,emissions:scope,dataQualityScore:quality,ojkTier,emissionSourceMethod:sourceMethod,
   evidenceReference:label(p.evidenceReference,'Referensi bukti',600),emissionSourceVintage:label(p.emissionSourceVintage,'Vintage emisi',60)};
  return input;
 }
 export function financedEmissions(input){
  const p=normalizeExposure(input),share=divide(dec(p.outstanding,'Outstanding'),dec(p.attributionDenominator,'Denominator'));
- const financed={};for(const [k,v] of Object.entries(p.emissions))financed[k]=v===null?null:format(multiply(share,dec(v,k)));
- return {input:p,attributionFactor:format(share),financedTco2e:financed,method:'PCAF-Part-A-2025-asset-specific-attribution-v1',status:'internal_estimate_requires_methodology_signoff',excludedScopes:Object.entries(financed).filter(([,v])=>v===null).map(([k])=>k)};
+ const outstanding=dec(p.outstanding,'Outstanding'),denominator=dec(p.attributionDenominator,'Denominator');
+ const financed={};for(const [k,v] of Object.entries(p.emissions))financed[k]=v===null?null:format((dec(v,k)*outstanding+denominator/2n)/denominator);
+ const complete=financed.scope1!==null&&financed.scope2!==null;
+ const main=complete?format(dec(financed.scope1,'scope1')+dec(financed.scope2,'scope2')):null;
+ return {input:p,attributionFactor:format(share),financedTco2e:financed,mainFinancedScope1And2Tco2e:main,supplementaryFinancedScope3Tco2e:financed.scope3,
+  mainFigureCoverage:complete?'complete':'incomplete_scope1_or_scope2',ojkTier:p.ojkTier,ojkDataQualityStatus:p.ojkTier===null?'unclassified_requires_bank_review':'bank_declared_pending_review',method:'PCAF-Part-A-2025-asset-specific-attribution-v1',status:'internal_estimate_requires_methodology_signoff',excludedScopes:Object.entries(financed).filter(([,v])=>v===null).map(([k])=>k)};
 }
 export function reconcilePortfolio(batch){
  if(!isObject(batch)||!Array.isArray(batch.exposures)||batch.exposures.length===0||batch.exposures.length>100)reject('Batch harus berisi 1–100 fasilitas; pecah unggahan besar menjadi batch terkontrol.');
