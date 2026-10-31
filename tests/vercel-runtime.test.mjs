@@ -72,6 +72,17 @@ test('health is explicit and redacts secrets, with false release readiness',asyn
  assert.equal(res.headers['Cache-Control'],'no-store');
  assert.equal(JSON.stringify(res.data).includes('PASSWORD'),false);
 });
+test('read-only OJK 2026 readiness route reports seven books and does not claim certification',async()=>{
+ const res=mockRes();
+ await handler({query:{path:'ojk-readiness'},method:'GET',headers:{}},res);
+ assert.equal(res.code,200);
+ assert.equal(res.data.books.length,7);
+ assert.equal(res.data.counts.booksPassed,0);
+ assert.equal(res.data.status,'NOT_READY');
+ assert.equal(res.data.officialOjkCertification,false);
+ assert.equal(res.data.bankProductionReady,false);
+ assert.equal(res.headers['Cache-Control'],'no-store');
+});
 test('institution remains fail-closed with no banking identity',async()=>{
  const res=mockRes();
  await handler({query:{path:'enterprise/session'},method:'GET',headers:{}},res);
