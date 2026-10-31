@@ -1,0 +1,64 @@
+name: GreenCal Cloudflare to Vercel service cutover
+on:
+  pull_request:
+    paths:
+      - 'migrations/vercel/**'
+      - 'src/vercel/**'
+      - 'src/enterprise/identity.js'
+      - 'api/bridge.js'
+      - 'tests/vercel-*'
+      - 'package.json'
+      - '.github/workflows/vercel-cloudflare-cutover.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'migrations/vercel/**'
+      - 'src/vercel/**'
+      - 'src/enterprise/identity.js'
+      - 'api/bridge.js'
+      - 'tests/vercel-*'
+      - 'package.json'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  cutover:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: gc_ci
+          POSTGRES_PASSWORD: synthetic_ci_password_not_a_real_secret
+          POSTGRES_DB: greencal_ci
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U gc_ci -d greencal_ci"
+          --health-interval 5s --health-timeout 5s --health-retries 12
+    env:
+      GREENCAL_TEST_PG_URL: postgresql://gc_ci:synthetic_ci_password_not_a_real_secret@127.0.0.1:5432/greencal_ci
+      PGPASSWORD: synthetic_ci_password_not_a_real_secret
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Install pinned Node dependencies
+        run: npm install --ignore-scripts
+      - name: Check native Vercel runtime and institution OIDC
+        run: |
+          node --check api/bridge.js
+          node --check src/vercel/oidc.js
+          node --check src/vercel/public-ai.js
+          node --check src/vercel/postgres.js
+          npm run test:vercel
+      - name: Test public AI quota PostgreSQL DDL in disposable database
+        run: psql -h 127.0.0.1 -U gc_ci -d greencal_ci -v ON_ERROR_STOP=1 -f migrations/vercel/0001_public_ai.sql
+      - name: Test enterprise PostgreSQL migrations and triggers (synthetic fixtures only)
+        run: |
+          psql -h 127.0.0.1 -U gc_ci -d greencal_ci -v ON_ERROR_STOP=1 -f migrations/vercel/0100_enterprise_core.sql
+          psql -h 127.0.0.1 -U gc_ci -d greencal_ci -v ON_ERROR_STOP=1 -f migrations/vercel/0101_enterprise_modules.sql
+          npm run test:postgres
+      - name: Build Vercel static assets
+        run: npm run build
