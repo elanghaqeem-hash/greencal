@@ -26,7 +26,7 @@ Navigation: \`/enterprise/\` → **Discovery Readiness**, an institution-specifi
 
 The same weighted method applies separately to 12 scored topics. The client UI displays a server-calculated score and coverage; clients cannot supply a final grade.
 
-A preliminary result with only some dimensions scored is clearly labelled with its coverage, not treated as a complete readiness decision. Indication *eligible for controlled bank review* requires **all six scored dimensions and all twelve topics covered, both weighted scores ≥3, and zero blockers**. Any explicitly marked blocker, or a failed high-criticality quality test, overrides high scores. This is still not bank approval, official model validation or authorization to go live.
+A preliminary result with only some dimensions scored is clearly labelled with its coverage, not treated as a complete readiness decision. Indication *eligible for controlled bank review* requires **all six scored dimensions and all twelve topics covered, both weighted scores ≥3, all 111 questionnaire items, 35 inventory items and 20 quality checks addressed with evidence for positive/partial findings, and zero blockers**. Any explicitly marked blocker, or a failed high-criticality quality test, overrides high scores. This is still not bank approval, official model validation or authorization to go live.
 
 Scored dimensions/topics of 3 or 4 require a documentary evidence reference. For other questions, evidence and proxy limitations remain visible for reviewer judgment. No sample/demo bank scores or entities are generated or seeded.
 
