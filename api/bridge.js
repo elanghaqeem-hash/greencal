@@ -4,6 +4,7 @@ import {getPostgres,getPublicPostgres} from '../src/vercel/postgres.js';
 import {handleVercelPublicAi} from '../src/vercel/public-ai.js';
 import {bankOidcConfig} from '../src/vercel/oidc.js';
 import {handleEnterpriseApi} from '../src/enterprise/api.js';
+import {publicOjkReadiness} from '../src/enterprise/ojk-readiness.js';
 
 const NO_STORE={'Cache-Control':'no-store','X-Content-Type-Options':'nosniff','Referrer-Policy':'no-referrer'};
 const send=(res,status,body)=>{
@@ -33,6 +34,7 @@ export async function handler(req,res){
   return scope?send(res,200,{scope}):
    blocked(res,'NETWORK_SCOPE_UNAVAILABLE','Identitas jaringan tidak tersedia; penyimpanan dinonaktifkan.');
  }
+ if(path==='/api/ojk-readiness'&&req.method==='GET')return send(res,200,publicOjkReadiness());
  if(path==='/api/health'&&req.method==='GET'){
   const postgres=!!(process.env.DATABASE_URL_POOLED||process.env.GREENCAL_POSTGRES_URL||process.env.DATABASE_URL);
   const sso=process.env.GC_ENTERPRISE_IDENTITY_MODE==='oidc'?
@@ -43,6 +45,7 @@ export async function handler(req,res){
    frontend:'deployed',postgresConfigured:postgres,institutionSSOConfigured:sso,
    enterpriseEnabled:enabled&&postgres&&sso,bankProductionReady:false,
    regulatoryReportingApproved:false,
+   ojkSevenBooksStatus:'NOT_READY',ojkVerifiedBooks:0,
    book7CatalogIncluded:true,book7ParametersPdfRounded:true,
    modulesConfigured:{book5:process.env.GC_ENTERPRISE_BOOK5_ENABLED==='true',book6:process.env.GC_ENTERPRISE_BOOK6_ENABLED==='true',book7:process.env.GC_ENTERPRISE_BOOK7_ENABLED==='true',quantitative:process.env.GC_ENTERPRISE_QUANT_ENABLED==='true',advanced:process.env.GC_ENTERPRISE_ADVANCED_ENABLED==='true',sourceReview:process.env.GC_ENTERPRISE_SOURCE_REVIEW_ENABLED==='true',releaseApproval:process.env.GC_ENTERPRISE_RELEASE_ENABLED==='true'}});
  }
