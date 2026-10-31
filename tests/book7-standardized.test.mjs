@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {book7BorrowerMapping,book7ProductivePd,book7RetailNpl,book7CollateralLgd,book7Npl,book7Ckpn,book7MarketShock,book7Liquidity,book7Capital} from '../src/enterprise/book7.js';
+import {book7BorrowerMapping,book7ProductivePd,book7RetailNpl,book7CollateralLgd,book7Npl,book7Ckpn,book7MarketShock,book7Liquidity,book7Capital,book7FryeJacobs} from '../src/enterprise/book7.js';
 import {handleQuantApi} from '../src/enterprise/quant-api.js';
 import {enterpriseDb} from './support/enterprise-db.mjs';
 const meta={scenario:'SYNTHETIC-DELAYED',year:2027,sourceReference:'SYNTHETIC TEST / NOT OJK OFFICIAL',sourceSha256:'a'.repeat(64)};
@@ -35,6 +35,12 @@ test('B7 combined physical/transition collateral LGD follows VTL flow',()=>{
  assert.equal(y.adjustedCollateral,'5890860000');
  assert.ok(Math.abs(Number(y.adjustedLGD)-0.407276)<0.00001);
  assert.throws(()=>book7CollateralLgd({...meta,collateralKind:'cre_rre',collateralValue:'100',ead:'200',baselineLGD:'0.45',physicalHaircut:'0.1',transitionCost:'100'}));
+});
+test('B7 Frye-Jacobs unsecured LGD matches illustrative ~46.42% and official correlation',()=>{
+ const p=book7FryeJacobs({...meta,assetClass:'corporate',ttcPD:'0.0015',adjustedPitPD:'0.0065',baselineLGD:'0.45',riskBearerType:'debtor',riskBearerRef:'ANON-001'});
+ assert.equal(p.rho,'0.18');assert.ok(Math.abs(Number(p.adjustedLGD)-0.4642)<0.001);
+ assert.throws(()=>book7FryeJacobs({...meta,assetClass:'corporate',ttcPD:'0',adjustedPitPD:'0.0065',baselineLGD:'0.45',riskBearerType:'debtor',riskBearerRef:'ANON-001'}));
+ assert.throws(()=>book7FryeJacobs({...meta,assetClass:'corporate',ttcPD:'0.0015',adjustedPitPD:'0.0065',baselineLGD:'0.45',riskBearerType:'other',riskBearerRef:'ANON-001'}));
 });
 test('B7 performing loan and NPL adjustments are tied to PD scenario',()=>{
  const x=book7Npl({...meta,baselinePD:'0.015',adjustedPD:'0.018',baselineNpl:'889788',totalLoans:'80889788'});
