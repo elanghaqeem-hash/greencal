@@ -119,6 +119,7 @@ export async function handler(req,res){
       GC_ENTERPRISE_QUANT_ENABLED:process.env.GC_ENTERPRISE_QUANT_ENABLED==='true'?'true':'false',
       GC_ENTERPRISE_BOOK7_ENABLED:process.env.GC_ENTERPRISE_BOOK7_ENABLED==='true'?'true':'false',
       GC_ENTERPRISE_BOOK6_ENABLED:process.env.GC_ENTERPRISE_BOOK6_ENABLED==='true'?'true':'false',
+      GC_ENTERPRISE_BOOK124_ENABLED:process.env.GC_ENTERPRISE_BOOK124_ENABLED==='true'?'true':'false',
       GC_ENTERPRISE_ADVANCED_ENABLED:process.env.GC_ENTERPRISE_ADVANCED_ENABLED==='true'?'true':'false',
       GC_ENTERPRISE_SOURCE_REVIEW_ENABLED:process.env.GC_ENTERPRISE_SOURCE_REVIEW_ENABLED==='true'?'true':'false',
       GC_ENTERPRISE_RELEASE_ENABLED:process.env.GC_ENTERPRISE_RELEASE_ENABLED==='true'?'true':'false',
