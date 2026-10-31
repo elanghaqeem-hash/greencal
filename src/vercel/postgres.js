@@ -58,7 +58,9 @@ export function d1Compatibility(db){
     const result=[];
     for(const q of qs){
      if(!q||typeof q.sql!=='string'||!Array.isArray(q.params))throw Error('INVALID_STATEMENT');
-     const r=await client.query(q.sql,q.params);
+     const plan=toPgSql(q.sql);
+     if(plan.parameterCount!==q.params.length)throw Error('SQL_PARAMETER_COUNT_MISMATCH');
+     const r=await client.query(plan.text,q.params);
      result.push({success:true,results:r.rows,meta:{changes:r.rowCount??0}});
     }
     await client.query('COMMIT');

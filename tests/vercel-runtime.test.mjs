@@ -34,6 +34,19 @@ test('transactional batch rolls back if any query fails',async()=>{
  await assert.rejects(()=>adapter.batch([{sql:'SELECT 1',params:[]},{sql:'broken',params:[]}]),/SQL_ERROR/);
  assert.deepEqual(log,['BEGIN','SELECT 1','broken','ROLLBACK','RELEASE']);
 });
+test('PostgreSQL batch converts D1 placeholders inside one transaction',async()=>{
+ const log=[];
+ const client={async query(sql,args){log.push([sql,args]);return {rows:[],rowCount:1};},release(){log.push(['RELEASE']);}};
+ const db=d1Compatibility({query:async()=>{},connect:async()=>client});
+ const res=await db.batch([{sql:'INSERT INTO a(v) VALUES(?)',params:['x']},{sql:'UPDATE a SET v=? WHERE id=?',params:['y','z']}]);
+ assert.equal(res.length,2);
+ assert.deepEqual(log.map(x=>x[0]),['BEGIN','INSERT INTO a(v) VALUES($1)','UPDATE a SET v=$1 WHERE id=$2','COMMIT','RELEASE']);
+ assert.deepEqual(log[1][1],['x']);
+ const rollbackLog=[];
+ const bad={query:async()=>{},connect:async()=>({async query(sql){rollbackLog.push(sql);return {rows:[],rowCount:0};},release(){}})};
+ await assert.rejects(()=>d1Compatibility(bad).batch([{sql:'UPDATE a SET v=?',params:[]}]),/SQL_PARAMETER_COUNT_MISMATCH/);
+ assert.deepEqual(rollbackLog,['BEGIN','ROLLBACK']);
+});
 test('without configuration, never connect to database',async()=>{
  const old={DATABASE_URL:process.env.DATABASE_URL,DATABASE_URL_POOLED:process.env.DATABASE_URL_POOLED,GREENCAL_POSTGRES_URL:process.env.GREENCAL_POSTGRES_URL};
  delete process.env.DATABASE_URL; delete process.env.DATABASE_URL_POOLED; delete process.env.GREENCAL_POSTGRES_URL;
@@ -53,6 +66,9 @@ test('health is explicit and redacts secrets, with false release readiness',asyn
  assert.equal(res.code,200);
  assert.equal(res.data.platform,'vercel');
  assert.equal(res.data.bankProductionReady,false);
+ assert.equal(res.data.book7CatalogIncluded,true);
+ assert.equal(res.data.book7ParametersPdfRounded,true);
+ assert.equal(res.data.modulesConfigured.book7,false);
  assert.equal(res.headers['Cache-Control'],'no-store');
  assert.equal(JSON.stringify(res.data).includes('PASSWORD'),false);
 });
@@ -78,6 +94,7 @@ test('network scope HMAC is stable by IP, opaque, and not browser-provided',()=>
  assert.equal(a,b);
  assert.notEqual(a,c);
  assert.equal(publicNetworkScope({headers:{'x-vercel-forwarded-for':'bad_ip'}},secret),null);
+ assert.equal(publicNetworkScope({headers:{'x-forwarded-for':'203.0.113.99'}},secret),null);
  assert.equal(publicNetworkScope({headers:{'x-vercel-forwarded-for':'203.0.113.42'}},'short'),null);
 });
 test('public scope endpoint refuses untrusted or absent proxy context',async()=>{
