@@ -35,6 +35,10 @@ export function book3Debtor(p){
   year:validPeriod(p.year),evidenceReference:name(p.evidenceReference,'Referensi sumber',500),
   sourceVersion:name(p.sourceVersion,'Versi sumber/kalkulator',100),
   sourceAssuranceStatus:name(p.sourceAssuranceStatus,'Status assurance',100)};
+ if(sourceMethod==='peer_proxy')source.peerProxy={
+  peerSector:p.peerSector.trim(),peerBusinessModel:p.peerBusinessModel.trim(),
+  scalingBasis:p.scalingBasis.trim(),scalingEvidence:p.scalingEvidence.trim()
+ };
  const e=scopes(p.emissions);
  const present=Object.entries(e).filter(([,v])=>v!==null).map(([k])=>k);
  return {debtor:source,emissionsTco2e:e,presentScopes:present,missingScopes:['scope1','scope2','scope3'].filter(k=>e[k]===null),
@@ -58,6 +62,7 @@ export function book3Financed(p){
  const complete=financed.scope1!==null&&financed.scope2!==null;
  const main=complete?fmt(number(financed.scope1,'financed Scope1')+number(financed.scope2,'financed Scope2')):null;
  return {assetClass,denominatorBasis:basis,currency,attributionFactor:fmt(factor),
+  attributionInputs:{outstanding:fmt(os),attributionDenominator:fmt(d),currency,denominatorCurrency,denominatorBasis:basis},
   financedTco2e:financed,mainFinancedScope1And2Tco2e:main,
   supplementaryFinancedScope3Tco2e:financed.scope3,
   mainFigureCoverage:complete?'complete':'incomplete_scope1_or_scope2',
@@ -81,7 +86,8 @@ export function book3CarbonCost(p){
   base+=number(e.scope2,'Scope2');s2included=true;
  }else if(p.includeScope2!==false&&p.includeScope2!==undefined)bad('includeScope2 harus boolean.');
  if(p.includeScope3===true||p.financedEmissions!==undefined)bad('Scope 3 dan financed emissions bukan basis biaya karbon debitur.');
- const gap=product(base,rate),cost=product(gap,carbonPrice);
+ // Do not round the emission gap before pricing it; round only the final IDR result.
+ const gap=product(base,rate),cost=(base*rate*carbonPrice+(S*S)/2n)/(S*S);
  const revenue=p.debtorRevenue===undefined?null:number(p.debtorRevenue,'Pendapatan debitur');
  const intensity=revenue===null||revenue===0n?null:fmt((cost*S*100n+revenue/2n)/revenue);
  return {debtorRef:debtor.debtor.debtorRef,year:debtor.debtor.year,
@@ -102,7 +108,8 @@ export function book3Activity(p){
  if(!Object.hasOwn(priority,tier))bad('Faktor harus national, international, atau ipcc.');
  if(p.hasApplicableNationalFactor===true&&tier!=='national')bad('Faktor nasional yang relevan harus diprioritaskan.');
  if(p.hasApplicableInternationalFactor===true&&tier==='ipcc')bad('Sumber internasional harus diprioritaskan atas IPCC jika sesuai.');
- const kg=product(qty,f),tonnes=(kg+500n)/1000n;
+ // Convert kg to tonnes with one final rounding, not a preliminary kg rounding.
+ const kgToTonnesScale=1000n*S,tonnes=(qty*f+kgToTonnesScale/2n)/kgToTonnesScale;
  return {scope:name(p.scope,'Scope',15),activityUnit:unit,reportingYear:year,
   estimatedTco2e:fmt(tonnes),formula:'activity × kgCO2e/unit ÷ 1000',
   factor:{year,sourceTier:tier,source:name(p.factorSource,'Sumber faktor',250),
