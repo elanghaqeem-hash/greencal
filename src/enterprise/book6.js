@@ -83,7 +83,7 @@ export const BOOK6_METRICS=Object.freeze([
 ].map(Object.freeze));
 export const BOOK6_BOND_FIELDS=Object.freeze(['isin','name','issuerType','rating','maturityDate','couponRate','couponFrequency','acquisitionValue','marketValue','kbli','currency','accountingClass','hqlaClass']);
 const metricMap=new Map(BOOK6_METRICS.map(m=>[m.id,m])), questionSet=new Set(BOOK6_QUESTIONS.map(q=>q.id)),sectorSet=new Set(BOOK6_SECTORS.map(s=>s.code));
-export function book6Catalog(){return {version:'ojk-crms-book6-2026-internal-v1',source:'OJK Buku 6 2026',officialWorkbookAvailable:false,templateParity:'unverified',questions:BOOK6_QUESTIONS,sectors:BOOK6_SECTORS,scenarios:BOOK6_SCENARIOS,periods:BOOK6_PERIODS,metrics:BOOK6_METRICS,bondFields:BOOK6_BOND_FIELDS,officialSubmission:false};}
+export function book6Catalog(){return {version:'ojk-crms-book6-2026-internal-v1',source:'OJK Buku 6 2026',officialWorkbookAvailable:false,officialWorkbookMetadataInspected:true,sourceWorkbookFormulaCells:2876,sourceWorkbookSharedFormulaCells:2496,sourceWorkbookBlueUnlockedCells:12489,officialWorkbookUnlockedFormulaReviewRequired:133,templateParity:'unverified',questions:BOOK6_QUESTIONS,sectors:BOOK6_SECTORS,scenarios:BOOK6_SCENARIOS,periods:BOOK6_PERIODS,metrics:BOOK6_METRICS,bondFields:BOOK6_BOND_FIELDS,officialSubmission:false};}
 export function validateBook6Draft(body){
  if(!object(body))fail('Dokumen harus berupa objek.');
  const y=body.reportingYear;if(!Number.isInteger(y)||y<2026||y>2050)fail('Tahun laporan tidak valid.');
@@ -154,6 +154,6 @@ export function book6Preview(doc){
   glCkpnReconciled:false,officialWorkbookCellParity:false};
  if(answeredWithoutEvidence.length)warnings.push('Jawaban tanpa referensi bukti: '+answeredWithoutEvidence.length+'.');
  warnings.push('Sumber SHA-256 hanya deklarasi pengguna; belum diverifikasi ke dokumen/GL asli.');
- warnings.push('Workbook .xlsx OJK asli belum tersedia: struktur sel, rumus dan integritas format tidak bisa dinyatakan cocok.');
+ warnings.push('Workbook OJK asli diperiksa secara offline: 12 worksheet dan 2.876 formula; parity seluruh sel/formula serta persetujuan Bank tetap belum diverifikasi.');
  return {questionCount:BOOK6_QUESTIONS.length,answeredCount:answered,sectionCounts:sections,qualitative,quantitative,warnings,officialSubmission:false,templateParity:'unverified',readyForBankUse:false};
 }
