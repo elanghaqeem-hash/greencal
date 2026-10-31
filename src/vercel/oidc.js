@@ -39,7 +39,7 @@ export async function verifyBankOidcIdentity(request,env){
      (claims.nbf!==undefined&&(!Number.isInteger(claims.nbf)||claims.nbf>now))||
      typeof claims.sub!=='string'||claims.sub.length<1||claims.sub.length>255||
      typeof claims.email!=='string'||claims.email.length>254||
-     !/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(claims.email)||
+     !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(claims.email)||
      claims.email_verified!==true)invalid();
   const r=await fetch(cfg.jwksUrl,{signal:AbortSignal.timeout(5000),redirect:'error',
    headers:{Accept:'application/json'}});
