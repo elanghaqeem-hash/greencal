@@ -90,3 +90,20 @@ test("form rejects malformed numbers and zero outstanding before persisting",()=
   assert.match(source,/el\.value\.trim\(\) && parseNum\(el\.value\) == null/);
   assert.match(source,/x\.os == null \|\| x\.os <= 0/);
 });
+
+
+test("loss-making debtors remain valid climate-risk inputs while malformed profit is rejected",()=>{
+  const parseNum = new Function(
+    block("function parseNum(s) {","function nf(")+"; return parseNum;"
+  )();
+  assert.equal(parseNum("-17.25"),-17.25,"a debtor's negative profit/loss must remain reportable");
+  assert.equal(parseNum("not-a-number"),null,"malformed profit must not be silently converted to zero");
+  const start=source.indexOf("async function saveFin(ev) {");
+  const end=source.indexOf("  x.at = nowIso();",start);
+  assert.ok(start>=0&&end>start,"financing form validation must be available");
+  const validation=source.slice(start,end);
+  assert.match(validation,/\["xOs","Outstanding"\]/,"numeric input remains validated");
+  assert.match(validation,/\["xProfit","Laba"\]/,"profit field must be validated");
+  assert.match(validation,/parseNum\(el\.value\) == null/,"malformed profit must be rejected");
+  assert.doesNotMatch(validation,/x\.profit\s*<\s*0|Nilai laba negatif tidak didukung/,"a loss-making bank debtor must not be rejected solely because profit is negative");
+});
