@@ -54,7 +54,7 @@ test('OIDC URL and audience are pinned to same approved HTTPS issuer',()=>{
   {GC_ENTERPRISE_OIDC_AUD:''}
  ])assert.equal(bankOidcConfig({...env,...overrides}),null);
 });
-test('public AI config replaces KV safely, never accepts encrypted credentials in JSON',()=>{
+test('public AI config replaces KV safely, never accepts encrypted credentials in JSON',async()=>{
  assert.equal(parsePublicAiOrder('invalid'),false);
  assert.equal(parsePublicAiOrder(JSON.stringify([{provider:'openai',model:'test',enabled:true},
   {provider:'openai',model:'test',enabled:true}])),false);
