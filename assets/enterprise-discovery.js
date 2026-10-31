@@ -23,13 +23,13 @@ window.GreenCalDiscovery={async render(root,ctx){
  const stage=e('div',undefined,'discovery-stage');root.append(stage);
  try{[cat,list]=await Promise.all([ctx.api('/discovery/catalog'),ctx.api('/discovery/assessments')]);}
  catch(err){error(stage,'Menu tersedia tetapi database enterprise belum dimigrasikan atau akses institusi belum aktif: '+err.message);ctx.notice('Discovery Readiness memerlukan ENTERPRISE_DB dan migrasi 0100.');return;}
- const member=ctx.membership(),subject=(ctx?.membership()&&ctx?.membership().subject)||null;
+ const member=ctx.membership();
  // Subject is supplied by the authenticated /session response; never infer an author's identity from text input.
  const canCreate=writers.has(member.role);
  const refreshList=async()=>{list=await ctx.api('/discovery/assessments');populateList();};
  const sel=select([['','Pilih assessment institusi']],''),createTitle=input('text','',160);
  const actions=e('div',undefined,'discovery-controls');
- actions.append(field(e('div'),'Assessment',sel),field(e('div'),'Judul assessment baru',createTitle));
+ const selectorBox=e('div'),newBox=e('div');field(selectorBox,'Assessment',sel);field(newBox,'Judul assessment baru',createTitle);actions.append(selectorBox,newBox);
  if(canCreate){const create=btn('Buat assessment',async()=>{
   const title=createTitle.value.trim();if(title.length<3){alert('Isi judul minimal 3 karakter.');return;}
   const result=await ctx.api('/discovery/assessments',{method:'POST',body:JSON.stringify({title,payload:{scope:'',asOf:'',interviewer:'',notes:'',dimensions:{},topics:{},answers:{},inventory:{},quality:{}}})});
