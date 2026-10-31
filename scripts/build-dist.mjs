@@ -46,3 +46,21 @@ if (process.env.GC_MIGRATION_READONLY_PROBE === "true" &&
   console.log("GREENCAL_READONLY_MIGRATION_PROBE", JSON.stringify(summary));
 }
 
+
+// Opt-in one-time DEMO-only PostgreSQL schema migration. Unlike the default
+// build, this performs a write ONLY on a branch-scoped Vercel Preview with
+// an exact target confirmation and an empty destination. Production ignores it.
+if (process.env.GC_DEMO_MIGRATION_APPLY === 'apply-demo-only-20261031') {
+  const {migrateDummyOnPreview}=await import('./vercel/migrate-demo-on-build.mjs');
+  const result=await migrateDummyOnPreview();
+  console.log('GREENCAL_DEMO_MIGRATION_RESULT',JSON.stringify(result));
+  if(!result.applied)throw Error('DEMO_MIGRATION_NOT_APPLIED');
+}
+
+// Independent post-migration read-only check (Preview only; no PII or secrets in logs).
+if(process.env.GC_DEMO_VERIFY_READONLY==='true'&&process.env.VERCEL_ENV==='preview'){
+ const {verifyPersistedDemo}=await import('./vercel/verify-demo-on-build.mjs');
+ const proof=await verifyPersistedDemo();
+ console.log('GREENCAL_DEMO_PERSISTED_PROOF',JSON.stringify(proof));
+ if(!proof.demoVerified)throw Error('DEMO_READONLY_PROOF_FAILED');
+}
