@@ -3,11 +3,16 @@
   "name": "greencal",
   "main": "src/worker.js",
   "compatibility_date": "2026-10-18",
+  "vars": {
+    "GREENCAL_PUBLIC_AI_ENABLED": "true"
+  },
   "assets": {
     "directory": "./dist",
     "binding": "ASSETS",
     "run_worker_first": [
-      "/api/*"
+      "/api/*",
+      "/enterprise",
+      "/enterprise/*"
     ]
   },
   "kv_namespaces": [

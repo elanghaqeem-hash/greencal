@@ -1,0 +1,85 @@
+import { copyFile, mkdir, readFile, rm, stat } from "node:fs/promises";
+import { resolve, join, dirname } from "node:path";
+
+// P0: publish every external asset the production HTML requires.
+// Never silently deploy an index.html with broken JavaScript imports.
+const root = resolve(import.meta.dirname, "..");
+const dist = join(root, "dist");
+const required = [
+  "index.html",
+  "auth-client.js",
+  "assets/guide-learning.js",
+];
+const html = await readFile(join(root, "index.html"), "utf8");
+for (const asset of required.slice(1)) {
+  const variants = [asset, "./" + asset, "/" + asset];
+  if (!variants.some(ref => html.includes(ref))) {
+    throw new Error("Asset not referenced by index.html: " + asset);
+  }
+  const f = join(root, asset);
+  const meta = await stat(f);
+  if (!meta.isFile() || meta.size < 100) {
+    throw new Error("Required GreenCal asset missing or empty: " + asset);
+  }
+}
+await rm(dist, { recursive: true, force: true });
+await mkdir(dist, { recursive: true });
+const enterpriseAssets = ["enterprise.html", "assets/enterprise.css", "assets/enterprise.js", "assets/enterprise-analytics.js", "assets/enterprise-release.js", "assets/enterprise-book6.js", "assets/enterprise-books124.js", "assets/enterprise-book3.js", "assets/enterprise-book5.js", "assets/enterprise-discovery.js", "assets/enterprise-discovery.css"];
+for (const asset of [...required, ...enterpriseAssets]) {
+  const target = join(dist, asset === "enterprise.html" ? "enterprise/index.html" : asset);
+  await mkdir(dirname(target), { recursive: true });
+  await copyFile(join(root, asset), target);
+  const copied = await stat(target);
+  const original = await stat(join(root, asset));
+  if (copied.size !== original.size) {
+    throw new Error("Asset copy size differs: " + asset);
+  }
+  console.log("P0 asset:", asset, copied.size, "bytes");
+}
+console.log("GreenCal dist is complete; assets are compatible with Vercel and Cloudflare.");
+// One-time Preview-only target verification; no rows or connection strings leave Vercel.
+// This is deliberately NOT a schema migration or a bank production release gate.
+if (process.env.GC_MIGRATION_READONLY_PROBE === "true" &&
+    process.env.VERCEL_ENV === "preview") {
+  const {inspectDestinationDatabase} = await import("./vercel/inspect-db-on-build.mjs");
+  const summary=await inspectDestinationDatabase();
+  console.log("GREENCAL_READONLY_MIGRATION_PROBE", JSON.stringify(summary));
+}
+
+
+// Opt-in one-time DEMO-only PostgreSQL schema migration. Unlike the default
+// build, this performs a write ONLY on a branch-scoped Vercel Preview with
+// an exact target confirmation and an empty destination. Production ignores it.
+if (process.env.GC_DEMO_MIGRATION_APPLY === 'apply-demo-only-20261031') {
+  const {migrateDummyOnPreview}=await import('./vercel/migrate-demo-on-build.mjs');
+  const result=await migrateDummyOnPreview();
+  console.log('GREENCAL_DEMO_MIGRATION_RESULT',JSON.stringify(result));
+  if(!result.applied)throw Error('DEMO_MIGRATION_NOT_APPLIED');
+}
+
+// Independent post-migration read-only check (Preview only; no PII or secrets in logs).
+if(process.env.GC_DEMO_VERIFY_READONLY==='true'&&process.env.VERCEL_ENV==='preview'){
+ const {verifyPersistedDemo}=await import('./vercel/verify-demo-on-build.mjs');
+ const proof=await verifyPersistedDemo();
+ console.log('GREENCAL_DEMO_PERSISTED_PROOF',JSON.stringify(proof));
+ if(!proof.demoVerified)throw Error('DEMO_READONLY_PROOF_FAILED');
+}
+
+// Bank Sawan synthetic tenant: one-shot Preview-only migration, never Production.
+// Existing public and other demo institutions are protected by independent DB guards.
+if(process.env.GC_SAWAN_SEED_APPLY==='seed-sawan-demo-once-20261031'){
+ const {seedSawanOnPreview}=await import('./vercel/seed-sawan-on-build.mjs');
+ const proof=await seedSawanOnPreview();
+ console.log('GREENCAL_SAWAN_SEED_RESULT',JSON.stringify(proof));
+ if(!proof.applied)throw Error('SAWAN_DEMO_SEED_REJECTED');
+}
+// Independent read-only proof; no passwords, identities or secret values in logs.
+if(process.env.GC_SAWAN_VERIFY_READONLY==='true'&&process.env.VERCEL_ENV==='preview'){
+ const {getSawanDemoSummary}=await import('../src/vercel/sawan-demo.js');
+ const proof=await getSawanDemoSummary();
+ console.log('GREENCAL_SAWAN_VERIFY',JSON.stringify({verified:proof.ok===true,
+  syntheticOnly:proof.tenant?.syntheticOnly===true,
+  book6:proof.book6?.status,book7Runs:proof.book7?.runs,
+  readiness:proof.readiness?.status,bankProductionReady:false}));
+ if(!proof.ok)throw Error('SAWAN_DEMO_PROOF_FAILED');
+}

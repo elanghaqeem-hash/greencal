@@ -1,0 +1,43 @@
+/* Scoped styles for GreenCal institutional Discovery Readiness. */
+.discovery-hero{background:linear-gradient(115deg,#effbf5,#f2f7fc);border-color:#c5e4da}
+.discovery-eyebrow{font-size:11px;letter-spacing:1.25px;text-transform:uppercase;font-weight:800;color:#0a7865}
+.discovery-hero h2{font-size:clamp(20px,3vw,28px);margin:8px 0}
+.discovery-hero>p{max-width:1000px}
+.discovery-controls{display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap;margin-top:20px}
+.discovery-controls>div{flex:1 1 240px}
+.discovery-controls>button{margin-bottom:0}
+.discovery-hint{font-size:12px;color:#805b18;background:#fff9e9;padding:12px;border-radius:9px;border:1px solid #eeddb4;margin-bottom:0}
+.discovery-stage{min-width:0}
+.discovery-actions{display:flex;flex-wrap:wrap;gap:10px;margin:16px 0 4px}
+.discovery-tabs{display:flex;gap:8px;overflow-x:auto;padding:4px 2px 12px;scrollbar-width:thin;margin-bottom:8px}
+.discovery-tabs button{white-space:nowrap;flex:0 0 auto;font-size:13px;border-radius:10px}
+.discovery-tabs button.active{background:#0b6a58;color:#fff;border-color:#0b6a58}
+.discovery-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.discovery-kpi{border:1px solid #cee3db;background:#f6fbf9;padding:16px;border-radius:11px;display:grid;gap:6px;min-width:0}
+.discovery-kpi span{font-size:13px;color:#416a60}
+.discovery-kpi strong{font-size:clamp(24px,3vw,32px);font-variant-numeric:tabular-nums;letter-spacing:-1px;color:#0b5d51}
+.discovery-kpi small{font-size:12px;color:#55756c}
+.discovery-kpi progress{width:100%;height:10px;accent-color:#0e846e}
+.discovery-grid-input{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.discovery-grid-input label{min-width:0}
+.discovery-grid-input label:has(textarea){grid-column:1/-1}
+.discovery-grid-input input[type=checkbox]{width:22px;height:22px;min-height:22px;accent-color:#087466}
+.discovery-form-section{margin-top:0}
+.discovery-form-section h3{margin-top:0;font-size:18px}
+.discovery-item{padding:18px 0;border-bottom:1px solid #dce8e2}
+.discovery-item:last-child{border-bottom:0}
+.discovery-item>strong{display:block;margin-bottom:8px;font-size:14px;color:#174f44}
+.discovery-item>small{display:inline-block;background:#f0f8f4;color:#386356;margin:0 8px 10px 0;border-radius:12px;padding:3px 9px;font-size:11px}
+.discovery-item-header{display:flex;justify-content:space-between;gap:12px;align-items:start}
+.discovery-item-header strong{font-size:15px}
+.discovery-item-header span{flex-shrink:0;font-size:12px;color:#426e64;background:#e7f5ed;padding:4px 8px;border-radius:99px}
+.discovery-item>p{color:#557369;font-size:13px;margin:8px 0 14px}
+.discovery-group{margin:10px 0;border:1px solid #d7e7df;background:#fff;border-radius:10px;padding:0 16px}
+.discovery-group>summary{font-weight:750;color:#0a6755;cursor:pointer;padding:14px 4px}
+.discovery-group>.discovery-item:first-of-type{border-top:1px solid #e5eeea}
+.discovery-save{position:sticky;bottom:0;z-index:2;display:flex;justify-content:flex-end;padding:13px 18px;background:color-mix(in srgb,white 94%,#e9f4ef);border:1px solid #cbdcd3;border-radius:12px;box-shadow:0 -8px 22px #0a3c2b18;margin:14px 0}
+.discovery-save p{font-size:12px;margin:0}
+.discovery-history{width:min(850px,96vw)}
+.discovery-error{background:#fff0ed;border-left:4px solid #d7513f;padding:16px;color:#a02e24}
+@media(max-width:820px){.discovery-grid{grid-template-columns:1fr}.discovery-grid-input{grid-template-columns:1fr}.discovery-actions button{flex:1 1 100%}.discovery-controls>div{flex:1 1 100%}.discovery-controls button{width:100%}.discovery-save{bottom:0}.discovery-group{padding:0 10px}}
+@media(prefers-reduced-motion:reduce){.discovery-tabs{scroll-behavior:auto}}

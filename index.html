@@ -1915,49 +1915,23 @@ dialog.modal-sheet .modal-foot { background:var(--surface); }
     [data-theme="dark"] .emission-panel {background:linear-gradient(145deg,#102a22,var(--surface) 46%);box-shadow:none}
     [data-theme="dark"] #scopeDonut .carbon-ring-svg {filter:none}
     @media(prefers-reduced-motion:reduce){#scopeDonut .carbon-source,#scopeDonut .carbon-ring-svg circle{transition:none}}
-
-    /* Bank Riau Kepri Syariah official user-supplied wordmark; isolated on white for dark mode. */
-    .brks-logo-wrap {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      width: 178px;
-      height: 48px;
-      flex: 0 0 178px;
-      padding: 4px 7px;
-      background: #ffffff;
-      border: 1px solid #e5ece7;
-      border-radius: 10px;
-      box-shadow: 0 1px 3px rgba(12, 53, 37, .05);
-    }
-    .brks-logo-img { display:block; width:100%; height:100%; object-fit:contain; }
     .brand-block { gap: 12px; max-width: 100%; }
     .brand-info { min-width: 0; }
     .brand-sub { max-width: 100%; }
     @media (min-width: 860px) {
-      .brks-logo-wrap { width: 190px; flex-basis: 190px; height: 52px; }
       .header-inner { height: max(var(--header-h), 72px); }
     }
     @media (min-width: 621px) and (max-width: 859px) {
-      .brks-logo-wrap { width: 158px; flex-basis: 158px; height: 44px; }
       .brand-title { font-size: 15px; }
       .brand-block { gap: 9px; }
     }
     @media (max-width: 620px) {
-      .brks-logo-wrap {
-        width: clamp(114px, 37vw, 152px);
-        flex-basis: clamp(114px, 37vw, 152px);
-        height: 43px;
-        padding: 3px 5px;
-        border-radius: 9px;
-      }
       .brand-block { gap: 8px; overflow: hidden; }
       .brand-info { overflow: hidden; }
       .brand-title { font-size: clamp(13.5px, 3.8vw, 16px); line-height: 1.25; }
       .brand-sub { font-size: 10.5px; }
     }
     @media (max-width: 359px) {
-      .brks-logo-wrap { width: 112px; flex-basis: 112px; height: 40px; }
       .brand-title { white-space: normal; font-size: 13px; line-height: 1.18; }
       .brand-sub { font-size: 10px; }
     }
@@ -2164,9 +2138,8 @@ dialog.modal-sheet .modal-foot { background:var(--surface); }
 /* GC mobile dashboard polish / 2026-10-18 */
 @media(max-width:620px){
   header.app-header .header-inner{row-gap:7px;padding-top:9px;padding-bottom:8px;min-height:0}
-  header.app-header .brand-block{display:grid;grid-template-columns:clamp(82px,25vw,108px) minmax(0,1fr);gap:9px;min-width:0;overflow:visible;align-items:center}
-  header.app-header .brks-logo-wrap{grid-column:1;width:100%;height:38px;flex-basis:auto;padding:3px 5px;border-radius:9px}
-  header.app-header .brand-info{grid-column:2;min-width:0;overflow:visible}
+  header.app-header .brand-block{display:grid;grid-template-columns:minmax(0,1fr);gap:9px;min-width:0;overflow:visible;align-items:center}
+  header.app-header .brand-info{grid-column:1;min-width:0;overflow:visible}
   header.app-header .brand-title{font-size:clamp(14px,3.9vw,17px);line-height:1.25;white-space:normal;overflow:visible;overflow-wrap:normal}
   header.app-header .brand-sub{font-size:clamp(10.5px,2.7vw,11.5px);line-height:1.35;margin-top:3px;white-space:normal;overflow:visible;text-overflow:clip;overflow-wrap:break-word;max-width:none}
   header.app-header .year-select-wrap{min-height:36px;padding:5px 12px}
@@ -2298,10 +2271,9 @@ dialog.modal-sheet .modal-foot { background:var(--surface); }
   #breakdownTableWrap {display:none;margin-top:10px;}
   #breakdownTableWrap.is-expanded {display:block;}
   #breakdownTableWrap table {min-width:620px;}
-  /* Shorten the tall brand header without harming logo legibility. */
+  /* Keep the compact, bank-neutral brand header. */
   .app-header {box-shadow:0 4px 16px rgba(8,40,30,.045);}
   .header-inner {min-height:0;row-gap:5px;padding-top:8px;padding-bottom:8px;}
-  .brks-logo-wrap {height:40px;width:clamp(105px,34vw,139px);flex-basis:clamp(105px,34vw,139px);}
   .brand-title {font-size:clamp(13px,3.8vw,15px);}
   .brand-sub {font-size:10px;}
   .year-select-wrap {min-height:34px;padding:4px 10px;}
@@ -2901,7 +2873,7 @@ dialog.modal-sheet .modal-foot { background:var(--surface); }
 }
 
 
-/* GC_BRAND_LEFT_ALIGN_20261018: desktop logo/title immediately follow sidebar toggle */
+/* GC_BRAND_LEFT_ALIGN_20261018: desktop GreenCal title follows sidebar toggle */
 @media (min-width: 860px) {
   header.app-header .header-inner {
     justify-content: flex-start;
@@ -2925,7 +2897,6 @@ dialog.modal-sheet .modal-foot { background:var(--surface); }
   header.app-header .header-actions { margin-left: 0; flex: 0 0 auto; }
 }
 @media (min-width: 860px) and (max-width: 1080px) {
-  header.app-header .brks-logo-wrap {width: 158px; flex-basis: 158px; height: 44px;}
   header.app-header .brand-title {font-size: clamp(15px, 1.8vw, 18px);}
   header.app-header .brand-sub {font-size: 11px;}
   header.app-header .brand-block {max-width: calc(100% - 198px);}
@@ -3068,7 +3039,490 @@ dialog.modal-sheet .modal-foot { background:var(--surface); }
  .gc-ai-editable p,.gc-ai-editable div{font-size:13px;}
 }
 
+
+/* GreenCal Narrative Editor v4 — responsive premium sustainability workspace */
+.gc-ai-editor-panel.panel {
+  container:gc-narrative / inline-size;
+  position:relative;isolation:isolate;min-width:0;overflow:hidden;
+  padding:0!important;background:#fff;border:1px solid #d6e5db;border-radius:19px;
+  box-shadow:0 8px 27px rgba(9,67,45,.052),0 1px 3px rgba(9,67,45,.03);
+}
+.gc-ai-editor-panel .gc-ai-editor-heading {
+  display:grid!important;grid-template-columns:minmax(0,1fr) auto;
+  align-items:start;gap:clamp(15px,2vw,26px);
+  padding:clamp(18px,2.2vw,27px);margin:0!important;min-width:0;
+  border:none!important;border-bottom:1px solid #e3eee7!important;
+  background:radial-gradient(ellipse at 100% 5%,rgba(222,243,231,.46),transparent 35%),linear-gradient(108deg,#fff 6%,#fcfefd 72%,#f5fbf7 100%);
+}
+.gc-ai-editor-panel .gc-ai-editor-heading-main{display:flex;align-items:flex-start;gap:15px;min-width:0;flex:none}
+.gc-ai-editor-panel .gc-ai-editor-leading-icon{
+  width:46px;height:46px;flex:none;display:grid;place-items:center;
+  background:#e9f5ed;border:1px solid #d3e8dc;border-radius:13px;color:#17674c;
+}
+.gc-ai-editor-panel .gc-ai-editor-leading-icon svg{width:24px;height:24px}
+.gc-ai-editor-panel .gc-ai-editor-heading-text{flex:1;min-width:0;max-width:810px}
+.gc-ai-editor-panel .gc-ai-editor-eyebrow{
+  margin:1px 0 8px;color:#248165;font-size:10px;font-weight:800;line-height:1.35;letter-spacing:.1em;
+}
+.gc-ai-editor-panel .gc-ai-editor-heading h3{
+  margin:0 0 9px!important;font-size:clamp(17px,1.6vw,21px);font-weight:800;
+  line-height:1.32;letter-spacing:-.027em;color:#122e29;overflow-wrap:anywhere;
+}
+.gc-ai-editor-panel .gc-ai-editor-heading p{
+  margin:0!important;color:#667871;font-size:12.5px;font-weight:450;
+  line-height:1.65;max-width:710px;overflow-wrap:anywhere;
+}
+.gc-ai-editor-panel .gc-ai-editor-actions{
+  display:flex;flex-wrap:wrap;justify-content:flex-end;align-items:flex-start;align-content:flex-start;
+  gap:8px;min-width:0;max-width:510px;
+}
+.gc-ai-editor-panel .gc-ai-editor-actions .gc-ai-action{
+  display:inline-flex;justify-content:center;align-items:center;gap:8px;
+  margin:0;padding:10px 14px;width:auto;max-width:100%;
+  min-height:43px;height:auto;border-radius:11px;
+  font-size:12px;line-height:1.4;font-weight:750;font-family:inherit;
+  letter-spacing:-.009em;box-shadow:none;white-space:nowrap;text-align:center;cursor:pointer;
+  transition:background-color .15s,border-color .15s,box-shadow .15s;
+}
+.gc-ai-editor-panel .gc-ai-action svg{width:17px;height:17px;flex:none}
+.gc-ai-editor-panel .gc-ai-action>span{min-width:0}
+.gc-ai-editor-panel .gc-ai-action-edit{color:#115e44;background:#fff;border:1px solid #70b595}
+.gc-ai-editor-panel .gc-ai-action-edit:hover{background:#eff9f3;border-color:#187f59}
+.gc-ai-editor-panel .gc-ai-action-save{color:#fff;border:1px solid #096b4c;background:#0b7052;box-shadow:0 4px 13px rgba(10,90,64,.14)}
+.gc-ai-editor-panel .gc-ai-action-save:hover{background:#075c44}
+.gc-ai-editor-panel .gc-ai-action-cancel{color:#354940;background:#fff;border:1px solid #d4ded8}
+.gc-ai-editor-panel .gc-ai-action-cancel:hover{background:#f3f7f4}
+.gc-ai-editor-panel .gc-ai-action-restore{color:#1a654c;background:#f3faf6;border:1px solid #cfdfd4}
+.gc-ai-editor-panel .gc-ai-action-restore:hover{background:#e6f5eb;border-color:#79ad90}
+.gc-ai-editor-panel .gc-ai-action:focus-visible{outline:3px solid #74cda3;outline-offset:2px}
+.gc-ai-editor-panel [hidden]{display:none!important}
+.gc-ai-editor-panel .gc-ai-editor-meta{
+  display:flex;align-items:center;flex-wrap:wrap;column-gap:14px;row-gap:9px;
+  min-height:57px;margin:0!important;padding:12px clamp(18px,2.2vw,27px);
+  border-bottom:1px solid #e5eee8;background:#f6fbf8;color:#5e7066;
+  font-size:11.5px;line-height:1.65;
+}
+.gc-ai-editor-panel .gc-ai-editor-statusline{
+  display:flex;align-items:flex-start;gap:10px;min-width:0;flex:1 1 380px;
+}
+.gc-ai-editor-panel .gc-ai-editor-statusline svg{flex:none;width:18px;height:18px;margin-top:1px;color:#18805a}
+.gc-ai-editor-panel #gcAiEditorStatus{display:block;min-width:0;overflow-wrap:anywhere}
+.gc-ai-editor-panel .gc-ai-draft-badge{
+  flex:none;background:#e8f6ee;border:1px solid #c9e4d3;color:#246947;
+  border-radius:99px;padding:5px 10px;font-size:10.5px;font-weight:750;
+  white-space:normal;max-width:100%;
+}
+.gc-ai-editor-panel .gc-ai-editor-warning{
+  flex-basis:100%;max-width:100%;border-radius:9px;padding:8px 10px;
+  background:#fff7e9;color:#945c1d;font-size:11.5px;line-height:1.5;overflow-wrap:anywhere;
+}
+.gc-ai-editor-panel .gc-ai-toolbar{
+  margin:18px clamp(16px,2vw,26px) 0;width:auto;max-width:100%;
+  border-color:#dce8df;background:#f7faf8;
+}
+.gc-ai-editor-panel .gc-ai-narrative{
+  margin:19px clamp(16px,2vw,26px) 0;min-width:0;
+}
+.gc-ai-editor-panel .gc-ai-narrative.gc-ai-editable{
+  margin-top:0;border-color:#dce8df;border-radius:0 0 13px 13px;outline-color:#b8d9c5;
+}
+.gc-ai-editor-panel .gc-ai-editor-footer{
+  margin:0;padding:14px clamp(16px,2vw,26px) 19px;line-height:1.7;
+}
+@container gc-narrative (max-width:1100px){
+  .gc-ai-editor-panel .gc-ai-editor-heading{grid-template-columns:minmax(0,1fr);gap:17px}
+  .gc-ai-editor-panel .gc-ai-editor-actions{justify-content:flex-start;max-width:none;width:100%}
+  .gc-ai-editor-panel .gc-ai-editor-heading h3{max-width:840px}
+}
+@container gc-narrative (max-width:600px){
+  .gc-ai-editor-panel .gc-ai-editor-heading{padding:17px 16px;gap:16px}
+  .gc-ai-editor-panel .gc-ai-editor-heading-main{gap:10px}
+  .gc-ai-editor-panel .gc-ai-editor-leading-icon{width:37px;height:37px;border-radius:10px}
+  .gc-ai-editor-panel .gc-ai-editor-leading-icon svg{width:21px;height:21px}
+  .gc-ai-editor-panel .gc-ai-editor-eyebrow{font-size:9px;letter-spacing:.06em;margin:0 0 6px}
+  .gc-ai-editor-panel .gc-ai-editor-heading h3{font-size:17px;line-height:1.34;margin-bottom:7px!important}
+  .gc-ai-editor-panel .gc-ai-editor-heading p{font-size:12px;line-height:1.6}
+  .gc-ai-editor-panel .gc-ai-editor-actions{
+    display:grid;grid-template-columns:repeat(2,minmax(0,1fr));align-items:stretch;gap:8px;
+  }
+  .gc-ai-editor-panel .gc-ai-editor-actions .gc-ai-action{
+    width:100%;min-height:45px;padding:9px 11px;font-size:11.5px;white-space:normal;
+  }
+  .gc-ai-editor-panel .gc-ai-editor-meta{padding:12px 16px;min-height:0;gap:8px}
+  .gc-ai-editor-panel .gc-ai-editor-statusline{flex-basis:100%;font-size:11.5px}
+  .gc-ai-editor-panel .gc-ai-narrative{margin:15px 15px 0}
+  .gc-ai-editor-panel .gc-ai-toolbar{margin:15px 15px 0}
+  .gc-ai-editor-panel .gc-ai-editor-footer{padding:13px 15px 17px}
+}
+@container gc-narrative (max-width:390px){
+  .gc-ai-editor-panel .gc-ai-editor-actions{grid-template-columns:1fr}
+  .gc-ai-editor-panel .gc-ai-editor-actions .gc-ai-action{
+    justify-content:flex-start;padding:11px 13px;min-height:44px;
+  }
+  .gc-ai-editor-panel .gc-ai-editor-heading h3{font-size:16px}
+}
+@media(prefers-reduced-motion:reduce){.gc-ai-editor-panel .gc-ai-action{transition:none}}
+
+
+/* GreenCal education center */
+#guide.gc-learning{padding:0;overflow:hidden}
+.gc-learning .edu-hero{padding:26px;background:linear-gradient(120deg,var(--primary-soft),var(--surface) 77%);border-bottom:1px solid var(--line)}
+.gc-learning .edu-eyebrow{font-size:11px;letter-spacing:.1em;text-transform:uppercase;font-weight:800;color:var(--primary)}
+.gc-learning .edu-hero h3{font-size:clamp(21px,2.7vw,30px);line-height:1.3;margin:7px 0}
+.gc-learning .edu-hero p{max-width:810px;color:var(--ink-muted);margin:0}
+.gc-learning .edu-layout{display:grid;grid-template-columns:235px minmax(0,1fr);align-items:start;gap:22px;padding:22px}
+.gc-learning .edu-nav{position:sticky;top:165px;display:grid;gap:6px}
+.gc-learning .edu-nav button{width:100%;text-align:left;border:1px solid transparent;background:transparent;border-radius:10px;padding:11px 12px;color:var(--ink-muted);font-weight:700;cursor:pointer}
+.gc-learning .edu-nav button[aria-selected="true"]{background:var(--primary-soft);border-color:var(--primary-border);color:var(--primary)}
+.gc-learning .edu-content{min-width:0}
+.gc-learning .edu-pane[hidden]{display:none!important}
+.gc-learning .edu-pane h4{font-size:20px;margin:0 0 9px}
+.gc-learning .edu-pane p{color:var(--ink-muted);line-height:1.7}
+.gc-learning .edu-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:18px 0}
+.gc-learning .edu-card{padding:17px;background:var(--surface);border:1px solid var(--line);border-radius:14px;min-width:0}
+.gc-learning .edu-card strong{display:block;font-size:15px;margin:7px 0}
+.gc-learning .edu-card p{font-size:13px;margin:0}
+.gc-learning .edu-ico{display:grid;place-items:center;width:40px;height:40px;background:var(--primary-soft);color:var(--primary);border-radius:12px;font-size:24px}
+.gc-learning .edu-flow{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:20px 0}
+.gc-learning .edu-step{position:relative;background:var(--surface-2);border:1px solid var(--line);border-radius:12px;padding:14px;min-width:0;font-size:12px}
+.gc-learning .edu-step b{display:block;font-size:14px;margin-bottom:4px}
+.gc-learning .edu-step span{color:var(--ink-muted)}
+.gc-learning .edu-visual{border:1px solid var(--line);border-radius:15px;padding:16px;background:var(--surface);margin:16px 0}
+.gc-learning .edu-visual svg{display:block;width:100%;height:auto;max-height:240px}
+.gc-learning .edu-callout{padding:14px 16px;background:var(--primary-soft);border-left:4px solid var(--primary);border-radius:8px;margin:16px 0;font-size:13px;line-height:1.6}
+.gc-learning .edu-formula{padding:14px 16px;border:1px solid var(--line);background:var(--surface-2);border-radius:10px;overflow-wrap:anywhere;margin:12px 0;font-size:14px}
+.gc-learning .edu-demo{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;background:var(--surface-2);border-radius:14px;padding:17px;margin:16px 0}
+.gc-learning .edu-demo label{display:grid;gap:6px;font-weight:700;font-size:13px}
+.gc-learning .edu-demo input{width:100%;min-width:0;padding:10px;border:1px solid var(--line);border-radius:8px;background:var(--surface)}
+.gc-learning .edu-result{grid-column:1/-1;font-size:22px;font-weight:800;color:var(--primary);padding:10px 0}
+.gc-learning .edu-table{width:100%;border-collapse:collapse;font-size:13px}
+.gc-learning .edu-table th,.gc-learning .edu-table td{border-bottom:1px solid var(--line);padding:10px;text-align:left;vertical-align:top}
+.gc-learning .edu-table th{background:var(--surface-2)}
+.gc-learning .edu-progress{height:7px;background:var(--line);border-radius:10px;overflow:hidden;margin:10px 0}
+.gc-learning .edu-progress span{display:block;height:100%;background:var(--primary);transition:width .2s}
+.gc-learning .edu-check{display:flex;align-items:start;gap:10px;margin:10px 0;font-size:14px;cursor:pointer}
+.gc-learning .edu-check input{margin-top:4px}
+@media(max-width:860px){.gc-learning .edu-layout{grid-template-columns:1fr;padding:14px}.gc-learning .edu-nav{position:static;display:flex;overflow-x:auto;padding:0 0 8px;gap:7px}.gc-learning .edu-nav button{flex:0 0 auto;width:auto;white-space:nowrap}.gc-learning .edu-grid{grid-template-columns:1fr 1fr}.gc-learning .edu-flow{grid-template-columns:1fr 1fr}}
+@media(max-width:520px){.gc-learning .edu-grid,.gc-learning .edu-flow{grid-template-columns:1fr}.gc-learning .edu-demo{grid-template-columns:1fr}.gc-learning .edu-hero{padding:18px}.gc-learning .edu-layout{padding:12px}.gc-learning .edu-card{padding:14px}}
+
+
+/* GreenCal Learning Center mobile card layout v1 — all columns remain visible */
+@media (max-width:700px){
+  #guide.gc-learning{max-width:100%;overflow:hidden}
+  .gc-learning .edu-layout,.gc-learning .edu-content,.gc-learning .edu-pane{
+    min-width:0;max-width:100%;
+  }
+  .gc-learning .edu-pane h4{font-size:clamp(17px,4.8vw,20px);overflow-wrap:anywhere}
+  .gc-learning .edu-demo{min-width:0;padding:14px;gap:12px;border:1px solid var(--line)}
+  .gc-learning .edu-demo label{min-width:0;overflow-wrap:anywhere;line-height:1.45}
+  .gc-learning .edu-demo input{max-width:100%;font-size:16px}
+  .gc-learning .edu-result{font-size:clamp(20px,6vw,26px);overflow-wrap:anywhere}
+  .gc-learning .edu-table{display:block;max-width:100%;min-width:0;width:100%;font-size:14px}
+  .gc-learning .edu-table thead{
+    display:block;position:absolute;width:1px;height:1px;margin:-1px;padding:0;
+    overflow:hidden;clip-path:inset(50%);white-space:nowrap;border:0;
+  }
+  .gc-learning .edu-table tbody{display:grid;gap:12px;min-width:0;width:100%}
+  .gc-learning .edu-table tbody tr{
+    display:block;min-width:0;max-width:100%;overflow:hidden;
+    border:1px solid var(--line);border-radius:14px;background:var(--surface);
+    box-shadow:0 2px 8px rgba(22,76,54,.045);
+  }
+  .gc-learning .edu-table tbody td{
+    display:block;box-sizing:border-box;max-width:100%;width:100%;
+    padding:10px 14px;border-bottom:1px solid var(--line);
+    text-align:left;line-height:1.55;white-space:normal;overflow-wrap:anywhere;
+  }
+  .gc-learning .edu-table tbody td::before{
+    content:attr(data-label);display:block;margin-bottom:3px;
+    font-size:10px;line-height:1.4;font-weight:800;letter-spacing:.06em;
+    text-transform:uppercase;color:var(--ink-muted);
+  }
+  .gc-learning .edu-table tbody td:first-child{
+    background:var(--primary-soft);font-weight:800;color:var(--primary);
+  }
+  .gc-learning .edu-table tbody td:last-child{border-bottom:0}
+}
+
+/* GreenCal · Surat Berharga / PCAF · Sektor Usaha Penerbit control */
+#wizardFormPanel .gc-security-sector-field{min-width:0;position:relative;display:flex;flex-direction:column;gap:7px}
+#wizardFormPanel .gc-security-sector-field>.field-label{
+  display:block;color:#1d4235;font-weight:800;font-size:12.5px;
+  letter-spacing:-.01em;line-height:1.5;margin:0
+}
+#wizardFormPanel .gc-security-sector-control{
+  position:relative;display:flex;align-items:center;width:100%;min-width:0;min-height:52px;
+  border-radius:14px;background:#fff;border:1px solid #cfe0d5;
+  box-shadow:0 1px 2px rgba(15,80,54,.045);
+  transition:border-color .16s,box-shadow .16s,background-color .16s;
+}
+#wizardFormPanel .gc-security-sector-control:hover{border-color:#91c2a4;background:#fcfffd}
+#wizardFormPanel .gc-security-sector-control:focus-within{
+  border-color:#169264;box-shadow:0 0 0 3px rgba(24,144,95,.12),0 2px 8px rgba(22,101,65,.06);
+}
+#wizardFormPanel .gc-security-sector-icon{
+  position:absolute;left:12px;top:50%;transform:translateY(-50%);
+  width:30px;height:30px;display:grid;place-items:center;pointer-events:none;
+  color:#177453;border-radius:9px;background:#edf7f1;z-index:1
+}
+#wizardFormPanel .gc-security-sector-icon svg{width:19px;height:19px}
+#wizardFormPanel .gc-security-sector-chevron{
+  position:absolute;right:12px;top:50%;transform:translateY(-50%);
+  width:19px;height:19px;color:#296b4e;pointer-events:none;z-index:1
+}
+#wizardFormPanel .gc-security-sector-chevron svg{width:100%;height:100%}
+#wizardFormPanel .gc-security-sector-control>#wzS_sector{
+  -webkit-appearance:none;appearance:none;
+  display:block;width:100%;min-width:0;max-width:100%;
+  height:52px;min-height:52px;margin:0;padding:10px 40px 10px 52px;
+  font-family:var(--font-main),sans-serif;font-size:13px;font-weight:600;
+  color:#1a4734;background:transparent;border:0;border-radius:14px;
+  box-shadow:none;outline:none;cursor:pointer;text-overflow:ellipsis;
+}
+#wizardFormPanel .gc-security-sector-field:not(.has-value) #wzS_sector{
+  color:#77847c;font-weight:450
+}
+#wizardFormPanel .gc-security-sector-control>#wzS_sector:focus-visible{
+  outline:2px solid #118356;outline-offset:2px
+}
+#wizardFormPanel .gc-security-sector-control:has(> #wzS_sector:disabled){
+  background:#f4f7f5;border-color:#e1e8e3;box-shadow:none;opacity:.74
+}
+#wizardFormPanel .gc-security-sector-control>#wzS_sector:disabled{cursor:not-allowed}
+#wizardFormPanel .gc-security-sector-field #wzS_secOtherWrap{margin-top:6px;min-width:0}
+#wizardFormPanel .gc-security-sector-field>.sr-only{
+  position:absolute!important;width:1px;height:1px;padding:0;margin:-1px;
+  overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0
+}
+#wizardFormPanel .gc-security-sector-field #wzS_secOtherWrap[hidden]{display:none!important}
+@media(max-width:620px){
+  #wizardFormPanel .gc-security-sector-field>.field-label{font-size:12px}
+  #wizardFormPanel .gc-security-sector-control{min-height:50px}
+  #wizardFormPanel .gc-security-sector-control>#wzS_sector{
+    height:50px;min-height:50px;padding-left:49px;font-size:14px
+  }
+  #wizardFormPanel .gc-security-sector-icon{left:10px}
+}
+@media(prefers-reduced-motion:reduce){
+  #wizardFormPanel .gc-security-sector-control{transition:none}
+}
+
+
+/* GREENCAL MOBILE NAV PARITY: use the existing nine desktop destinations in an accessible drawer. */
+.gc-mobile-sidebar-backdrop,.gc-mobile-sidebar-close{display:none}
+@media (max-width:859px){
+  header.app-header .gc-sidebar-toggle{
+    display:inline-flex!important;align-items:center;justify-content:center;
+    width:40px;height:40px;min-width:40px;min-height:40px;flex-shrink:0;
+    border-radius:11px;touch-action:manipulation;
+  }
+  header.app-header .header-inner{gap:8px}
+  header.app-header .brand-block{flex:1 1 auto;min-width:0;margin-right:auto}
+  header.app-header .header-actions{flex:0 0 auto;min-width:0}
+  .gc-mobile-sidebar-backdrop{
+    display:block;position:fixed;inset:0;z-index:305;
+    background:rgba(7,26,20,.5);opacity:0;visibility:hidden;
+    pointer-events:none;transition:opacity .2s ease,visibility .2s ease;
+  }
+  body.gc-mobile-menu-open .gc-mobile-sidebar-backdrop{
+    opacity:1;visibility:visible;pointer-events:auto;
+  }
+  #gcSidebar{
+    display:block!important;position:fixed;left:0;top:0;bottom:0;
+    height:100dvh;width:min(336px,calc(100vw - 48px));max-width:100%;
+    z-index:306;overflow-x:hidden;overflow-y:auto;overscroll-behavior:contain;
+    background:var(--surface);border-right:1px solid var(--line);
+    box-shadow:14px 0 36px rgba(0,0,0,.16);
+    transform:translateX(-110%);visibility:hidden;pointer-events:none;
+    transition:transform .22s ease,visibility .22s ease;
+    padding-bottom:var(--safe-bottom);
+  }
+  body.gc-mobile-menu-open #gcSidebar{
+    transform:translateX(0);visibility:visible;pointer-events:auto;
+  }
+  body.gc-mobile-menu-open{overflow:hidden;touch-action:auto}
+  #gcSidebar .gc-sidebar-inner{
+    display:flex;flex-direction:column;min-height:100%;
+    padding:calc(14px + var(--safe-top)) 13px 18px;gap:13px;
+  }
+  #gcSidebar .gc-sidebar-heading{
+    display:flex;align-items:center;gap:10px;padding:7px 5px 15px;
+    border-bottom:1px solid var(--line-subtle);color:var(--ink);
+  }
+  #gcSidebar .gc-sidebar-heading-icon{
+    display:grid;place-items:center;flex:0 0 42px;width:42px;height:42px;
+    border-radius:13px;background:var(--primary-soft);color:var(--primary);font-size:24px;
+  }
+  #gcSidebar .gc-sidebar-heading > div{min-width:0;flex:1}
+  #gcSidebar .gc-sidebar-heading strong{display:block;font-size:16px;font-weight:800}
+  #gcSidebar .gc-sidebar-heading small{
+    display:block;font-size:11px;color:var(--ink-muted);line-height:1.4;margin-top:3px;
+  }
+  #gcSidebar .gc-mobile-sidebar-close{
+    display:inline-flex;align-items:center;justify-content:center;
+    flex:0 0 36px;width:36px;height:36px;min-height:36px;
+    border:1px solid var(--line);background:var(--surface-2);color:var(--ink);
+    border-radius:10px;cursor:pointer;font-size:24px;line-height:1;
+  }
+  #gcSidebar nav.desktop-nav{
+    display:flex!important;flex-direction:column;align-items:stretch;
+    gap:5px;border-top:0;padding:0;overflow:visible;min-width:0;
+  }
+  #gcSidebar nav.desktop-nav button{
+    display:flex;align-items:center;justify-content:flex-start;
+    gap:12px;width:100%;min-width:0;min-height:46px;max-width:100%;
+    padding:11px 12px;white-space:normal;text-align:left;
+    font-size:13px;font-weight:700;line-height:1.35;
+    border:1px solid transparent;border-radius:12px;
+    background:transparent;color:var(--ink-muted);box-shadow:none;
+    touch-action:manipulation;
+  }
+  #gcSidebar nav.desktop-nav button svg{width:19px;height:19px;flex:0 0 19px}
+  #gcSidebar nav.desktop-nav button:hover{background:var(--primary-soft);color:var(--primary)}
+  #gcSidebar nav.desktop-nav button[aria-selected="true"]{
+    background:linear-gradient(110deg,#075d43,#087855);color:#fff;
+    border-color:rgba(7,82,60,.14);box-shadow:0 5px 14px rgba(6,91,64,.13);
+  }
+  #gcSidebar nav.desktop-nav button:focus-visible,
+  #gcSidebar .gc-mobile-sidebar-close:focus-visible{
+    outline:3px solid var(--primary);outline-offset:2px;
+  }
+  #gcSidebar .gc-sidebar-footer{
+    margin-top:auto;display:flex;gap:8px;align-items:center;
+    border-top:1px solid var(--line-subtle);padding:14px 10px 2px;
+    color:var(--ink-subtle);font-size:11px;
+  }
+  #gcSidebar .gc-sidebar-status-dot{
+    display:block;width:7px;height:7px;border-radius:50%;background:#29ba7d;
+  }
+}
+@media (min-width:860px){
+  .gc-mobile-sidebar-backdrop,.gc-mobile-sidebar-close{display:none!important}
+}
+@media (prefers-reduced-motion:reduce){
+  .gc-mobile-sidebar-backdrop,#gcSidebar{transition:none!important}
+}
+
+
+/* GreenCal mobile header alignment v2: one-row menu / title / year.
+   Override the legacy two-row 'brand theme / year year' grid. */
+.gc-brand-title-short{display:none}
+.gc-mobile-theme-btn{display:none}
+@media (max-width:620px){
+  :root{--header-h:64px}
+  header.app-header{
+    box-shadow:0 4px 18px rgba(11,67,48,.055);
+  }
+  header.app-header .header-inner{
+    display:grid!important;
+    grid-template-columns:40px minmax(0,1fr) auto;
+    grid-template-areas:"menu brand controls";
+    height:64px;min-height:64px;max-height:64px;
+    align-items:center;column-gap:8px;row-gap:0;
+    padding-top:9px;padding-bottom:9px;
+  }
+  header.app-header #gcSidebarToggle{
+    grid-area:menu;display:inline-flex!important;align-items:center;justify-content:center;
+    width:40px;height:40px;min-width:40px;min-height:40px;
+    padding:0;margin:0;
+    background:var(--primary-soft);
+    border:1px solid var(--primary-border);
+    border-radius:12px;
+    color:var(--primary);
+    box-shadow:none;
+  }
+  header.app-header #gcSidebarToggle:active{transform:scale(.97)}
+  header.app-header .brand-block{
+    grid-area:brand;display:flex!important;align-items:center;justify-content:flex-start;
+    gap:7px;width:100%;min-width:0;min-height:40px;
+    margin:0;padding:0;overflow:hidden;
+  }
+  header.app-header .brand-info{
+    display:block;flex:1 1 auto;min-width:0;max-width:100%;
+    overflow:hidden;line-height:1.1;
+  }
+  header.app-header .brand-title{
+    display:block;margin:0;line-height:1.2;font-size:clamp(11.5px,3.45vw,14px);
+    font-weight:800;letter-spacing:-.03em;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  }
+  header.app-header .gc-brand-title-long,
+  header.app-header .brand-title .chip,
+  header.app-header .brand-sub{display:none!important}
+  header.app-header .gc-brand-title-short{display:inline}
+  header.app-header .header-actions{
+    grid-area:controls;display:flex!important;
+    align-items:center;justify-content:flex-end;gap:0;
+    width:auto;min-width:0;max-width:100%;margin:0;
+  }
+  header.app-header .year-select-wrap{
+    display:inline-flex;align-items:center;justify-content:center;
+    min-width:79px;max-width:95px;height:39px;min-height:39px;
+    padding:0 7px;gap:5px;
+    border:1px solid var(--primary-border);
+    background:var(--primary-soft);color:var(--primary);
+    border-radius:11px;box-shadow:none;
+    grid-area:auto;justify-self:auto;white-space:nowrap;
+  }
+  header.app-header .year-select-wrap svg{
+    display:block!important;flex:0 0 15px;width:15px;height:15px;color:var(--primary);
+  }
+  header.app-header .year-select-wrap span{display:none!important}
+  header.app-header .year-select-wrap select{
+    min-width:0!important;max-width:68px;width:auto!important;
+    min-height:35px!important;
+    padding:0!important;
+    font-size:13px!important;font-weight:800;
+    color:var(--primary);background:transparent!important;
+    cursor:pointer;
+  }
+  header.app-header #themeToggle{display:none!important}
+  #gcSidebar .gc-mobile-theme-btn{
+    display:flex;align-items:center;justify-content:flex-start;gap:10px;
+    width:100%;min-height:43px;padding:9px 12px;
+    border:1px solid var(--line);border-radius:11px;
+    color:var(--ink);background:var(--surface-2);
+    font-size:12.5px;font-weight:700;text-align:left;cursor:pointer;
+  }
+  #gcSidebar .gc-mobile-theme-btn svg{width:18px;height:18px;flex:none;color:var(--primary)}
+  #gcSidebar .gc-mobile-theme-btn:focus-visible{
+    outline:3px solid var(--primary);outline-offset:2px;
+  }
+}
+@media (max-width:360px){
+  header.app-header .header-inner{column-gap:6px}
+  header.app-header .brand-block{gap:5px}
+  header.app-header .brand-title{font-size:11.5px}
+  header.app-header .year-select-wrap{min-width:75px;max-width:89px;padding:0 5px}
+  header.app-header .year-select-wrap svg{width:14px;height:14px;flex-basis:14px}
+  header.app-header .year-select-wrap select{font-size:12px!important}
+}
+@media (min-width:621px) and (max-width:859px){
+  header.app-header .header-inner{
+    display:flex!important;align-items:center;justify-content:space-between;
+    flex-wrap:nowrap;gap:10px;min-height:64px;height:auto;
+    padding-top:9px;padding-bottom:9px;
+  }
+  header.app-header #gcSidebarToggle{flex:0 0 40px}
+  header.app-header .brand-block{display:flex;min-width:0;flex:1 1 auto;overflow:hidden}
+  header.app-header .brand-info{flex:1 1 auto;min-width:0;overflow:hidden}
+  header.app-header .brand-title{min-width:0;overflow:hidden;text-overflow:ellipsis}
+  header.app-header .header-actions{
+    display:flex!important;flex:0 0 auto;align-items:center;gap:6px;
+  }
+  header.app-header .year-select-wrap{min-height:39px}
+}
+
+#btnRunCloudAi[hidden]{display:none!important}
+
+/* Integrated GreenCal User Manual */
+#view-manual{max-width:1140px;margin:auto;min-width:0}.gum-hero{border-radius:20px;padding:clamp(20px,3vw,34px);background:linear-gradient(115deg,#064933,#14845d);color:#fff;margin-bottom:14px}.gum-hero small{font-size:10px;letter-spacing:.12em;color:#c3f0d7;font-weight:800}.gum-hero h2{font-size:clamp(23px,3vw,34px);color:white;margin:8px 0}.gum-hero p{font-size:13px;line-height:1.55;color:#e3f5eb}.gum-hero span{display:inline-block;border:1px solid #ffffff61;border-radius:30px;padding:7px 10px;font-size:10px;margin-top:10px}
+.gum-tools{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}.gum-tools input{flex:1 1 250px;min-width:0;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:10px;padding:11px;font-size:13px}.gum-tools button,.gum-inner button{border:1px solid var(--line);border-radius:10px;background:var(--surface);color:var(--ink);font-size:12px;font-weight:750;padding:10px;cursor:pointer}#gum-print{background:var(--primary);color:var(--primary-ink);border-color:var(--primary)}.gum-layout{display:grid;grid-template-columns:210px minmax(0,1fr);gap:17px;align-items:start}.gum-index{position:sticky;top:90px;max-height:calc(100vh - 110px);overflow:auto;border:1px solid var(--line);border-radius:13px;padding:9px;background:var(--surface)}.gum-index a{display:block;color:var(--ink);text-decoration:none;border-radius:7px;padding:8px;font-size:11px;line-height:1.4}.gum-index a:hover{color:var(--primary);background:var(--primary-soft)}.gum-index a[hidden]{display:none!important}.gum-hint{margin:0 0 12px;background:var(--primary-soft);border:1px solid var(--primary-border);padding:12px;border-radius:10px;color:var(--ink);font-size:12px;line-height:1.6}.gum-chapter{background:var(--surface);border:1px solid var(--line);border-radius:12px;overflow:hidden;margin:0 0 10px;scroll-margin-top:100px}.gum-chapter[hidden]{display:none!important}.gum-chapter>summary{cursor:pointer;list-style:none;display:flex;align-items:center;gap:10px;padding:14px}.gum-chapter summary::-webkit-details-marker{display:none}.gum-chapter>summary span{padding:8px;background:var(--primary-soft);color:var(--primary);border-radius:8px;font-size:11px;font-weight:800}.gum-chapter summary b{font-size:13px;flex:1}.gum-chapter summary:after{content:"⌄";color:var(--ink-muted)}.gum-chapter[open] summary:after{content:"⌃"}.gum-inner{padding:15px;border-top:1px solid var(--line-subtle)}.gum-inner p{font-size:12.5px;line-height:1.85;white-space:normal;margin:0 0 8px;color:var(--ink)}.gum-inner button{margin-top:9px;background:var(--primary-soft);color:var(--primary)}
+.gum-flow{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;margin-bottom:15px}.gum-flow div{background:var(--primary-soft);border:1px solid var(--primary-border);border-radius:9px;padding:10px}.gum-flow small{display:block;color:var(--primary);font-weight:800;font-size:10px;margin-bottom:4px}.gum-flow b{font-size:11px}.gum-shot{margin:3px 0 15px;border:1px solid var(--line);border-radius:11px;overflow:hidden}.gum-top{background:var(--surface);padding:9px;color:var(--primary);font-size:10px;font-weight:800}.gum-screen{display:grid;grid-template-columns:122px minmax(0,1fr);min-height:145px;background:#eef8f2}.gum-side{background:#0a4a37;color:#eaf7ef;font-size:10px;line-height:2.2;padding:13px}.gum-body{padding:13px;min-width:0;color:#145139}.gum-body b{font-size:12px}.gum-tiles{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin:12px 0}.gum-tiles span{font-size:10px;background:#fff;border:1px solid #d7eadf;border-radius:7px;padding:8px}.gum-bars{font-size:29px;letter-spacing:5px;color:#0b8155}.gum-shot figcaption{font-size:10px;color:var(--ink-muted);padding:9px;background:var(--surface)}
+@media(max-width:880px){.gum-layout{grid-template-columns:1fr}.gum-index{position:static;max-height:none;display:flex;flex-wrap:wrap;gap:3px}.gum-index a{font-size:10px;border:1px solid var(--line)}}@media(max-width:550px){.gum-flow{grid-template-columns:repeat(2,minmax(0,1fr))}.gum-screen{grid-template-columns:70px minmax(0,1fr)}.gum-side{font-size:8px;padding:8px}.gum-body{padding:10px}.gum-tiles{gap:4px}.gum-tiles span{font-size:9px;padding:6px}.gum-bars{font-size:20px}}@media print{body{display:block!important;background:#fff!important;padding:0!important}header,.gc-sidebar,.mobile-nav,#fabAdd,#banners,#gcSyncStatus,.gc-mobile-sidebar-backdrop,.gum-tools,.gum-index{display:none!important}main.container{max-width:none!important;padding:0!important}section.view:not(#view-manual){display:none!important}#view-manual{display:block!important}.gum-layout{display:block!important}.gum-chapter{break-inside:avoid;page-break-inside:avoid}@page{size:A4;margin:13mm}}
+
 </style>
+  <script src="/assets/guide-learning.js"></script>
 </head>
 <body>
 
@@ -3078,18 +3532,17 @@ dialog.modal-sheet .modal-foot { background:var(--surface); }
   <header class="app-header">
     <div class="container">
       <div class="header-inner">
-        <button type="button" id="gcSidebarToggle" class="gc-sidebar-toggle" aria-controls="gcSidebar" aria-expanded="true" title="Sembunyikan sidebar" aria-label="Sembunyikan sidebar">
+        <button type="button" id="gcSidebarToggle" class="gc-sidebar-toggle" aria-controls="gcSidebar" aria-expanded="false" title="Buka menu lengkap" aria-label="Buka menu lengkap">
           <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <rect x="3" y="4" width="18" height="16" rx="2"/><path d="M9 4v16"/><path class="gc-sidebar-arrow" d="m15 9-3 3 3 3"/>
           </svg>
         </button>
         <a href="#" class="brand-block" id="brandLogo">
-          <span class="brks-logo-wrap">
-            <img class="brks-logo-img" src="./assets/brks-syariah.svg" width="360" height="79" alt="BRK Syariah — berkah untuk semua" fetchpriority="high">
-          </span>
+
+
           <div class="brand-info">
             <h1 class="brand-title">
-              Green Calculator
+              <span class="gc-brand-title-long">Green Calculator</span><span class="gc-brand-title-short">GreenCal</span>
               <span class="chip primary" style="font-size:10px;padding:2px 6px">CRMS 2026</span>
             </h1>
             <p class="brand-sub" id="orgName">Kalkulator Emisi OJK &amp; PCAF</p>
@@ -3115,12 +3568,14 @@ dialog.modal-sheet .modal-foot { background:var(--surface); }
     </div>
   </header>
 
-  <!-- Collapsible desktop sidebar (mobile uses unchanged bottom navigation) -->
+  <!-- Shared desktop sidebar and mobile full-menu drawer -->
+  <div id="gcMobileMenuBackdrop" class="gc-mobile-sidebar-backdrop" aria-hidden="true"></div>
   <aside id="gcSidebar" class="gc-sidebar" aria-label="Menu utama GreenCal">
     <div class="gc-sidebar-inner">
       <div class="gc-sidebar-heading">
         <span class="gc-sidebar-heading-icon" aria-hidden="true">☘</span>
         <div><strong>Menu Utama</strong><small>Carbon &amp; Climate Management</small></div>
+        <button type="button" class="gc-mobile-sidebar-close" id="gcMobileMenuClose" aria-label="Tutup menu lengkap" title="Tutup menu lengkap">&times;</button>
       </div>
       <nav class="desktop-nav gc-sidebar-nav" role="tablist" aria-label="Navigasi Utama">
         <button role="tab" data-tab="ringkasan" aria-selected="true">
@@ -3158,8 +3613,12 @@ dialog.modal-sheet .modal-foot { background:var(--surface); }
         <button role="tab" data-tab="panduan" aria-selected="false">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
           Panduan OJK
-        </button>
+        </button><button role="tab" data-tab="manual" aria-selected="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M4 5a2 2 0 0 1 2-2h14v17H6a2 2 0 0 1-2-2zM4 18a2 2 0 0 1 2-2h14M8 8h8"/></svg> User Manual</button>
       </nav>
+      <button type="button" class="gc-mobile-theme-btn" id="gcMobileThemeToggle" aria-label="Ganti tema tampilan">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.9 13a9 9 0 0 1-9.9-9.9 9 9 0 1 0 9.9 9.9Z"/></svg>
+        Ganti Tema Tampilan
+      </button>
       <div class="gc-sidebar-footer">
         <span class="gc-sidebar-status-dot" aria-hidden="true"></span>
         <span>GreenCal · CRMS 2026</span>
@@ -3324,6 +3783,7 @@ dialog.modal-sheet .modal-foot { background:var(--surface); }
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
               <span>Atur AI Tier (Admin)</span>
             </button>
+            <button class="btn sm" id="btnRunCloudAi" type="button" hidden title="Hanya data ringkasan agregat yang dikirim ke penyedia AI; tanpa rincian debitur">AI Cloud</button>
             <button class="btn primary sm" id="btnRunAi">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
               <span>Jalankan Analisa</span>
@@ -3898,7 +4358,8 @@ dialog.modal-sheet .modal-foot { background:var(--surface); }
       <div class="panel" id="guide"></div>
     </section>
 
-    <!-- ADMIN ONLY: VERIFIED ROLE DIRECTORY -->
+    <section class="view" id="view-manual" hidden aria-label="User Manual GreenCal"><div class="gum-hero"><small>PANDUAN PENGGUNA · GREENCAL</small><h2>User Manual GreenCal</h2><p>Panduan end-to-end, contoh tampilan, penggunaan semua modul dan simulasi pelatihan.</p><span>21 bab · Versi 1.0 · 20 Oktober 2026 · HP &amp; Laptop</span></div><div class="gum-tools"><input type="search" id="gum-search" placeholder="Cari topik atau nama menu..." aria-label="Cari isi user manual"><button type="button" id="gum-all">Buka semua</button><button type="button" id="gum-close">Tutup semua</button><button type="button" id="gum-print">Cetak / Simpan PDF</button></div><div class="gum-layout"><nav class="gum-index" aria-label="Daftar isi"><a href="#gum-1" data-gum-link="1">01 · Mulai Menggunakan GreenCal</a><a href="#gum-2" data-gum-link="2">02 · Flow Besar End-to-End</a><a href="#gum-3" data-gum-link="3">03 · Navigasi Desktop dan HP</a><a href="#gum-4" data-gum-link="4">04 · Akses Admin dan Maker</a><a href="#gum-5" data-gum-link="5">05 · Ringkasan Emisi dan KPI</a><a href="#gum-6" data-gum-link="6">06 · Kalkulator Cepat</a><a href="#gum-7" data-gum-link="7">07 · Data Aktivitas Scope 1–3</a><a href="#gum-8" data-gum-link="8">08 · Listrik PLN, BBM dan AC</a><a href="#gum-9" data-gum-link="9">09 · Perjalanan Dinas: Udara, Darat, Laut, Hotel</a><a href="#gum-10" data-gum-link="10">10 · Pembiayaan Debitur PCAF</a><a href="#gum-11" data-gum-link="11">11 · Surat Berharga</a><a href="#gum-12" data-gum-link="12">12 · Risiko Transisi NGFS</a><a href="#gum-13" data-gum-link="13">13 · Offset dan Penyerapan Karbon</a><a href="#gum-14" data-gum-link="14">14 · Parameter dan Faktor Emisi</a><a href="#gum-15" data-gum-link="15">15 · Analisa AI dan Editor Narasi</a><a href="#gum-16" data-gum-link="16">16 · Ekspor, Laporan dan Cadangan</a><a href="#gum-17" data-gum-link="17">17 · Latihan A: Emisi Kantor Cabang</a><a href="#gum-18" data-gum-link="18">18 · Latihan B: Emisi Terbiayai</a><a href="#gum-19" data-gum-link="19">19 · Troubleshooting</a><a href="#gum-20" data-gum-link="20">20 · Checklist Sebelum Pelaporan</a><a href="#gum-21" data-gum-link="21">21 · Referensi dan Penafian</a></nav><article><p class="gum-hint">Petunjuk: pilih topik atau cari kata kunci. Gambar ilustrasi adalah rekonstruksi kode; untuk laporan gunakan data yang sudah divalidasi.</p><p id="gum-empty" hidden>Tidak ada hasil pencarian.</p><details class="gum-chapter" id="gum-1" data-gum-part open><summary><span>01</span><b>Mulai Menggunakan GreenCal</b></summary><div class="gum-inner"><p>Buka greencal.elang-haqeem.workers.dev; pilih tahun dan unit kerja. Siapkan sumber data listrik, BBM, AC, perjalanan, pembiayaan, serta bukti. Masukkan data, periksa ringkasan dan ekspor.</p></div></details><details class="gum-chapter" id="gum-2" data-gum-part open><summary><span>02</span><b>Flow Besar End-to-End</b></summary><div class="gum-inner"><div class="gum-flow" aria-label="Alur penggunaan GreenCal"><div><small>1</small><b>Persiapan</b></div><div><small>2</small><b>Aktivitas S1–3</b></div><div><small>3</small><b>PCAF</b></div><div><small>4</small><b>Validasi</b></div><div><small>5</small><b>NGFS</b></div><div><small>6</small><b>Analisa AI</b></div><div><small>7</small><b>Laporan</b></div><div><small>8</small><b>↻ Koreksi</b></div></div><p>Persiapan tahun/unit → Aktivitas Scope 1–3 → Pembiayaan PCAF → Validasi → Simulasi NGFS → Analisa AI → Laporan. Jika ada data gap, koreksi sumber lalu jalankan ulang.</p></div></details><details class="gum-chapter" id="gum-3" data-gum-part><summary><span>03</span><b>Navigasi Desktop dan HP</b></summary><div class="gum-inner"><p>Desktop: gunakan sidebar semua modul. HP: lima tab Ringkasan, Analisa AI, Kalkulator, Aktivitas, Lainnya. User Manual dapat ditemukan di menu lengkap/Lainnya.</p></div></details><details class="gum-chapter" id="gum-4" data-gum-part><summary><span>04</span><b>Akses Admin dan Maker</b></summary><div class="gum-inner"><p>Admin dapat mengelola pengaturan, pengguna, parameter dan penghapusan; Maker menginput dan mengubah aktivitas. Mode publik tertentu tidak memakai login dan membatasi fitur Admin. Jangan memakai data rahasia tanpa izin.</p></div></details><details class="gum-chapter" id="gum-5" data-gum-part><summary><span>05</span><b>Ringkasan Emisi dan KPI</b></summary><div class="gum-inner"><figure class="gum-shot" role="img" aria-label="Ilustrasi layar aplikasi"><div class="gum-top">☘ GreenCal — Ringkasan Emisi dan KPI</div><div class="gum-screen"><div class="gum-side">Ringkasan<br>Kalkulator<br>Aktivitas<br>Pembiayaan<br>Analisa AI</div><div class="gum-body"><b>Ringkasan Emisi dan KPI</b><div class="gum-tiles"><span>Total Emisi</span><span>Scope 1</span><span>Scope 2</span><span>Scope 3</span></div><div class="gum-bars">▂　▆　▄　█　▃</div></div></div><figcaption>Ilustrasi berdasarkan struktur aplikasi (bukan screenshot produksi).</figcaption></figure><p>Pilih tahun, periksa emisi bruto, Scope 1, Scope 2, Scope 3 dan financed emissions. Bandingkan faktor listrik Per Sistem atau Nasional. Tinjau grafik unit/cabang, kualitas data dan rincian kategori. Ekspor CSV bila perlu.</p></div></details><details class="gum-chapter" id="gum-6" data-gum-part><summary><span>06</span><b>Kalkulator Cepat</b></summary><div class="gum-inner"><figure class="gum-shot" role="img" aria-label="Ilustrasi layar aplikasi"><div class="gum-top">☘ GreenCal — Kalkulator Cepat</div><div class="gum-screen"><div class="gum-side">Ringkasan<br>Kalkulator<br>Aktivitas<br>Pembiayaan<br>Analisa AI</div><div class="gum-body"><b>Kalkulator Cepat</b><div class="gum-tiles"><span>Listrik PLN</span><span>BBM</span><span>Refrigeran</span><span>Perjalanan</span><span>PCAF</span><span>Surat Berharga</span></div><div class="gum-bars">▂　▆　▄　█　▃</div></div></div><figcaption>Ilustrasi berdasarkan struktur aplikasi (bukan screenshot produksi).</figcaption></figure><p>Pilih Listrik PLN, BBM &amp; Kendaraan, AC &amp; Refrigeran, Perjalanan Dinas, Emisi Debitur PCAF, atau Surat Berharga PCAF. Lengkapi field dan satuan, periksa emisi, lalu simpan ke Data Aktivitas atau Pembiayaan.</p><button type="button" data-gum-go="wizard">Buka modul terkait ↗</button></div></details><details class="gum-chapter" id="gum-7" data-gum-part><summary><span>07</span><b>Data Aktivitas Scope 1–3</b></summary><div class="gum-inner"><p>Buka Data Aktivitas → + Tambah Data. Isi Periode, Unit Kerja/Cabang, Kategori Emisi, volume dan satuan, Keterangan Sumber, Referensi Bukti, Status Data. Simpan Draft atau Tambah Aktivitas lalu cek Kartu/Tabel dan ekspor.</p><button type="button" data-gum-go="aktivitas">Buka modul terkait ↗</button></div></details><details class="gum-chapter" id="gum-8" data-gum-part><summary><span>08</span><b>Listrik PLN, BBM dan AC</b></summary><div class="gum-inner"><p>Listrik Scope 2: masukkan kWh aktual dan sistem PLN; emisi = kWh × faktor emisi. BBM Scope 1: tentukan genset/boiler atau kendaraan, BBM dan jumlahnya. AC Scope 1: isi jenis refrigeran, jumlah kebocoran dan GWP. Validasi parameter tahun.</p></div></details><details class="gum-chapter" id="gum-9" data-gum-part><summary><span>09</span><b>Perjalanan Dinas: Udara, Darat, Laut, Hotel</b></summary><div class="gum-inner"><figure class="gum-shot" role="img" aria-label="Ilustrasi layar aplikasi"><div class="gum-top">☘ GreenCal — Perjalanan Dinas: Udara, Darat, Laut, Hotel</div><div class="gum-screen"><div class="gum-side">Ringkasan<br>Kalkulator<br>Aktivitas<br>Pembiayaan<br>Analisa AI</div><div class="gum-body"><b>Perjalanan Dinas: Udara, Darat, Laut, Hotel</b><div class="gum-tiles"><span>✈ Udara</span><span>🚌 Darat</span><span>⛴ Laut</span><span>🏨 Hotel</span></div><div class="gum-bars">▂　▆　▄　█　▃</div></div></div><figcaption>Ilustrasi berdasarkan struktur aplikasi (bukan screenshot produksi).</figcaption></figure><p>Pesawat: domestik/internasional, kelas kabin, jarak, penumpang, PP/sekali jalan. Darat: bus, taksi, kereta/KRL/MRT/LRT dan jarak atau biaya. Laut: feri, kapal, speedboat dan jarak/biaya/BBM aktual. Hotel: kamar/tamu, malam dan metode penghitungan. Simpan ke Aktivitas. Feri/speedboat berbasis jarak bisa memakai faktor kapal penumpang sebagai pendekatan.</p></div></details><details class="gum-chapter" id="gum-10" data-gum-part><summary><span>10</span><b>Pembiayaan Debitur PCAF</b></summary><div class="gum-inner"><figure class="gum-shot" role="img" aria-label="Ilustrasi layar aplikasi"><div class="gum-top">☘ GreenCal — Pembiayaan Debitur PCAF</div><div class="gum-screen"><div class="gum-side">Ringkasan<br>Kalkulator<br>Aktivitas<br>Pembiayaan<br>Analisa AI</div><div class="gum-body"><b>Pembiayaan Debitur PCAF</b><div class="gum-tiles"><span>Debitur</span><span>Outstanding</span><span>Kelas Aset</span><span>Faktor Atribusi</span></div><div class="gum-bars">▂　▆　▄　█　▃</div></div></div><figcaption>Ilustrasi berdasarkan struktur aplikasi (bukan screenshot produksi).</figcaption></figure><p>Buka Investasi &amp; Pembiayaan → + Tambah Eksposur. Isi debitur, sektor, akad, kelas aset, outstanding, penyebut atribusi, emisi debitur, Tier/Data Quality dan bukti. Periksa financed emissions; aritmetika ilustratif: outstanding ÷ penyebut × emisi debitur, sesuai kelas aset.</p><button type="button" data-gum-go="pembiayaan">Buka modul terkait ↗</button></div></details><details class="gum-chapter" id="gum-11" data-gum-part><summary><span>11</span><b>Surat Berharga</b></summary><div class="gum-inner"><p>Buka wizard Surat Berharga atau + Surat Berharga pada Pembiayaan. Pilih SBN, SBSN, sukuk, saham, obligasi, green bond dan sejenisnya. Isi penerbit/negara, ISIN, nilai investasi, penyebut, emisi dan kualitas data. Jika belum lengkap tandai data gap, jangan otomatis nol emisi.</p></div></details><details class="gum-chapter" id="gum-12" data-gum-part><summary><span>12</span><b>Risiko Transisi NGFS</b></summary><div class="gum-inner"><figure class="gum-shot" role="img" aria-label="Ilustrasi layar aplikasi"><div class="gum-top">☘ GreenCal — Risiko Transisi NGFS</div><div class="gum-screen"><div class="gum-side">Ringkasan<br>Kalkulator<br>Aktivitas<br>Pembiayaan<br>Analisa AI</div><div class="gum-body"><b>Risiko Transisi NGFS</b><div class="gum-tiles"><span>Skenario</span><span>Horizon</span><span>Harga Karbon</span><span>Debitur</span></div><div class="gum-bars">▂　▆　▄　█　▃</div></div></div><figcaption>Ilustrasi berdasarkan struktur aplikasi (bukan screenshot produksi).</figcaption></figure><p>Pilih skenario NGFS, horizon, harga karbon dan target pengurangan. Pilih debitur periode aktif; nilai risiko hukum/kebijakan, teknologi, pasar, reputasi, status rencana transisi dan bukti. Simpan Penilaian Draft, tinjau dampak biaya karbon/PD Bucket dan ekspor CSV. Hasil bersifat simulasi.</p><button type="button" data-gum-go="transisi">Buka modul terkait ↗</button></div></details><details class="gum-chapter" id="gum-13" data-gum-part><summary><span>13</span><b>Offset dan Penyerapan Karbon</b></summary><div class="gum-inner"><p>Buka Offset, isi periode, jumlah tCO₂e, proyek/registri, peruntukan dan bukti sertifikat; klik Simpan Offset. Offset dicatat terpisah, tidak menghapus emisi bruto.</p></div></details><details class="gum-chapter" id="gum-14" data-gum-part><summary><span>14</span><b>Parameter dan Faktor Emisi</b></summary><div class="gum-inner"><p>Tinjau Tabel Faktor, Kelas Aset &amp; Akad, Pengaturan, Impor/Ekspor dan Riwayat Audit. Periksa faktor PLN, BBM, refrigeran, perjalanan, limbah, satuan, sumber dan periode. Perubahan parameter harus dibackup, direview dan dicatat versinya.</p></div></details><details class="gum-chapter" id="gum-15" data-gum-part><summary><span>15</span><b>Analisa AI dan Editor Narasi</b></summary><div class="gum-inner"><figure class="gum-shot" role="img" aria-label="Ilustrasi layar aplikasi"><div class="gum-top">☘ GreenCal — Analisa AI dan Editor Narasi</div><div class="gum-screen"><div class="gum-side">Ringkasan<br>Kalkulator<br>Aktivitas<br>Pembiayaan<br>Analisa AI</div><div class="gum-body"><b>Analisa AI dan Editor Narasi</b><div class="gum-tiles"><span>Temuan</span><span>Rekomendasi</span><span>Editor</span><span>Ekspor</span></div><div class="gum-bars">▂　▆　▄　█　▃</div></div></div><figcaption>Ilustrasi berdasarkan struktur aplikasi (bukan screenshot produksi).</figcaption></figure><p>Verifikasi data lebih dulu. Buka Analisa AI dan jalankan mode yang tersedia. Baca temuan, data gap dan rekomendasi. Koreksi draf pada editor WYSIWYG sebelum menggunakan Salin Analisa, Unduh Word atau Unduh Teks. AI cloud hanya aktif jika konfigurasi siap; semua hasil butuh review manusia.</p><button type="button" data-gum-go="ai">Buka modul terkait ↗</button></div></details><details class="gum-chapter" id="gum-16" data-gum-part><summary><span>16</span><b>Ekspor, Laporan dan Cadangan</b></summary><div class="gum-inner"><p>Ringkasan, Data Aktivitas dan Pembiayaan: Ekspor CSV. Risiko Transisi: unduh CSV skenario. AI: salin, Word, teks. Menu Lainnya: cadangan JSON dan opsi reset. Backup sebelum berpindah perangkat/IP atau menghapus data. Data browser tidak otomatis tersinkron.</p></div></details><details class="gum-chapter" id="gum-17" data-gum-part><summary><span>17</span><b>Latihan A: Emisi Kantor Cabang</b></summary><div class="gum-inner"><p>Data fiktif: PLN 1.250 kWh/bulan, genset 120 liter solar, refrigeran R-410A 0,25 kg, penerbangan domestik 950 km sekali jalan PP untuk satu orang, hotel 2 malam 1 kamar. Input masing-masing dengan tahun/unit sama; cek Scope 1–3 dan tidak ada double counting.</p></div></details><details class="gum-chapter" id="gum-18" data-gum-part><summary><span>18</span><b>Latihan B: Emisi Terbiayai</b></summary><div class="gum-inner"><p>Debitur fiktif PT Simulasi Energi: outstanding Rp125 miliar, penyebut Rp500 miliar, emisi 10.000 tCO₂e. Contoh matematis: 125 ÷ 500 × 10.000 = 2.500 tCO₂e, bukan angka produksi. Simpan eksposur, pilih debitur di NGFS lalu tinjau risiko dan AI.</p></div></details><details class="gum-chapter" id="gum-19" data-gum-part><summary><span>19</span><b>Troubleshooting</b></summary><div class="gum-inner"><p>Tombol tidak bereaksi: tutup dialog, muat ulang dan cek koneksi. Form gagal: periksa field wajib, satuan dan periode. Dashboard kosong: periksa filter, tahun, aktivitas dan jaringan/IP. AI gagal: cek pengaturan provider. Ekspor gagal: izinkan download. Saat melapor catat waktu, perangkat dan langkah reproduksi.</p></div></details><details class="gum-chapter" id="gum-20" data-gum-part><summary><span>20</span><b>Checklist Sebelum Pelaporan</b></summary><div class="gum-inner"><p>Pastikan periode/unit benar, tidak ada data ganda, faktor serta satuan tepat, bukti dan data quality PCAF tersedia, asumsi NGFS ditandai simulasi, narasi AI diperiksa manusia, ekspor dan backup tersimpan aman.</p></div></details><details class="gum-chapter" id="gum-21" data-gum-part><summary><span>21</span><b>Referensi dan Penafian</b></summary><div class="gum-inner"><p>Gunakan sumber resmi OJK CRMS, BI Kalkulator Hijau, GHG Protocol, PCAF, ISO 14064-1, NGFS, IPCC dan TKBI. GreenCal bukan sistem resmi/tersertifikasi OJK atau BI. Data latihan bukan bukti kepatuhan. Manual 1.0, 20 Oktober 2026.</p></div></details></article></div></section>
+<!-- ADMIN ONLY: VERIFIED ROLE DIRECTORY -->
     <section class="view" id="view-users" hidden data-admin-only>
       <div class="view-header"><div class="view-title-group">
         <h2>Pengguna &amp; Hak Akses</h2>
@@ -3997,7 +4458,7 @@ dialog.modal-sheet .modal-foot { background:var(--surface); }
           </div>
         </div>
 
-        <div class="data-card" onclick="setTab('panduan')" style="cursor:pointer">
+        <div class="data-card" data-gum-menu tabindex="0" role="button" style="cursor:pointer"><div class="data-card-head"><div style="display:flex;align-items:center;gap:12px"><div class="wizard-icon-box" style="width:40px;height:40px;font-size:20px">📗</div><div><h3 class="data-card-title">User Manual GreenCal</h3><span style="font-size:12px;color:var(--ink-muted)">Flow besar, gambar aplikasi dan langkah penggunaan</span></div></div><strong>→</strong></div></div><div class="data-card" onclick="setTab('panduan')" style="cursor:pointer">
           <div class="data-card-head">
             <div style="display:flex;align-items:center;gap:12px">
               <div class="wizard-icon-box" style="width:40px;height:40px;font-size:20px">📖</div>
@@ -4079,7 +4540,7 @@ const BASE = JSON.parse(document.getElementById("baseline").textContent);
 const STORAGE_KEY = "green_calc_storage_v1";
 
 const DEFAULT_SETTINGS = {
-  orgName: "PT Bank Riau Kepri Syariah (Perseroda)",
+  orgName: "Kalkulator Emisi OJK & PCAF",
   paramVersion: "Buku 3 CRMS 2026 (OJK)",
   paramEffective: "2026-10-18",
   years: [2024, 2025, 2026],
@@ -4835,16 +5296,97 @@ function calcWarm(i, y) {
 
 const CAT = id => CATS.find(c => c.id === id);
 
+/* P3.1 — distinguish unknown measurements from an explicitly entered zero.
+ * All checks use category definitions; optional hotel metadata is never numeric input.
+ * This validates measurements, not the scientific authority of catalog factors.
+ */
+function gcValidateActivityInputs(c, inp) {
+  const supplied = key => inp[key] != null && String(inp[key]).trim() !== "";
+  const label = key => (c.f || []).find(field => field.k === key)?.label || key;
+  const requireFields = (...keys) => {
+    for (const key of keys) {
+      if (!supplied(key)) throw new Error("Isi " + label(key) + " untuk menghitung emisi.");
+    }
+  };
+  const requireOne = (...keys) => {
+    if (!keys.some(supplied)) {
+      throw new Error("Isi minimal satu pengukuran: " + keys.map(label).join(", ") + ".");
+    }
+  };
+  const method = inp.m || "";
+  switch (c.id) {
+    case "s1_stat": case "s1_waste": case "s2_elec": case "s3_c3":
+    case "s3_c5": requireFields("qty"); break;
+    case "s1_mob": requireFields("qty"); break;
+    case "s2_steam": requireFields("qty"); break;
+    case "s3_c1": requireFields("idr"); break;
+    case "s1_ref":
+      if (method === "sederhana") requireOne("nc","ncap","rech","dcap","rec");
+      else if (method === "penapisan") requireOne("nc","capop","dcap");
+      else requireOne("inv","tr","cc");
+      break;
+    case "s1_fire":
+      if (method === "penapisan") requireFields("cap");
+      else requireOne("inv","tr","cc");
+      break;
+    case "s3_c7":
+      if (method === "umum") requireFields("dist","emp");
+      else requireFields("vm");
+      break;
+    case "s3_c4": case "s3_c9":
+      if (method === "tm") requireFields("w","dist");
+      else requireFields("vm");
+      break;
+    case "s3_c8": case "s3_c13": case "s3_c14":
+      if (method === "bbm") requireFields("qty");
+      else if (method === "listrik") requireFields("kwh");
+      else requireFields("area");
+      break;
+    // s3_c6 already validates each travel method through mustPositive().
+  }
+  for (const field of c.f || []) {
+    if (field.t !== "num" || field.text || (field.show && !field.show(inp))) continue;
+    if (!supplied(field.k)) continue; // required values checked above
+    const value = Number(inp[field.k]);
+    if (!Number.isFinite(value) || value < 0) {
+      throw new Error("Nilai " + field.label + " harus angka tidak negatif.");
+    }
+    if (["veh","units","emp","days","eff","mon"].includes(field.k) && value <= 0) {
+      throw new Error(field.label + " harus lebih besar dari nol.");
+    }
+    if (field.k === "eff" && value > 100) {
+      throw new Error("Efisiensi ketel harus dalam rentang 0–100%.");
+    }
+    if (field.k === "mon" && value > 12) {
+      throw new Error("Bulan beroperasi harus dalam rentang 1–12.");
+    }
+  }
+}
+
 function runCalc(cat, inp, y) {
   const c = CAT(cat);
   if (!c) throw new Error("Kategori tidak dikenal: " + cat);
+  gcValidateActivityInputs(c, inp);
   const o = c.calc(inp, y);
   const g1 = gwpCH4(y), g2 = gwpN2O(y);
   const kg = nn(o.co2) + (nn(o.ch4) / 1000) * g1 + (nn(o.n2o) / 1000) * g2 + nn(o.oth);
   if (!isFinite(kg)) throw new Error("Lengkapi data aktivitas");
-  const refs = (o.refs || []).map(([t, k]) => {
+  // Retain factor provenance in stored activity snapshots, including GWP
+  // multipliers actually used to convert CH4/N2O to CO2e.
+  const pairRefs = [...(o.refs || [])];
+  if (Number(o.ch4)) pairRefs.push(["gwp","METHANE"]);
+  if (Number(o.n2o)) pairRefs.push(["gwp","NITROUS-OXIDE"]);
+  const seenRefs = new Set();
+  const refs = pairRefs.filter(([t, k]) => {
+    const id = t + ":" + k;
+    if (seenRefs.has(id)) return false;
+    seenRefs.add(id); return true;
+  }).map(([t, k]) => {
     const r = R(t, k, y);
-    return { t, k, id: rowId(r), v: r.v };
+    return { t, k, id: rowId(r), v: r.v,
+      name: r.name || r.key, src: r.src || "",
+      validFrom: r.validFrom ?? null, validTo: r.validTo ?? null,
+      catalogStatus: r.status || "belum dicatat" };
   });
   return {
     t: kg / 1000,
@@ -4880,25 +5422,33 @@ const clsById = id => S.classes.find(c => c.id === id);
 
 function expCalc(x) {
   if (x.assetKind === "security") return gcSecExpCalc(x);
+  // P2: invalid outstanding/denominators are data gaps, never silently capped.
+  const numeric = v => v == null || (typeof v === "string" && !v.trim())
+    ? null : (Number.isFinite(Number(v)) ? Number(v) : null);
   const b = x.basis, y = x.year;
-  let af = null, emis = x.emis, fin = null;
+  const os = numeric(x.os), denom = numeric(x.denom), pct = numeric(x.pct);
+  let af = null, emis = numeric(x.emis), fin = null;
+  const basis = BASIS.find(z => z.k === b);
   if (b === "eeio") {
     try {
       const r = R("invest", x.investKey, y);
-      fin = ((x.os || 0) * 1e9 * r.ef) / 1000;
-      af = null;
-      emis = null;
+      if (os != null && os > 0 && Number.isFinite(r.ef) && r.ef >= 0) {
+        const amount = os * 1e9 * r.ef / 1000;
+        if (Number.isFinite(amount)) fin = amount;
+      }
     } catch(e) { fin = null; }
-    return { af, emis, fin, dq: 5 };
+    return { af:null, emis:null, fin, dq:fin == null ? null : 5 };
   }
+  if (!basis || b === "belum") return { af:null, emis:null, fin:null, dq:null };
   if (b === "kepemilikan") {
-    af = x.pct != null ? x.pct / 100 : null;
-  } else {
-    af = (x.denom > 0 && x.os != null) ? Math.min(x.os / x.denom, 1) : null;
+    if (os != null && os > 0 && pct != null && pct >= 0 && pct <= 100) af = pct / 100;
+  } else if (os != null && os > 0 && denom != null && denom > 0 && os <= denom) {
+    af = os / denom;
   }
-  if (b === "belum") emis = null;
-  fin = (af != null && emis != null) ? af * emis : null;
-  return { af, emis, fin, dq: (BASIS.find(z => z.k === b) || {}).dq };
+  if (emis != null && emis < 0) emis = null;
+  const estimate = af != null && emis != null ? af * emis : null;
+  if (estimate != null && Number.isFinite(estimate)) fin = estimate;
+  return { af, emis, fin, dq: fin == null ? null : basis.dq };
 }
 
 /* ---------- SUMMARY AGGREGATOR ---------- */
@@ -4966,7 +5516,7 @@ function renderAll() {
   if (!S.year) S.year = st().defaultYear || years().slice(-1)[0];
   if (!S.method) S.method = st().scope2Method || "spasial";
 
-  $("#orgName").textContent = st().orgName || "Bank Riau Kepri Syariah";
+  $("#orgName").textContent = st().orgName || "Kalkulator Emisi OJK & PCAF";
   fillYear($("#dashYear"), S.year);
 
   // Update scope 2 button state
@@ -4987,6 +5537,7 @@ function renderAll() {
     offset: renderOff,
     parameter: renderParams,
     panduan: renderGuide,
+    manual:()=>{},
     ai: renderAiView,
     menu: () => {},
     users: () => GC_AUTH.renderUsers()
@@ -5996,8 +6547,10 @@ const GC_PCAF_SECTOR_GROUPS = [
 const GC_PCAF_SECTOR_INDEX = new Map(
   GC_PCAF_SECTOR_GROUPS.flatMap(g => g.items.map(name => [name,{name,crsa:g.crsa,group:g.label}]))
 );
-function gcPcafSectorOptions() {
-  return '<option value="">Pilih sektor usaha debitur...</option>' +
+function gcPcafSectorOptions(context="debitur") {
+  // Keep the same PCAF sector taxonomy for financing and investments; only the context differs.
+  const placeholder=context==="penerbit"?"Pilih sektor usaha penerbit...":"Pilih sektor usaha debitur...";
+  return '<option value="">'+placeholder+'</option>' +
     GC_PCAF_SECTOR_GROUPS.map(g =>
       '<optgroup label="' + esc(g.label) + '">' +
       g.items.map(name => '<option value="' + esc(name) + '">' + esc(name) + '</option>').join("") +
@@ -6152,8 +6705,12 @@ function renderWzSecurities(box){
  '<div class="input-row-2">',
  '<label class="field-group"><span class="field-label">Nama Penerbit / Negara</span><input type="text" id="wzS_issuer" maxlength="160" placeholder="Republik Indonesia / PT Emiten Tbk"></label>',
  '<label class="field-group"><span class="field-label">Kode Efek / ISIN (opsional)</span><input type="text" id="wzS_isin" maxlength="60" placeholder="FR..., SR..., atau ISIN"></label></div>',
- '<div class="input-row-2"><div class="field-group"><label class="field-label" for="wzS_sector">Sektor Usaha Penerbit</label>',
- '<select id="wzS_sector">',gcPcafSectorOptions(),'</select>',
+ '<div class="input-row-2"><div class="field-group gc-security-sector-field"><label class="field-label" for="wzS_sector">Sektor Usaha Penerbit</label>',
+ '<div class="gc-security-sector-control">',
+ '<span class="gc-security-sector-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="3" width="8" height="18" rx="1.5"/><path d="M3 21V10l5-2M16 9l5 2v10M11 7h2M11 11h2M11 15h2M11 21v-3h2v3"/></svg></span>',
+ '<select id="wzS_sector" aria-describedby="wzS_sectorHint">',gcPcafSectorOptions("penerbit"),'</select>',
+ '<span class="gc-security-sector-chevron" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></span></div>',
+ '<span id="wzS_sectorHint" class="sr-only">Pilih sektor kegiatan utama penerbit. Gunakan kolom pencarian sektor pada perangkat seluler.</span>',
  '<label class="field-group" id="wzS_secOtherWrap" hidden><span class="field-label">Sektor Usaha Lainnya</span>',
  '<input type="text" id="wzS_sectorOther" maxlength="160" placeholder="Tulis sektor penerbit"></label></div>',
  '<label class="field-group"><span class="field-label">Dasar Data Emisi</span><select id="wzS_basis">',
@@ -6200,6 +6757,8 @@ function renderWzSecurities(box){
    e("wzS_emisLabel").textContent=sovereign?"Emisi GRK Teritorial Negara (tCO₂e)":"Emisi GRK Penerbit (tCO₂e)";
    e("wzS_pppWrap").hidden=!sovereign;
    e("wzS_sector").disabled=sovereign||!eligible;
+   const sectorField=e("wzS_sector").closest(".gc-security-sector-field");
+   if(sectorField)sectorField.classList.toggle("has-value",!!e("wzS_sector").value);
    e("wzS_secOtherWrap").hidden=e("wzS_sector").disabled||e("wzS_sector").value!=="__custom__";
    const scopes=sovereign?["production_excl_lulucf","production_incl_lulucf"]:["s1s2","s1s2s3"];
    [...e("wzS_scope").options].forEach(o=>o.hidden=!scopes.includes(o.value));
@@ -6387,13 +6946,24 @@ function calcAct() {
   try {
     const o = runCalc(cat, i, y);
     CUR_ACT = { ok: true, res: o, inputs: i };
+    const factorTrace = o.refs.length ?
+      '<details class="gc-factor-trace"><summary>Rujukan faktor (' + o.refs.length + ')</summary>' +
+        o.refs.map(ref => '<div class="result-formula"><b>' + esc(ref.name) + '</b> · ' +
+          esc(ref.src || "Sumber belum dicatat") + ' · ' +
+          esc(String(ref.validFrom ?? "?")) + '–' + esc(String(ref.validTo ?? "?")) +
+          ' · versi ' + esc(String(ref.v ?? "?")) + '</div>').join("") +
+        '<small>Status faktor pada katalog bukan bukti verifikasi independen; periksa sumber primer sebelum pelaporan resmi.</small>' +
+      '</details>' : "";
     r.innerHTML =
       '<span class="result-val">' + nf(o.t, 3) + ' tCO₂e</span>' +
       (o.bio > 0 ? '<span class="result-formula">+ ' + nf(o.bio, 3) + ' tCO₂ biogenik (terpisah)</span>' : '') +
-      o.L.map(l => '<span class="result-formula">' + esc(l) + '</span>').join("");
+      o.L.map(l => '<span class="result-formula">' + esc(l) + '</span>').join("") +
+      factorTrace;
   } catch(e) {
     CUR_ACT = { ok: false };
-    r.innerHTML = '<span class="result-formula" style="color:var(--ink-muted)">' + esc(e.message.startsWith("Faktor") || e.message.startsWith("Satuan") ? e.message : "Isi data aktivitas untuk melihat hasil kalkulasi.") + '</span>';
+    const detail = /^(Faktor|Satuan|Isi |Nilai |Masukkan |Efisiensi |Bulan |Jumlah |Hari )/.test(e.message || "");
+    r.innerHTML = '<span class="result-formula" style="color:var(--ink-muted)">' +
+      esc(detail ? e.message : "Isi data aktivitas untuk melihat hasil kalkulasi.") + '</span>';
   }
 }
 
@@ -6414,10 +6984,12 @@ function renderAct() {
 
 
 /* Data draft is device-local and excluded from saved activity calculations. */
-const ACTIVITY_DRAFT_KEY = "green_activity_draft_v1";
+// Drafts follow the same Cloudflare-verified network scope as saved activities.
+const activityDraftKey = () => window.GC_AUTH?.scopedKey("activity-draft") || null;
 function getActivityDraft() {
   try {
-    const raw = localStorage.getItem(ACTIVITY_DRAFT_KEY);
+    const key=activityDraftKey();
+    const raw = key ? localStorage.getItem(key) : null;
     if (!raw) return null;
     const d = JSON.parse(raw);
     return d && typeof d === "object" && d.cat ? d : null;
@@ -6438,7 +7010,7 @@ function renderActivityDraftState() {
     '<button class="btn sm" type="button" id="btnRemoveActivityDraft">Hapus draft</button></div>';
   $("#btnRestoreActivityDraft").onclick = restoreActivityDraft;
   $("#btnRemoveActivityDraft").onclick = () => {
-    try { localStorage.removeItem(ACTIVITY_DRAFT_KEY); }
+    try { const key=activityDraftKey(); if(!key)throw Error("Network not verified"); localStorage.removeItem(key); }
     catch(err) { toast("Tidak dapat menghapus draft."); return; }
     renderActivityDraftState();
     toast("Draft telah dihapus.");
@@ -6452,7 +7024,7 @@ function saveActivityDraft() {
     desc:$("#aDesc").value,evidence:$("#aEvidence").value,
     savedAt:new Date().toISOString()
   };
-  try { localStorage.setItem(ACTIVITY_DRAFT_KEY,JSON.stringify(d)); }
+  try { const key=activityDraftKey(); if(!key)throw Error("Network not verified"); localStorage.setItem(key,JSON.stringify(d)); }
   catch(err) { toast("Penyimpanan lokal tidak diizinkan browser."); return; }
   renderActivityDraftState();
   toast("Draft tersimpan di browser. Belum termasuk data emisi.");
@@ -6482,41 +7054,86 @@ function clearActivityFilters() {
 }
 
 
-/* GreenCal desktop sidebar – persisted preference, mobile navigation unchanged */
+/* Shared desktop sidebar and smartphone navigation drawer (one source of tab destinations). */
 const GC_SIDEBAR_PREF = "greencal_desktop_sidebar_collapsed";
 function initDesktopSidebar() {
   const btn=document.getElementById("gcSidebarToggle");
   const sidebar=document.getElementById("gcSidebar");
   const head=document.querySelector("header.app-header");
-  if (!btn || !sidebar || !head) return;
-  let collapsed=false;
-  try {collapsed=localStorage.getItem(GC_SIDEBAR_PREF)==="1";} catch(e){}
-  const setCollapsed=(state,persist)=>{
-    collapsed=!!state;
-    document.body.classList.toggle("gc-sidebar-collapsed",collapsed);
-    btn.setAttribute("aria-expanded",String(!collapsed));
-    btn.setAttribute("aria-label",collapsed?"Tampilkan sidebar":"Sembunyikan sidebar");
-    btn.setAttribute("title",collapsed?"Tampilkan menu samping":"Sembunyikan menu samping");
-    sidebar.setAttribute("aria-hidden",String(collapsed));
-    sidebar.inert=collapsed;
+  const backdrop=document.getElementById("gcMobileMenuBackdrop");
+  const closeBtn=document.getElementById("gcMobileMenuClose");
+  if(!btn||!sidebar||!head||!backdrop||!closeBtn)return;
+  let collapsed=false, mobileOpen=false;
+  try{collapsed=localStorage.getItem(GC_SIDEBAR_PREF)==="1";}catch(e){}
+  const isMobile=()=>window.matchMedia("(max-width: 859px)").matches;
+  const sync=()=>{
+    const mobile=isMobile();
+    if(!mobile)mobileOpen=false;
+    document.body.classList.toggle("gc-mobile-menu-open",mobile&&mobileOpen);
+    document.body.classList.toggle("gc-sidebar-collapsed",!mobile&&collapsed);
+    const visible=mobile?mobileOpen:!collapsed;
+    sidebar.inert=!visible;
+    sidebar.setAttribute("aria-hidden",String(!visible));
+    if(mobile&&mobileOpen){
+      sidebar.setAttribute("role","dialog");
+      sidebar.setAttribute("aria-modal","true");
+    }else{
+      sidebar.setAttribute("role","complementary");
+      sidebar.removeAttribute("aria-modal");
+    }
+    btn.setAttribute("aria-expanded",String(visible));
+    const label=mobile?(mobileOpen?"Tutup menu lengkap":"Buka menu lengkap"):
+      (collapsed?"Tampilkan sidebar":"Sembunyikan sidebar");
+    btn.setAttribute("aria-label",label);
+    btn.title=label;
     const chevron=btn.querySelector("path.gc-sidebar-arrow");
-    if(chevron)chevron.setAttribute("d",collapsed?"m12 9 3 3-3 3":"m15 9-3 3 3 3");
-    if(persist){try{localStorage.setItem(GC_SIDEBAR_PREF,collapsed?"1":"0");}catch(e){}}
+    if(chevron)chevron.setAttribute("d",mobile?"m15 9-3 3 3 3":
+      (collapsed?"m12 9 3 3-3 3":"m15 9-3 3 3 3"));
   };
+  const closeMobile=(returnFocus=false)=>{
+    if(!mobileOpen)return;
+    mobileOpen=false;
+    sync();
+    if(returnFocus)btn.focus();
+  };
+  btn.onclick=()=>{
+    if(isMobile()){
+      mobileOpen=!mobileOpen;sync();
+      if(mobileOpen)closeBtn.focus();
+    }else{
+      collapsed=!collapsed;
+      try{localStorage.setItem(GC_SIDEBAR_PREF,collapsed?"1":"0");}catch(e){}
+      sync();
+    }
+  };
+  closeBtn.onclick=()=>closeMobile(true);
+  backdrop.onclick=()=>closeMobile(true);
+  sidebar.querySelectorAll("nav.desktop-nav button").forEach(item=>{
+    item.addEventListener("click",()=>{if(isMobile())closeMobile(false);});
+  });
+  document.addEventListener("keydown",e=>{
+    if(!isMobile()||!mobileOpen)return;
+    if(e.key==="Escape"){e.preventDefault();closeMobile(true);return;}
+    if(e.key!=="Tab")return;
+    const focusable=Array.from(sidebar.querySelectorAll('button:not([disabled]),a[href]'))
+      .filter(el=>el.getClientRects().length>0&&!el.closest('[hidden]'));
+    if(!focusable.length)return;
+    const first=focusable[0],last=focusable[focusable.length-1];
+    if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus();}
+    else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus();}
+  });
   const updateHeaderHeight=()=>{
-    const height=Math.ceil(head.getBoundingClientRect().height);
-    document.documentElement.style.setProperty("--gc-sidebar-top",height+"px");
+    document.documentElement.style.setProperty("--gc-sidebar-top",
+      Math.ceil(head.getBoundingClientRect().height)+"px");
   };
-  btn.onclick=()=>setCollapsed(!collapsed,true);
-  setCollapsed(collapsed,false);
+  sync();
   updateHeaderHeight();
   if(typeof ResizeObserver==="function"){
     const observer=new ResizeObserver(updateHeaderHeight);
     observer.observe(head);
   }
-  window.addEventListener("resize",updateHeaderHeight,{passive:true});
+  window.addEventListener("resize",()=>{sync();updateHeaderHeight();},{passive:true});
 }
-
 
 /* Enterprise activity panels: all values are calculated from registered entries.
    No demo numbers, fabricated growth or unsupported comparisons. */
@@ -6867,7 +7484,7 @@ async function saveAct(ev) {
   }
 
   saveStateToStorage();
-  try { localStorage.removeItem(ACTIVITY_DRAFT_KEY); } catch (err) {}
+  try { const key=activityDraftKey(); if(key)localStorage.removeItem(key); } catch (err) {}
   resetAct();
   renderAll();
 }
@@ -6948,15 +7565,21 @@ function updFin() {
   if (b === "eeio") {
     try {
       const f = R("invest", x.investKey, x.year);
-      h = x.os != null ?
+      h = r.fin != null ?
         '<span class="result-val">' + nf(r.fin, 2) + ' tCO₂e</span><span class="result-formula">Rp ' + nfa(x.os) + ' Miliar × ' + nfx(f.ef) + ' kgCO₂e/IDR</span>' :
-        '<span class="result-formula">Isi nilai outstanding pembiayaan.</span>';
+        '<span class="result-formula">Isi outstanding positif dan periksa faktor emisi investasi yang berlaku.</span>';
     } catch(e) { h = '<span>' + esc(e.message) + '</span>'; }
   } else if (r.af == null) {
-    h = '<span class="result-formula">' + (b === "kepemilikan" ? "Isi porsi kepemilikan." : "Isi outstanding dan penyebut untuk menghitung Attribution Factor.") + '</span>';
+    const invalidRatio = x.os != null && x.denom != null && x.denom > 0 && x.os > x.denom;
+    const invalidPct = b === "kepemilikan" && x.pct != null && (x.pct < 0 || x.pct > 100);
+    h = '<span class="result-formula">' +
+      (invalidRatio ? "Outstanding melebihi penyebut atribusi. Koreksi input; emisi terbiayai dicatat sebagai Gap Data." :
+       invalidPct ? "Porsi kepemilikan harus berada pada rentang 0–100%." :
+       b === "kepemilikan" ? "Isi porsi kepemilikan 0–100%." :
+       "Isi outstanding dan penyebut positif. Outstanding tidak boleh melebihi penyebut.") + '</span>';
   } else {
     h = (r.fin != null ? '<span class="result-val">' + nf(r.fin, 2) + ' tCO₂e</span>' : '<span><b>Belum dapat dihitung</b> — emisi debitur belum ada (dicatat sebagai Gap).</span>') +
-      '<span class="result-formula">' + (b === "kepemilikan" ? "AF = " + nfa(x.pct) + "% = " + nf(r.af, 4) : "AF = min(" + nfa(x.os) + " ÷ " + nfa(x.denom) + ", 1) = " + nf(r.af, 4)) + '</span>' +
+      '<span class="result-formula">' + (b === "kepemilikan" ? "AF = " + nfa(x.pct) + "% = " + nf(r.af, 4) : "AF = " + nfa(x.os) + " ÷ " + nfa(x.denom) + " = " + nf(r.af, 4)) + '</span>' +
       (r.fin != null ? '<span class="result-formula">' + nf(r.af, 4) + ' × ' + nfa(r.emis) + ' tCO₂e = ' + nf(r.fin, 2) + ' tCO₂e</span>' : '');
   }
   el.innerHTML = h;
@@ -7123,7 +7746,21 @@ async function saveFin(ev) {
   ev.preventDefault();
   const x = finFromForm();
   if (!x.debtor) { toast("Isi nama debitur terlebih dahulu."); return; }
-  if (x.os == null || x.os < 0) { toast("Isi nilai outstanding pembiayaan."); return; }
+  // Parsing must not silently turn malformed numbers into a valid missing-value state.
+  for (const [id, label] of [["xOs","Outstanding"],["xDenom","Penyebut"],["xPct","Kepemilikan"],["xEmis","Emisi debitur"],["xProfit","Laba"]]) {
+    const el = $( "#" + id );
+    if (!el || el.disabled || el.closest("[hidden]")) continue;
+    if (el.value.trim() && parseNum(el.value) == null) {
+      toast("Nilai " + label + " tidak valid. Gunakan angka."); return;
+    }
+  }
+  if (x.os == null || x.os <= 0) { toast("Outstanding harus lebih besar dari nol."); return; }
+  if (x.denom != null && x.denom <= 0) { toast("Penyebut harus lebih besar dari nol, atau kosong jika belum tersedia."); return; }
+  if (x.basis !== "kepemilikan" && x.basis !== "eeio" && x.denom != null && x.os > x.denom) {
+    toast("Outstanding melebihi penyebut atribusi. Periksa nilai sebelum menyimpan."); return;
+  }
+  if (x.pct != null && (x.pct < 0 || x.pct > 100)) { toast("Porsi kepemilikan harus 0–100%."); return; }
+  if (x.emis != null && x.emis < 0) { toast("Emisi debitur tidak boleh negatif."); return; }
 
   x.at = nowIso();
   x.contoh = false;
@@ -7144,13 +7781,15 @@ async function saveFin(ev) {
 }
 
 /* ---------- RISIKO TRANSISI DEBITUR (NGFS) — GC_TRANSITION_WORKSPACE_V1 ---------- */
-const GC_TRANS_SCENARIO_STORE = "greencal_transition_scenario_assumptions_v1";
+// No unscoped transition assumptions: switching IP must show a blank workspace.
+const transitionScenarioKey = () => window.GC_AUTH?.scopedKey("transition-scenario") || null;
 const GC_TRANS_RATING_TEXT = ["Belum dinilai","1 · Rendah","2 · Agak rendah","3 · Sedang","4 · Tinggi","5 · Sangat tinggi"];
 const GC_TRANS_PLAN_TEXT = {"":"Belum diketahui","tidak":"Belum tersedia","proses":"Dalam penyusunan","ada_nv":"Ada, belum diverifikasi","ada_v":"Ada, terverifikasi"};
 function transKey(sc,yr) { return String(sc) + "|" + String(yr); }
 function transLoadOverrides() {
   try {
-    const x=JSON.parse(localStorage.getItem(GC_TRANS_SCENARIO_STORE)||"{}");
+    const key=transitionScenarioKey();
+    const x=JSON.parse((key && localStorage.getItem(key))||"{}");
     return x&&typeof x==="object"&&!Array.isArray(x)?x:{};
   }catch(e){return {};}
 }
@@ -7265,7 +7904,7 @@ function transSaveScenario(e) {
   if(x.price===null||x.red===null||x.source.length<6){toast("Isi harga karbon, penurunan 0–100%, dan referensi sumber (minimal 6 karakter).");return;}
   const obj=transLoadOverrides();
   obj[transKey(sc,yr)]={...x,updatedAt:nowIso()};
-  try{localStorage.setItem(GC_TRANS_SCENARIO_STORE,JSON.stringify(obj));}
+  try{const key=transitionScenarioKey();if(!key)throw Error("Network not verified");localStorage.setItem(key,JSON.stringify(obj));}
   catch(e){toast("Penyimpanan asumsi gagal. Periksa kapasitas browser.");return;}
   toast("Asumsi skenario tersimpan lokal pada perangkat ini.");
   renderTrans();
@@ -7273,7 +7912,7 @@ function transSaveScenario(e) {
 function transClearScenario() {
   const {sc,yr}=transSelected(),obj=transLoadOverrides();
   delete obj[transKey(sc,yr)];
-  try{localStorage.setItem(GC_TRANS_SCENARIO_STORE,JSON.stringify(obj));}
+  try{const key=transitionScenarioKey();if(!key)throw Error("Network not verified");localStorage.setItem(key,JSON.stringify(obj));}
   catch(e){toast("Gagal menghapus asumsi.");return;}
   renderTrans();toast("Asumsi lokal dihapus; kembali ke parameter tabel jika tersedia.");
 }
@@ -7702,27 +8341,99 @@ function pAudit(body) {
 /* ---------- PANDUAN PENGGUNAAN OJK 2026 ---------- */
 function renderGuide() {
   const g = $("#guide");
-  if (g.dataset.done) return;
+  if (!g || g.dataset.done) return;
   g.dataset.done = "1";
-  g.innerHTML =
-    '<div class="form-stack">' +
-      '<h3 style="margin:0">Panduan Teknis Climate Risk Management &amp; Scenario Analysis (CRMS) OJK 2026</h3>' +
-      '<p>Aplikasi ini dirancang sebagai alat bantu komprehensif bagi perbankan di Indonesia untuk menghitung, mengelola, dan melaporkan emisi Gas Rumah Kaca (GRK) sesuai standar OJK Buku 1–7 dan GHG Protocol.</p>' +
-      '<h4>Alur Kerja Perhitungan Emisi</h4>' +
-      '<ol style="padding-left:20px;line-height:1.7">' +
-        '<li><b>Lini 1 (Unit Bisnis &amp; Cabang):</b> Mencatat konsumsi energi primer (Listrik PLN, BBM Genset, Mobil Operasional, AC, Perjalanan Dinas) melalui tab <b>Data Aktivitas</b> atau <b>Kalkulator Cepat</b>.</li>' +
-        '<li><b>Lini 1 / Tim Manajemen Risiko (Pembiayaan):</b> Menginput portofolio pembiayaan debitur di tab <b>Investasi &amp; Pembiayaan</b> untuk menghitung Scope 3 Kategori 15 (PCAF Financed Emissions).</li>' +
-        '<li><b>Lini 2 (Manajemen Risiko &amp; Kepatuhan):</b> Menganalisis <b>Risiko Transisi</b> per skenario NGFS (Net Zero 2050, Delayed Transition) dan mengelola versi faktor emisi di tab <b>Parameter</b>.</li>' +
-        '<li><b>Lini 3 (Audit Internal / Eksternal):</b> Menguji jejak bukti (nomor faktur/rekening) dan kesiapan pengungkapan pada tab <b>Ringkasan</b>.</li>' +
-      '</ol>' +
-      '<h4>Rumus Dasar yang Diterapkan</h4>' +
-      '<div class="result-box" style="font-size:12.5px">' +
-        '<b>Total CO₂e (kg)</b> = CO₂ (kg) + CH₄ (g)/1.000 × GWP CH₄ + N₂O (g)/1.000 × GWP N₂O + Gas Lain (kgCO₂e)<br>' +
-        '<b>Scope 2 Listrik</b> = Konsumsi (kWh) × Faktor Grid Sistem (kgCO₂e/kWh)<br>' +
-        '<b>PCAF Financed Emissions</b> = Attribution Factor (Outstanding ÷ Total Ekuitas+Utang) × Emisi Debitur (tCO₂e)<br>' +
-        '<b>Biaya Karbon NGFS</b> = Emisi Debitur × % Penurunan Emisi × Harga Karbon (Rp/tCO₂e)' +
-      '</div>' +
-    '</div>';
+  g.classList.add("gc-learning");
+  g.innerHTML = `
+    <div class="edu-hero"><div class="edu-eyebrow">GreenCal Learning Center · CRMS &amp; Carbon Accounting</div>
+      <h3>Panduan praktis pengukuran emisi dan risiko iklim perbankan</h3>
+      <p>Pelajari konsep, input data, perhitungan, risiko pembiayaan, dan pemeriksaan bukti melalui enam modul. Contoh dan latihan di halaman ini bersifat edukatif; angka resmi harus diperiksa pada sumber, tahun, dan konteks penerapannya.</p>
+    </div>
+    <div class="edu-layout">
+      <nav class="edu-nav" aria-label="Navigasi materi GreenCal">
+        <button type="button" data-edu-tab="dasar" aria-selected="true">01 · Dasar CRMS</button>
+        <button type="button" data-edu-tab="scope" aria-selected="false">02 · Scope 1, 2 &amp; 3</button>
+        <button type="button" data-edu-tab="hitung" aria-selected="false">03 · Rumus &amp; Simulasi</button>
+        <button type="button" data-edu-tab="pcaf" aria-selected="false">04 · Financed Emissions</button>
+        <button type="button" data-edu-tab="risiko" aria-selected="false">05 · Skenario Risiko</button>
+        <button type="button" data-edu-tab="audit" aria-selected="false">06 · Tata Kelola &amp; Audit</button>
+      </nav>
+      <div class="edu-content">
+        <section class="edu-pane" data-edu-pane="dasar">
+          <h4>Memahami Climate Risk Management &amp; Scenario Analysis</h4>
+          <p>CRMS membantu bank mengenali bagaimana bahaya iklim dan perubahan menuju ekonomi rendah karbon dapat memengaruhi debitur, aset, kualitas kredit/pembiayaan, likuiditas, dan strategi bisnis. Inventarisasi emisi GRK adalah salah satu masukan, bukan pengganti penilaian risiko.</p>
+          <div class="edu-grid">
+            <div class="edu-card"><span class="edu-ico" aria-hidden="true">☀</span><strong>Risiko fisik</strong><p>Banjir, kekeringan, panas ekstrem, dan kejadian kronis yang mengganggu aset atau operasional.</p></div>
+            <div class="edu-card"><span class="edu-ico" aria-hidden="true">↗</span><strong>Risiko transisi</strong><p>Perubahan kebijakan, teknologi, harga karbon, pasar, dan preferensi konsumen.</p></div>
+            <div class="edu-card"><span class="edu-ico" aria-hidden="true">▤</span><strong>Risiko keuangan</strong><p>Dampak potensial terhadap arus kas debitur, PD, LGD, agunan, dan konsentrasi portofolio.</p></div>
+          </div>
+          <h4>Alur kerja data hingga keputusan</h4>
+          <div class="edu-flow"><div class="edu-step"><b>1. Identifikasi</b><span>Sumber emisi dan eksposur pembiayaan</span></div><div class="edu-step"><b>2. Ukur</b><span>Aktivitas × faktor emisi terverifikasi</span></div><div class="edu-step"><b>3. Analisis</b><span>Materialitas dan skenario risiko</span></div><div class="edu-step"><b>4. Validasi</b><span>Review, pengungkapan, tindak lanjut</span></div></div>
+          <div class="edu-callout"><b>Referensi pembelajaran:</b> Gunakan dokumen CRMS OJK Buku 1–7 sesuai topik dan edisi resmi yang berlaku, disertai GHG Protocol, PCAF, dan publikasi NGFS. Perbedaan metodologi harus dicatat; GreenCal bukan sertifikasi kepatuhan OJK.</div>
+        </section>
+        <section class="edu-pane" data-edu-pane="scope" hidden>
+          <h4>Peta sumber emisi GRK: Scope 1, 2, dan 3</h4>
+          <p>Batas organisasi, batas operasional, tahun inventarisasi, dan kategori kegiatan perlu ditentukan lebih dahulu. Emisi pembiayaan merupakan bagian dari Scope 3 Kategori 15, bukan Scope 1 bank.</p>
+          <div class="edu-visual" role="img" aria-label="Infografis alur Scope 1 berupa emisi langsung, Scope 2 berupa listrik yang dibeli, dan Scope 3 berupa rantai nilai termasuk emisi pembiayaan">
+            <svg viewBox="0 0 680 190" xmlns="http://www.w3.org/2000/svg"><rect x="8" y="24" width="205" height="145" rx="14" fill="#dcfce7"/><rect x="237" y="24" width="205" height="145" rx="14" fill="#fef3c7"/><rect x="466" y="24" width="205" height="145" rx="14" fill="#dbeafe"/><g font-family="Arial,sans-serif" fill="#172d26"><text x="24" y="57" font-weight="bold" font-size="19">SCOPE 1</text><text x="253" y="57" font-weight="bold" font-size="19">SCOPE 2</text><text x="482" y="57" font-weight="bold" font-size="19">SCOPE 3</text><text x="24" y="90" font-size="16">🚗  BBM kendaraan</text><text x="24" y="121" font-size="15">Genset, refrigeran</text><text x="253" y="90" font-size="16">⚡  Listrik dibeli</text><text x="253" y="121" font-size="15">Energi tidak langsung</text><text x="482" y="90" font-size="16">🏦  Pembiayaan</text><text x="482" y="121" font-size="15">Perjalanan, pemasok</text><text x="24" y="150" font-size="12">Emisi langsung</text><text x="253" y="150" font-size="12">Energi impor</text><text x="482" y="150" font-size="12">Rantai nilai</text></g></svg>
+          </div>
+          <div class="edu-grid"><div class="edu-card"><strong>Data aktivitas</strong><p>kWh listrik, liter BBM, kg refrigeran, km perjalanan, dan nilai pembiayaan.</p></div><div class="edu-card"><strong>Faktor emisi</strong><p>Simpan nilai, unit, wilayah, tahun berlaku, dan sumber referensi.</p></div><div class="edu-card"><strong>Mutu data</strong><p>Pisahkan data primer, estimasi, asumsi, dan keterbatasan cakupan.</p></div></div>
+          <div class="edu-callout">Hindari penghitungan ganda dalam satu inventarisasi. Penggabungan emisi operasional bank dengan emisi portofolio wajib disertai penjelasan batas dan kategori.</div>
+        </section>
+        <section class="edu-pane" data-edu-pane="hitung" hidden>
+          <h4>Rumus dasar dan kalkulator pembelajaran</h4>
+          <p>Untuk sumber energi dengan faktor emisi dalam kg CO₂e per satuan aktivitas, hasil tCO₂e diperoleh dengan membagi kg CO₂e dengan 1.000. Untuk gas terpisah, gunakan GWP dan unit massa yang konsisten.</p>
+          <div class="edu-formula"><b>Emisi (tCO₂e) = Aktivitas × Faktor Emisi (kgCO₂e/unit) ÷ 1.000</b></div>
+          <div class="edu-demo" aria-label="Simulasi emisi listrik">
+            <label>Konsumsi listrik (kWh)<input id="edu-kwh" type="number" inputmode="decimal" min="0" step="any" value="12000"></label>
+            <label>Faktor emisi contoh (kgCO₂e/kWh)<input id="edu-factor" type="number" inputmode="decimal" min="0" step="any" value="0.85"></label>
+            <div class="edu-result" id="edu-result" aria-live="polite">10,200 tCO₂e</div>
+            <small style="grid-column:1/-1;color:var(--ink-muted)">Faktor 0,85 hanya angka latihan, bukan faktor grid resmi. Pilih faktor sesuai periode, jaringan, dan metodologi pada tab Parameter.</small>
+          </div>
+          <table class="edu-table"><thead><tr><th>Aktivitas</th><th>Data yang dikumpulkan</th><th>Catatan</th></tr></thead><tbody>
+          <tr><td data-label="Aktivitas">Listrik</td><td data-label="Data yang dikumpulkan">kWh, lokasi, periode</td><td data-label="Catatan">Scope 2; tentukan metode dan faktor grid</td></tr><tr><td data-label="Aktivitas">BBM</td><td data-label="Data yang dikumpulkan">Liter menurut jenis bahan bakar</td><td data-label="Catatan">Scope 1 jika sumber dimiliki/dikendalikan</td></tr><tr><td data-label="Aktivitas">Refrigeran</td><td data-label="Data yang dikumpulkan">Massa kebocoran per jenis gas</td><td data-label="Catatan">Gunakan GWP yang terdokumentasi</td></tr><tr><td data-label="Aktivitas">Perjalanan bisnis</td><td data-label="Data yang dikumpulkan">Moda, jarak, kelas, frekuensi</td><td data-label="Catatan">Umumnya Scope 3; identifikasi faktor relevan</td></tr></tbody></table>
+        </section>
+        <section class="edu-pane" data-edu-pane="pcaf" hidden>
+          <h4>Menghitung emisi yang dibiayai (Financed Emissions)</h4>
+          <p>Metodologi PCAF mengatribusikan sebagian emisi debitur/proyek kepada lembaga keuangan. Denominator atribusi tidak selalu sama: bergantung kelas aset, struktur pembiayaan, dan ketentuan metode yang dipilih.</p>
+          <div class="edu-visual"><svg viewBox="0 0 650 140" xmlns="http://www.w3.org/2000/svg"><g font-family="Arial,sans-serif" text-anchor="middle"><rect x="7" y="30" width="172" height="78" rx="12" fill="#dbeafe"/><rect x="239" y="30" width="172" height="78" rx="12" fill="#dcfce7"/><rect x="471" y="30" width="172" height="78" rx="12" fill="#ede9fe"/><g fill="#152a30" font-size="16" font-weight="bold"><text x="93" y="60">Eksposur bank</text><text x="325" y="60">Faktor atribusi</text><text x="557" y="60">Emisi teratribusi</text></g><g font-size="12" fill="#334155"><text x="93" y="84">Outstanding pembiayaan</text><text x="325" y="84">Pembilang ÷ denominator</text><text x="557" y="84">Faktor × emisi debitur</text></g><g fill="#64748b" font-size="27"><text x="209" y="77">→</text><text x="441" y="77">→</text></g></g></svg></div>
+          <div class="edu-formula"><b>Emisi pembiayaan (tCO₂e) = Faktor atribusi × Emisi debitur (tCO₂e)</b><p style="margin:6px 0 0;font-size:13px">Contoh ilustratif: atribusi 10% × emisi debitur 2.000 tCO₂e = <b>200 tCO₂e</b>.</p></div>
+          <div class="edu-grid"><div class="edu-card"><strong>1. Klasifikasi aset</strong><p>Tentukan jenis pembiayaan, investasi atau proyek dan metodologi PCAF yang sesuai.</p></div><div class="edu-card"><strong>2. Verifikasi data</strong><p>Nilai pembiayaan, denominator, emisi debitur, tahun data, dan sumber bukti.</p></div><div class="edu-card"><strong>3. Skor kualitas</strong><p>Catat tingkat kualitas data PCAF dan prioritas perbaikan estimasi.</p></div></div>
+          <div class="edu-callout">Contoh denominator outstanding ÷ (ekuitas + utang) hanya tepat pada kelas aset/metode tertentu. Jangan terapkan rumus yang sama untuk seluruh portofolio.</div>
+        </section>
+        <section class="edu-pane" data-edu-pane="risiko" hidden>
+          <h4>Risiko iklim melalui skenario NGFS</h4>
+          <p>Analisis skenario bukan ramalan tunggal. Gunakan beberapa jalur perubahan iklim dan transisi untuk menguji ketahanan portofolio dalam horizon pendek, menengah, dan panjang.</p>
+          <div class="edu-grid"><div class="edu-card"><span class="edu-ico">↘</span><strong>Net Zero 2050</strong><p>Ilustrasi transisi lebih awal dan terkoordinasi; besaran dampak mengikuti versi skenario.</p></div><div class="edu-card"><span class="edu-ico">⏱</span><strong>Delayed Transition</strong><p>Perubahan kebijakan yang tertunda dapat menimbulkan penyesuaian lebih tajam.</p></div><div class="edu-card"><span class="edu-ico">☁</span><strong>Current Policies</strong><p>Memperhatikan potensi risiko fisik lebih tinggi dalam jangka panjang.</p></div></div>
+          <div class="edu-flow"><div class="edu-step"><b>Bahaya / kebijakan</b><span>Banjir atau biaya karbon</span></div><div class="edu-step"><b>Debitur</b><span>Biaya naik; pendapatan turun</span></div><div class="edu-step"><b>Risiko kredit</b><span>PD, LGD, nilai agunan</span></div><div class="edu-step"><b>Bank</b><span>Kerugian, modal, konsentrasi</span></div></div>
+          <div class="edu-callout">Asumsi harga karbon, perubahan emisi, sensitivitas PD/LGD dan periode proyeksi harus diberi label skenario, bukan hasil kepastian. Simpan sumber/versi NGFS dan validasi model internal.</div>
+        </section>
+        <section class="edu-pane" data-edu-pane="audit" hidden>
+          <h4>Tata kelola tiga lini dan kesiapan audit</h4>
+          <table class="edu-table"><thead><tr><th>Lini</th><th>Tanggung jawab utama</th><th>Bukti minimum</th></tr></thead><tbody><tr><td data-label="Lini">1 · Unit kerja</td><td data-label="Tanggung jawab utama">Input dan validasi awal data aktivitas/debitur</td><td data-label="Bukti minimum">Tagihan, meter, dokumen pembiayaan</td></tr><tr><td data-label="Lini">2 · Risiko &amp; Kepatuhan</td><td data-label="Tanggung jawab utama">Metodologi, faktor emisi, limit dan kajian skenario</td><td data-label="Bukti minimum">Register parameter, review, persetujuan</td></tr><tr><td data-label="Lini">3 · Audit Internal</td><td data-label="Tanggung jawab utama">Uji independen desain dan efektivitas kontrol</td><td data-label="Bukti minimum">Sampling, kertas kerja, temuan, tindak lanjut</td></tr></tbody></table>
+          <h4 style="margin-top:22px">Checklist kelengkapan pengungkapan</h4><p>Tandai setiap kontrol untuk melihat kemajuan persiapan dokumen. Checklist ini hanya berada di halaman panduan, bukan bukti persetujuan audit.</p>
+          <div id="edu-checks"><label class="edu-check"><input type="checkbox"> Batas organisasi, tahun, dan sumber data terdokumentasi</label><label class="edu-check"><input type="checkbox"> Faktor emisi memiliki sumber, unit, dan tahun berlaku</label><label class="edu-check"><input type="checkbox"> Scope dan kategori dihitung tanpa duplikasi internal</label><label class="edu-check"><input type="checkbox"> Asumsi dan kualitas data pembiayaan dicatat</label><label class="edu-check"><input type="checkbox"> Hasil dan skenario direview secara berjenjang</label><label class="edu-check"><input type="checkbox"> Bukti, keterbatasan, dan koreksi siap diaudit</label></div>
+          <div class="edu-progress" aria-label="Progres checklist"><span id="edu-progress" style="width:0%"></span></div><p id="edu-check-status">0 dari 6 pemeriksaan ditandai</p>
+        </section>
+      </div>
+    </div>`;
+  g.querySelectorAll("[data-edu-tab]").forEach(button => button.addEventListener("click", () => {
+    const id = button.dataset.eduTab;
+    g.querySelectorAll("[data-edu-tab]").forEach(b => b.setAttribute("aria-selected", String(b === button)));
+    g.querySelectorAll("[data-edu-pane]").forEach(p => { p.hidden = p.dataset.eduPane !== id; });
+  }));
+  const updateDemo = () => {
+    const amount = Number(g.querySelector("#edu-kwh").value), factor = Number(g.querySelector("#edu-factor").value);
+    g.querySelector("#edu-result").textContent = Number.isFinite(amount) && Number.isFinite(factor) && amount >= 0 && factor >= 0
+      ? (amount * factor / 1000).toLocaleString("id-ID", {minimumFractionDigits:3,maximumFractionDigits:3}) + " tCO₂e" : "Masukkan nilai ≥ 0";
+  };
+  g.querySelectorAll("#edu-kwh,#edu-factor").forEach(x => x.addEventListener("input",updateDemo));
+  updateDemo();
+  g.querySelectorAll("#edu-checks input").forEach(x => x.addEventListener("change", () => {
+    const all = [...g.querySelectorAll("#edu-checks input")], done = all.filter(c => c.checked).length;
+    g.querySelector("#edu-progress").style.width = (done / all.length * 100) + "%";
+    g.querySelector("#edu-check-status").textContent = done + " dari " + all.length + " pemeriksaan ditandai";
+  }));
 }
 
 /* ---------- DIALOG / MODAL ENGINE ---------- */
@@ -7947,6 +8658,8 @@ function bindEvents() {
 
   // Theme toggle
   $("#themeToggle").onclick = toggleTheme;
+  const mobileThemeToggle = document.getElementById("gcMobileThemeToggle");
+  if (mobileThemeToggle) mobileThemeToggle.onclick = toggleTheme;
 
   // Year select in header
   $("#dashYear").onchange = e => {
@@ -8031,7 +8744,11 @@ function bindEvents() {
   const btnCfgAi = $("#btnConfigureAi");
   if (btnCfgAi) btnCfgAi.onclick = openAiConfigDialog;
   const btnRunAi = $("#btnRunAi");
-  if (btnRunAi) btnRunAi.onclick = () => runAiAnalysisUi(true);
+  if (btnRunAi) btnRunAi.onclick = () => runAiAnalysisUi();
+  const btnCloud = $("#btnRunCloudAi");
+  if(btnCloud)btnCloud.onclick = () => confirmDlg("Jalankan Analisa AI Cloud?",
+    "Hanya jumlah emisi agregat per Scope, pembiayaan, dan tahun yang dikirim ke penyedia AI eksternal. Tidak termasuk nama debitur atau bukti transaksi. Keluaran adalah draf yang perlu ditinjau.",
+    "Jalankan AI Cloud",() => { void runAiAnalysisUi(true); });
 
   // NGFS Scenarios
   ["#tScen", "#tYr"].forEach(s => { const el = $(s); if (el) el.onchange = renderTrans; });
@@ -8049,37 +8766,52 @@ function bindEvents() {
 
   // Menu Backup & Restore
   $("#btnBackupJson").onclick = backupJson;
-  $("#btnClearPublicData").onclick = () => confirmDlg("Hapus data perangkat?", "Semua aktivitas, pembiayaan, dan offset yang disimpan di browser ini akan dihapus. Unduh cadangan JSON terlebih dahulu bila diperlukan.", "Hapus Data Lokal", () => { S.entries=[]; S.exposures=[]; S.offsets=[]; S.narrativeDrafts={}; S.audit=[]; saveStateToStorage(); LAST_AI_RESULT=null; renderAll(); toast("Perubahan reset sedang disimpan."); });
+  $("#btnClearPublicData").onclick = () => confirmDlg("Hapus data perangkat?", "Seluruh aktivitas, pembiayaan, offset, draf aktivitas, narasi dan asumsi transisi pada sesi jaringan ini akan dihapus. Cadangkan JSON terlebih dahulu.", "Hapus Data Lokal", () => {
+    try { GC_AUTH.resetCurrentScope(); } catch(e) { toast(e.message); return; }
+    S.entries=[]; S.exposures=[]; S.offsets=[]; S.narrativeDrafts={}; S.audit=[];
+    S.editActId=null; S.editFinId=null; LAST_AI_RESULT=null;
+    renderAll(); setTab("ringkasan"); toast("Data dan draf pada jaringan saat ini telah dihapus.");
+  });
   $("#fileRestoreJson").onchange = restoreJson;
-  // Per-browser D1 workspace, isolated using a server-issued HttpOnly cookie.
+  // Per-user browser working copy, isolated by the IP verified by Cloudflare.
   const scopeResetBtn=document.createElement("button");
   scopeResetBtn.type="button";
   scopeResetBtn.className="btn sm danger";
   scopeResetBtn.id="btnResetNetworkData";
   scopeResetBtn.textContent="Reset Data Saya";
-  scopeResetBtn.setAttribute("aria-label","Hapus seluruh data aktivitas, pembiayaan, dan offset perangkat ini");
+  scopeResetBtn.setAttribute("aria-label","Hapus seluruh data aktivitas, pembiayaan, dan offset pada jaringan ini");
   const backupPanel=document.querySelector("#btnResetData")?.parentElement;
   if(backupPanel)backupPanel.appendChild(scopeResetBtn);
   scopeResetBtn.onclick=()=>confirmDlg(
-    "Reset seluruh input perangkat ini?",
-    "Aktivitas, data pembiayaan, dan offset perangkat ini akan dihapus dari penyimpanan GreenCal. Cadangkan terlebih dahulu.",
+    "Reset seluruh input pada IP ini?",
+    "Aktivitas, pembiayaan, offset, draf dan asumsi transisi pada browser dan jaringan saat ini akan dihapus. Tindakan ini tidak dapat dibatalkan. Cadangkan terlebih dahulu bila diperlukan.",
     "Ya, Hapus Data Saya",
-    async ()=>{
+    ()=>{
       try{
-        await GC_AUTH.resetCurrentScope();
+        GC_AUTH.resetCurrentScope();
         S.entries=[];S.exposures=[];S.offsets=[];S.narrativeDrafts={};S.audit=[];
         S.editActId=null;S.editFinId=null;
         LAST_AI_RESULT=null;
         renderAll();setTab("ringkasan");
-        toast("Data perangkat ini berhasil dikosongkan.");
+        toast("Data pada jaringan ini berhasil dikosongkan.");
       }catch(error){toast(error.message);}
     }
   );
   $("#btnResetData").onclick = () => {
-    if (!GC_AUTH.scopeReady) { toast("Database belum tersedia."); return; }
+    if (!GC_AUTH.isAdmin) { toast("Hanya Admin yang dapat mereset data."); return; }
     confirmDlg("Reset Aktivitas?", "Semua aktivitas, eksposur dan offset bersama akan dikosongkan.", "Reset Data", () => { S.entries=[]; S.exposures=[]; S.offsets=[]; S.narrativeDrafts={}; saveStateToStorage(); renderAll(); toast("Menyimpan perubahan."); });
   };}
 
+async function refreshCloudAiAvailability(){
+  const button=$("#btnRunCloudAi");
+  if(!button)return;
+  button.hidden=true;
+  try{
+    const response=await fetch("/api/ai/status",{credentials:"same-origin",cache:"no-store"});
+    const status=response.ok?await response.json():null;
+    button.hidden=!(status?.ok&&status.publicCloudEnabled===true);
+  }catch(_){button.hidden=true;}
+}
 async function boot() {
   initTheme();
   // Clean any legacy browser API key values before activating public mode.
@@ -8100,6 +8832,7 @@ async function boot() {
     renderAll();
     setTab("ringkasan");
   });
+  void refreshCloudAiAvailability();
 }
 
 function closeDlg() {
@@ -8367,6 +9100,10 @@ function gcAiSetEditMode(enabled){
   if(toggle)toggle.hidden=enabled;
   if(save)save.hidden=!enabled;
   if(cancel)cancel.hidden=!enabled;
+  const panel=$(".gc-ai-editor-panel");
+  if(panel)panel.dataset.editorMode=enabled?"editing":"view";
+  const restore=$("#gcAiRestore");
+  if(restore)restore.hidden=enabled||!gcAiDraft();
   if(enabled)editor.focus();
 }
 function gcAiRememberSelection() {
@@ -8790,7 +9527,7 @@ async function runAiTier3(summaryData, year, config) {
     response=await fetch("/api/ai/analyze",{method:"POST",headers:{"Content-Type":"application/json"},
       body:JSON.stringify(payload),credentials:"same-origin",cache:"no-store"});
     result=await response.json();
-  }catch(e){throw Error("Tidak dapat menjangkau layanan AI server. Periksa koneksi internet.");}
+  }catch(e){throw Error("Tidak dapat menghubungi layanan AI Cloud. Periksa koneksi dan ketersediaan layanan.");}
   if(!response.ok||!result.ok)throw Error(result.message||("Layanan AI gagal (HTTP "+response.status+")."));
   const local=runAiTier2(s,year);
   return Object.assign({},local,{
@@ -8805,13 +9542,11 @@ async function runAiTier3(summaryData, year, config) {
 }
 
 /* Master AI Runner */
-async function executeAiAnalysis(useCloud = false) {
+async function executeAiAnalysis() {
   const cfg = getAiConfig();
   const s = summary(S.year, S.method);
   
-  if (useCloud) {
-    return await runAiTier3(s, S.year, cfg);
-  } else if (cfg.tier === "tier1") {
+  if (cfg.tier === "tier1") {
     return runAiTier1(s, S.year);
   } else if (cfg.tier === "tier3") {
     return await runAiTier3(s, S.year, cfg);
@@ -8853,7 +9588,7 @@ function renderAiView() {
   }
 }
 
-async function runAiAnalysisUi(useCloud = false) {
+async function runAiAnalysisUi(useCloud=false) {
   if(!gcAiEnsureSaved())return;
   const box = $("#aiContentBox");
   box.innerHTML = 
@@ -8864,7 +9599,7 @@ async function runAiAnalysisUi(useCloud = false) {
     '</div>';
 
   try {
-    const res = await executeAiAnalysis(useCloud);
+    const res = useCloud===true ? await runAiTier3(summary(S.year,S.method),S.year,{}) : await executeAiAnalysis();
     LAST_AI_RESULT = res;
     LAST_AI_FINGERPRINT = gcAiFingerprint(S.year);
     displayAiResult(res);
@@ -8976,21 +9711,27 @@ function displayAiResult(res) {
   // Editorial Word-like WYSIWYG panel: saved manual draft takes precedence over generated narrative.
   const edited=gcAiDraft(),stale=edited&&edited.fingerprint!==gcAiFingerprint(S.year);
   html +=
-    '<div class="panel gc-ai-editor-panel">' +
+    '<div class="panel gc-ai-editor-panel" role="region" aria-labelledby="gcAiEditorTitle">' +
       '<div class="panel-header gc-ai-editor-heading">' +
-        '<div><h3>Draf Narasi Pengungkapan Laporan Keberlanjutan (TCFD / ISSB S2)</h3>' +
-          '<p>Narasi dapat diedit manual seperti dokumen Word. Perubahan hanya disimpan sebagai draft dan memerlukan validasi sebelum pelaporan resmi.</p></div>' +
-        '<div class="gc-ai-editor-actions">' +
-          '<button type="button" class="btn sm primary" id="gcAiEdit">Edit Narasi</button>' +
-          '<button type="button" class="btn sm primary" id="gcAiSave" hidden>Simpan Perubahan</button>' +
-          '<button type="button" class="btn sm" id="gcAiCancel" hidden>Batalkan</button>' +
-          '<button type="button" class="btn sm" id="gcAiRestore" '+(edited?'':'hidden')+'>Gunakan Hasil Otomatis</button>' +
+        '<div class="gc-ai-editor-heading-main">' +
+          '<span class="gc-ai-editor-leading-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M8 13h8M8 17h6"/></svg></span>' +
+          '<div class="gc-ai-editor-heading-text">' +
+            '<div class="gc-ai-editor-eyebrow">DOKUMEN KEBERLANJUTAN · EDITOR NARASI</div>' +
+            '<h3 id="gcAiEditorTitle">Draf Narasi Pengungkapan Laporan Keberlanjutan (TCFD / ISSB S2)</h3>' +
+            '<p>Narasi dapat diedit manual seperti dokumen Word. Perubahan hanya disimpan sebagai draft dan memerlukan validasi sebelum pelaporan resmi.</p>' +
+          '</div>' +
+        '</div>' +
+        '<div class="gc-ai-editor-actions" role="group" aria-label="Tindakan editor narasi">' +
+          '<button type="button" class="btn sm gc-ai-action gc-ai-action-edit" id="gcAiEdit" aria-controls="gcAiNarrativeEditor"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L9 17l-4 1 1-4L16.5 3.5z"/></svg><span>Edit Narasi</span></button>' +
+          '<button type="button" class="btn sm gc-ai-action gc-ai-action-save" id="gcAiSave" aria-controls="gcAiNarrativeEditor" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><path d="M17 21v-8H7v8M7 3v5h8"/></svg><span>Simpan Perubahan</span></button>' +
+          '<button type="button" class="btn sm gc-ai-action gc-ai-action-cancel" id="gcAiCancel" aria-controls="gcAiNarrativeEditor" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg><span>Batalkan</span></button>' +
+          '<button type="button" class="btn sm gc-ai-action gc-ai-action-restore" id="gcAiRestore" title="Hapus draft manual dan gunakan narasi otomatis (memerlukan konfirmasi)" '+(edited?'':'hidden')+'><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 3 1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8L12 3zM19.5 17l.7 2 .8.7-2 .7-.7 2-.7-2-2-.7 2-.7z"/></svg><span>Gunakan Hasil Otomatis</span></button>' +
         '</div>' +
       '</div>' +
       '<div class="gc-ai-editor-meta" aria-live="polite">' +
+        '<span class="gc-ai-editor-statusline"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 7.5h.01"/></svg><span id="gcAiEditorStatus">Pilih Edit Narasi untuk mengubah isi maupun format dokumen.</span></span>' +
         '<span id="gcAiDraftBadge" class="gc-ai-draft-badge" '+(edited?'':'hidden')+'>Draft manual · '+(edited?esc(edited.updatedAt?.replace("T"," ").slice(0,16)||"Tersimpan"):"")+'</span>' +
         (stale?'<span class="gc-ai-editor-warning">Data emisi berubah sejak draft disimpan. Tinjau kembali angka dan narasinya.</span>':'') +
-        '<span id="gcAiEditorStatus">Pilih Edit Narasi untuk mengubah isi maupun format dokumen.</span>' +
       '</div>' +
       '<div class="gc-ai-toolbar" id="gcAiToolbar" role="toolbar" aria-label="Peralatan format narasi" hidden>' +
         '<div class="gc-ai-toolgroup">' +
@@ -9130,7 +9871,7 @@ window.displayAiResult = displayAiResult;
   const list = sheet.querySelector(".gc-choice-options");
   let active = null;
   const allowed = sel => !!sel && !sel.disabled && sel.options.length >= 4 &&
-    (sel.id === "aUnit" || sel.id === "aCat" || sel.id === "wzL_unit" || sel.id === "wzL_grid" || sel.id === "wzB_fuel" || sel.id === "wzX_sec" ||
+    (sel.id === "aUnit" || sel.id === "aCat" || sel.id === "wzL_unit" || sel.id === "wzL_grid" || sel.id === "wzB_fuel" || sel.id === "wzX_sec" || sel.id === "wzS_sector" ||
       !!sel.closest("#aFields")) &&
     window.matchMedia("(max-width: 859px)").matches;
   const draw = () => {
@@ -9192,5 +9933,14 @@ window.displayAiResult = displayAiResult;
 })();
 
   </script>
+<script id="gc-user-manual-script">
+(()=>{const v=document.getElementById("view-manual");if(!v)return;const d=[...v.querySelectorAll("[data-gum-part]")],links=[...v.querySelectorAll("[data-gum-link]")];
+v.querySelector("#gum-search").addEventListener("input",e=>{const q=e.target.value.toLocaleLowerCase("id").trim();let n=0;d.forEach(x=>{x.hidden=!!q&&!x.textContent.toLocaleLowerCase("id").includes(q);if(!x.hidden){n++;if(q)x.open=true;}});links.forEach(a=>a.hidden=document.getElementById("gum-"+a.dataset.gumLink).hidden);v.querySelector("#gum-empty").hidden=!!n;});
+v.querySelector("#gum-all").onclick=()=>d.forEach(x=>{if(!x.hidden)x.open=true;});v.querySelector("#gum-close").onclick=()=>d.forEach(x=>x.open=false);
+links.forEach(a=>a.onclick=e=>{e.preventDefault();const x=document.getElementById("gum-"+a.dataset.gumLink);x.open=true;x.scrollIntoView({block:"start",behavior:"smooth"});});
+v.querySelectorAll("[data-gum-go]").forEach(x=>x.onclick=()=>window.setTab?.(x.dataset.gumGo));
+document.querySelectorAll("[data-gum-menu]").forEach(x=>{let go=()=>window.setTab?.("manual");x.onclick=go;x.onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();go();}};});
+let previous=null;v.querySelector("#gum-print").onclick=()=>{previous=d.map(x=>({open:x.open,hidden:x.hidden}));d.forEach(x=>{x.open=true;x.hidden=false;});window.print();};window.addEventListener("afterprint",()=>{if(previous){d.forEach((x,i)=>{x.open=previous[i].open;x.hidden=previous[i].hidden;});previous=null;}});
+})();</script>
 </body>
 </html>

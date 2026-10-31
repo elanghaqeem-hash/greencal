@@ -1,0 +1,55 @@
+name: OJK 2026 Book 6 workpaper integrity
+on:
+  pull_request:
+    paths:
+      - 'src/enterprise/book6*.js'
+      - 'src/enterprise/api.js'
+      - 'migrations/enterprise/0008_book6_workpapers.sql'
+      - 'assets/enterprise-book6.js'
+      - 'assets/enterprise.js'
+      - 'enterprise.html'
+      - 'scripts/build-dist.mjs'
+      - 'tests/book6-workpaper.test.mjs'
+      - 'scripts/book6/**'
+      - 'tests/book6/**'
+      - 'tests/support/enterprise-db.mjs'
+      - '.github/workflows/book6-workpaper.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'src/enterprise/book6*.js'
+      - 'migrations/enterprise/0008_book6_workpapers.sql'
+      - 'tests/book6-workpaper.test.mjs'
+      - 'scripts/book6/**'
+      - 'tests/book6/**'
+  workflow_dispatch:
+jobs:
+  book6:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Check JS source and UI
+        run: |
+          node --check src/enterprise/book6.js
+          node --check src/enterprise/book6-api.js
+          node --check src/enterprise/api.js
+          node --check assets/enterprise-book6.js
+          node --check assets/enterprise.js
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install official workbook inspection dependencies
+        run: python -m pip install -r scripts/book6/requirements.txt
+      - name: Test protected XLSX inspection and strict cell-mapping gates (synthetic fixtures)
+        run: python -m unittest discover -s tests/book6 -p 'test_*.py' -v
+      - name: Test Book 6 real migration + API
+        run: node --test tests/book6-workpaper.test.mjs
+      - name: Regression test for existing enterprise and Book 7
+        run: node --test tests/enterprise-foundation.test.mjs tests/book7-standardized.test.mjs
+      - name: Verify enterprise production build assets
+        run: node scripts/build-dist.mjs

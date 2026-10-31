@@ -1,0 +1,38 @@
+name: GreenCal Vercel bank schema preflight
+on:
+  pull_request:
+    paths:
+      - 'scripts/vercel/**'
+      - 'tests/vercel-*.test.mjs'
+      - 'api/bridge.js'
+      - 'src/vercel/**'
+      - 'package.json'
+      - '.github/workflows/vercel-bank-preflight.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/vercel/**'
+      - 'tests/vercel-*.test.mjs'
+      - 'api/bridge.js'
+      - 'src/vercel/**'
+      - 'package.json'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  vercel-preflight:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Syntax-check Vercel API, PostgreSQL adapter and read-only preflight
+        run: |
+          node --check api/bridge.js
+          node --check src/vercel/postgres.js
+          node --check scripts/vercel/verify-bank-schema.mjs
+      - name: Test with synthetic metadata only, no credentials
+        run: npm run test:vercel
+      - name: Check application assets for Vercel deployment
+        run: npm run build

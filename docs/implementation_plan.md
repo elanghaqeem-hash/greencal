@@ -1,3 +1,5 @@
+> **Catatan audit 27 Oktober 2026:** dokumen ini adalah rencana historis. Pernyataan kelengkapan tujuh buku atau akurasi terhadap sumber OJK di bawah belum memiliki traceability/validasi yang memadai. Gunakan `docs/enterprise/README.md` dan matriks regulasi terbaru sebagai status implementasi yang berlaku.
+
 # Rencana Pengembangan Sistem Green Calculator Lengkap & Mobile-Friendly (HP)
 
 ## Gambaran Umum & Tujuan

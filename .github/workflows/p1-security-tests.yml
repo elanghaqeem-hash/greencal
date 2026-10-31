@@ -1,0 +1,53 @@
+name: GreenCal P1 public AI and data isolation
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'index.html'
+      - 'auth-client.js'
+      - 'src/worker.js'
+      - 'src/ai-worker.js'
+      - 'src/public-ai.js'
+      - 'migrations/0004_public_ai_quota.sql'
+      - 'tests/p1-*.mjs'
+      - '.github/workflows/p1-security-tests.yml'
+  pull_request:
+    paths:
+      - 'index.html'
+      - 'auth-client.js'
+      - 'src/worker.js'
+      - 'src/ai-worker.js'
+      - 'src/public-ai.js'
+      - 'migrations/0004_public_ai_quota.sql'
+      - 'tests/p1-*.mjs'
+      - '.github/workflows/p1-security-tests.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  p1-regression:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: |
+          node --check src/worker.js
+          node --check src/ai-worker.js
+          node --check src/public-ai.js
+          node --check auth-client.js
+          node --test tests/p1-api.test.mjs tests/auth-ui.test.mjs tests/rbac.test.mjs
+          node scripts/build-dist.mjs
+      - name: Install Playwright Chromium
+        run: |
+          npm install --no-save --no-package-lock playwright@1.56.1
+          npx playwright install --with-deps chromium
+      - name: Verify IP partitioning in mobile browser
+        run: |
+          python3 -m http.server 8787 --directory dist >/tmp/greencal-p1-http.log 2>&1 &
+          SERVER_PID=$!
+          trap 'kill "$SERVER_PID" || true' EXIT
+          node tests/p1-browser-isolation.mjs
+          node tests/p0-browser-smoke.mjs

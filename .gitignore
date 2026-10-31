@@ -1,4 +1,4 @@
-﻿# OS generated files
+# OS generated files
 Thumbs.db
 ehthumbs.db
 Desktop.ini
@@ -15,3 +15,10 @@ $RECYCLE.BIN/
 # Logs and temp
 *.log
 *.tmp
+
+# Generated Cloudflare static-asset bundle
+dist/
+/node_modules
+
+# Local Workers runtime state
+.wrangler/

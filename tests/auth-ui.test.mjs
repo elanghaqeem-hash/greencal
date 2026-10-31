@@ -11,21 +11,23 @@ test("GreenCal public calculator does not require a login or MFA form",()=>{
                    "gcEnrollBiometrics","gcForcePasswordForm","gcActivationForm"]){
   assert.equal(html.split('id="'+id+'"').length-1,0,id+" should not appear as an active UI control");
  }
- assert.match(client,/GreenCal anonymous workspace: D1-backed per-browser data, no login/);
+ assert.match(client,/GreenCal Public Mode: no login/);
  assert.match(client,/role:"public"/);
 });
 
-test("public calculator persists using a private device cookie and revision-safe D1 API",()=>{
- assert.match(client,/fetch\("\/api\/public\/state"/);
- assert.match(client,/credentials:"same-origin"/);
- assert.match(client,/revision/);
- assert.match(client,/await request\("GET"\)/);
- assert.match(client,/await request\("PUT"/);
- assert.match(client,/status===409/);
- assert.match(client,/async resetCurrentScope/);
- assert.doesNotMatch(client,/localStorage\.getItem\(scopedStore/);
- assert.doesNotMatch(client,/greencal_ip_scope_v1_/);
- assert.doesNotMatch(client,/api\/client-scope/);
+test("public calculator isolates browser data by verified IP scope",()=>{
+ assert.match(client,/greencal_ip_scope_v1_/);
+ assert.match(client,/fetch\("\/api\/client-scope"/);
+ assert.match(client,/scopeReady=true/);
+ assert.match(client,/localStorage.setItem\(scopedStore/);
+ assert.match(client,/localStorage.getItem\(scopedStore/);
+ assert.match(client,/keys.forEach\(key=>localStorage.removeItem\(key\)\)/);
+ assert.match(client,/EXTRA_SCOPE_KEYS/);
+ assert.match(client,/entries:Array.isArray/);
+ assert.match(client,/exposures:Array.isArray/);
+ assert.match(client,/offsets:Array.isArray/);
+ assert.match(client,/LEGACY_STORE="greencal_public_data_v1"/);
+ assert.doesNotMatch(client,/localStorage.getItem\(LEGACY_STORE\)/);
 });
 
 test("admin-only UI and key configuration are hidden in public mode",()=>{
@@ -38,8 +40,9 @@ test("admin-only UI and key configuration are hidden in public mode",()=>{
 
 test("public calculator still has responsive branding and parses",()=>{
  assert.match(html,/Plus Jakarta Sans/);
- assert.match(html,/assets\/brks-syariah\.svg/);
- const script=html.slice(html.lastIndexOf("<script>")+8,html.lastIndexOf("</script>"));
+ assert.doesNotMatch(html,/assets\/brks-syariah\.svg/);
+ assert.match(html,/id="brandLogo"/);
+ const script=html.slice(html.lastIndexOf("<script>")+8,html.indexOf("</script>", html.lastIndexOf("<script>")));
  assert.ok(script.length>100000);
  assert.doesNotThrow(()=>new Function(script));
  assert.doesNotThrow(()=>new Function(client));

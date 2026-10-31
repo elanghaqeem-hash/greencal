@@ -1,0 +1,48 @@
+name: GreenCal PR31 safe reconciliation regression
+on:
+  pull_request:
+    paths:
+      - 'docs/enterprise/pr31-safe-reconciliation-20261031.md'
+      - '.github/workflows/pr31-reconciliation.yml'
+      - 'auth-client.js'
+      - 'index.html'
+      - 'src/worker.js'
+      - 'src/ai-worker.js'
+      - 'src/public-ai.js'
+      - 'src/vercel/public-ai.js'
+      - 'api/bridge.js'
+      - 'tests/p1-*.mjs'
+      - 'tests/vercel-*.test.mjs'
+  push:
+    branches: [main]
+    paths:
+      - 'docs/enterprise/pr31-safe-reconciliation-20261031.md'
+      - '.github/workflows/pr31-reconciliation.yml'
+      - 'auth-client.js'
+      - 'index.html'
+      - 'src/worker.js'
+      - 'src/ai-worker.js'
+      - 'src/public-ai.js'
+      - 'src/vercel/public-ai.js'
+      - 'api/bridge.js'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  public-and-vercel-regression:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Validate public, AI, user access, Vercel bridge and calculator contracts
+        run: |
+          node --check src/worker.js
+          node --check src/ai-worker.js
+          node --check auth-client.js
+          node --check api/bridge.js
+          node --test tests/p1-api.test.mjs tests/auth-ui.test.mjs tests/rbac.test.mjs tests/vercel-cloudflare-cutover.test.mjs tests/vercel-runtime.test.mjs tests/wizard-interaction.test.mjs tests/business-travel.test.mjs tests/pcaf-securities.test.mjs
+      - name: Verify Vercel static build
+        run: node scripts/build-dist.mjs
