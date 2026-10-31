@@ -20,3 +20,13 @@ The official non-www page initially timed out/rejected requests; its indexed `?t
 ## Next source step
 
 Complete whole-original retrieval for Books 1/3/5/6/7; inventory accompanying spreadsheets/data packages; OCR and visually reconcile image tables/formulas; extract definitions, inputs, units, rules, assumptions, outputs, applicability and cross-book dependencies for every relevant section. Have the bank Compliance, Quant/Model Validation and Sharia reviewers accept the matrix before implementing official formulas or templates. No 2024 formula/template is silently substituted.
+
+## 31 October 2026 addendum — user-supplied Buku 3 source
+
+A complete 50-page Buku 3 PDF supplied by the user was opened and page text/table/illustration reviewed. File size: 284,739,689 bytes. SHA-256 of the **uploaded file**:
+`439277a0471e72343354f8d723a45c58aecb7876b9d7d2f8f4d03bab6e9b4888`.
+This does **not** establish independent identity against an OJK-hosted official file. The 27 October checkpoint above remains a valid historical description; it is superseded for Buku 3 user-upload inspection only.
+
+Source pages reviewed: PDF p. 9 (separate debtor/financed purposes); pp. 13–15 (Scope 1–3, Tier 1–4, carbon-cost base); pp. 19–21 (attribution classes, Scope 1+2 main total and Scope 3 isolation); pp. 25–27 (activity data and factor vintage); pp. 31–33 (PT ABC example, peer proxy); pp. 37–46 (conversion/glossary); p. 47 (Annex C workbook by QR code). A new eight-item B3 regulatory-matrix mapping documents controlled implemented checks separately from regulatory validation.
+
+The official companion Annex C XLSX has not been supplied or successfully downloaded. **No live factor values or claims of Excel formula parity** are accepted from this PDF alone. The B3 sandbox is opt-in and must remain disabled for operational bank reporting until workbook equivalence, model validation and Bank UAT are evidenced.
