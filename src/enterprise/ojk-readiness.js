@@ -1,3 +1,4 @@
+import {OJK_ANNEX_AUDIT_20261031} from './ojk-annex-audit.js';
 // OJK CRMS 2026 internal conformance gate. Never infer regulatory PASS from CI, deploy or user claims.
 const MATRIX=[
 [1,'Tata kelola & strategi',[['B1_REQUIREMENTS','Pemetaan ketentuan resmi per halaman disetujui'],['B1_GOVERNANCE','Governance, strategi, risk appetite dan disclosure disetujui Bank'],['B1_UAT','UAT tata kelola dan tiga lini pertahanan lulus']]],
@@ -49,6 +50,7 @@ export function evaluateOjk2026({attestations=[],bankReleaseAuthorized=false,ver
 export function publicOjkReadiness(){
  return {...evaluateOjk2026(),assessmentBasis:'DOCUMENTED_GAPS_ONLY',evidenceAvailableInProduction:false,
   book3Reconciliation:{worksheets:35,formulasTotal:6900,independentlyRecalculated:249,notRecalculated:6651},
+  officialAnnexReconciliation:OJK_ANNEX_AUDIT_20261031,
   knownCriticalBlocks:['Buku 3: 6.651 formula belum direkalkulasi',
    'Buku 5: pengecualian dan dataset sumber belum disetujui Bank',
    'Buku 6: workbook resmi belum terbukti parity sel/formula',
