@@ -38,8 +38,12 @@ export async function migrateDummyOnPreview(env=process.env){
  const gate=migrationGate(env);
  if(!gate.allowed)return {...gate,applied:false,bankProductionReady:false};
  const {Client}=await import('pg');
- const client=new Client({connectionString:env.DATABASE_URL_POOLED||env.DATABASE_URL,
-  connectionTimeoutMillis:8000,ssl:{rejectUnauthorized:true},
+ const connectionString=env.DATABASE_URL_POOLED||env.DATABASE_URL;
+ const parsed=new URL(connectionString);
+ const localCi=env.CI==='true'&&env.GC_DEMO_LOCAL_CI_ONLY==='true'&&
+   ['127.0.0.1','localhost'].includes(parsed.hostname)&&env.GC_DEMO_TARGET_DATABASE==='greencal_ci';
+ const client=new Client({connectionString,
+  connectionTimeoutMillis:8000,ssl:localCi?false:{rejectUnauthorized:true},
   application_name:'greencal-demo-migration-20261031'});
  let began=false;
  try{
