@@ -17,7 +17,8 @@ export function resolveApiPath(query){
  return '/api/'+path.replace(/^\/+/,'');
 }
 export function publicNetworkScope(req,secret){
- const raw=req.headers?.['x-vercel-forwarded-for']||req.headers?.['x-forwarded-for'];
+ // Accept only the Vercel-managed forwarding header, never the generic client-supplied fallback.
+ const raw=req.headers?.['x-vercel-forwarded-for'];
  const ip=(typeof raw==='string'?raw.split(',')[0].trim():'');
  if(typeof secret!=='string'||secret.length<32||!isIP(ip))return null;
  return createHmac('sha256',secret).update('greencal:vercel:v1:'+ip).digest('hex');
@@ -37,7 +38,9 @@ export async function handler(req,res){
   return send(res,200,{ok:true,platform:'vercel',release:'controlled',
    frontend:'deployed',postgresConfigured:postgres,institutionSSOConfigured:sso,
    enterpriseEnabled:enabled&&postgres&&sso,bankProductionReady:false,
-   regulatoryReportingApproved:false});
+   regulatoryReportingApproved:false,
+   book7CatalogIncluded:true,book7ParametersPdfRounded:true,
+   modulesConfigured:{book6:process.env.GC_ENTERPRISE_BOOK6_ENABLED==='true',book7:process.env.GC_ENTERPRISE_BOOK7_ENABLED==='true',quantitative:process.env.GC_ENTERPRISE_QUANT_ENABLED==='true',advanced:process.env.GC_ENTERPRISE_ADVANCED_ENABLED==='true',sourceReview:process.env.GC_ENTERPRISE_SOURCE_REVIEW_ENABLED==='true',releaseApproval:process.env.GC_ENTERPRISE_RELEASE_ENABLED==='true'}});
  }
  if(path==='/api/ai/status'&&req.method==='GET'){
   return send(res,200,{ok:true,role:'public',publicCloudEnabled:false,
@@ -66,9 +69,18 @@ export async function handler(req,res){
    const isBody=!['GET','HEAD'].includes(req.method);
    const payload=isBody?(typeof req.body==='string'?req.body:JSON.stringify(req.body??{})):undefined;
    const request=new Request('https://'+host+path,{method:req.method,headers,body:payload});
+   // Explicit allowlist; do not forward unreviewed process.env or service secrets.
+   // All guarded modules remain OFF unless the institution configures each flag.
    const env={GC_ENTERPRISE_ENABLED:'true',ENTERPRISE_DB:db,
       GC_ENTERPRISE_ACCESS_DOMAIN:process.env.GC_ENTERPRISE_ACCESS_DOMAIN,
-      GC_ENTERPRISE_ACCESS_AUD:process.env.GC_ENTERPRISE_ACCESS_AUD};
+      GC_ENTERPRISE_ACCESS_AUD:process.env.GC_ENTERPRISE_ACCESS_AUD,
+      GC_ENTERPRISE_QUANT_ENABLED:process.env.GC_ENTERPRISE_QUANT_ENABLED==='true'?'true':'false',
+      GC_ENTERPRISE_BOOK7_ENABLED:process.env.GC_ENTERPRISE_BOOK7_ENABLED==='true'?'true':'false',
+      GC_ENTERPRISE_BOOK6_ENABLED:process.env.GC_ENTERPRISE_BOOK6_ENABLED==='true'?'true':'false',
+      GC_ENTERPRISE_ADVANCED_ENABLED:process.env.GC_ENTERPRISE_ADVANCED_ENABLED==='true'?'true':'false',
+      GC_ENTERPRISE_SOURCE_REVIEW_ENABLED:process.env.GC_ENTERPRISE_SOURCE_REVIEW_ENABLED==='true'?'true':'false',
+      GC_ENTERPRISE_RELEASE_ENABLED:process.env.GC_ENTERPRISE_RELEASE_ENABLED==='true'?'true':'false',
+      GC_ENTERPRISE_REQUIRE_SOURCE_MANIFEST:process.env.GC_ENTERPRISE_REQUIRE_SOURCE_MANIFEST==='true'?'true':'false'};
    const response=await handleEnterpriseApi(request,env);
    for(const [key,value] of response.headers){
     if(['content-type','cache-control','x-content-type-options','referrer-policy'].includes(key))res.setHeader(key,value);
