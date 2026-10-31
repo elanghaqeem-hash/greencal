@@ -1,6 +1,6 @@
 import {createHmac} from 'node:crypto';
 import {isIP} from 'node:net';
-import {getPostgres} from '../src/vercel/postgres.js';
+import {getEnterprisePostgres} from '../src/vercel/postgres.js';
 import {handleEnterpriseApi} from '../src/enterprise/api.js';
 
 const NO_STORE={'Cache-Control':'no-store','X-Content-Type-Options':'nosniff','Referrer-Policy':'no-referrer'};
@@ -34,10 +34,12 @@ export async function handler(req,res){
  if(path==='/api/health'&&req.method==='GET'){
   const postgres=!!(process.env.DATABASE_URL_POOLED||process.env.GREENCAL_POSTGRES_URL||process.env.DATABASE_URL);
   const sso=!!(process.env.GC_ENTERPRISE_ACCESS_DOMAIN&&process.env.GC_ENTERPRISE_ACCESS_AUD);
+  const enterpriseDatabase=!!process.env.GC_ENTERPRISE_DATABASE_URL_POOLED;
   const enabled=process.env.GC_ENTERPRISE_ENABLED==='true';
   return send(res,200,{ok:true,platform:'vercel',release:'controlled',
    frontend:'deployed',postgresConfigured:postgres,institutionSSOConfigured:sso,
-   enterpriseEnabled:enabled&&postgres&&sso,bankProductionReady:false,
+   enterpriseDatabaseConfigured:enterpriseDatabase,
+   enterpriseEnabled:enabled&&enterpriseDatabase&&sso,bankProductionReady:false,
    regulatoryReportingApproved:false,
    book7CatalogIncluded:true,book7ParametersPdfRounded:true,
    modulesConfigured:{book6:process.env.GC_ENTERPRISE_BOOK6_ENABLED==='true',book7:process.env.GC_ENTERPRISE_BOOK7_ENABLED==='true',quantitative:process.env.GC_ENTERPRISE_QUANT_ENABLED==='true',advanced:process.env.GC_ENTERPRISE_ADVANCED_ENABLED==='true',sourceReview:process.env.GC_ENTERPRISE_SOURCE_REVIEW_ENABLED==='true',releaseApproval:process.env.GC_ENTERPRISE_RELEASE_ENABLED==='true'}});
@@ -52,14 +54,15 @@ export async function handler(req,res){
    return blocked(res,'ENTERPRISE_NOT_ENABLED','Workspace institusi belum diaktifkan oleh bank.');
   if(!process.env.GC_ENTERPRISE_ACCESS_DOMAIN||!process.env.GC_ENTERPRISE_ACCESS_AUD)
    return blocked(res,'ENTERPRISE_IDENTITY_NOT_CONFIGURED','SSO institusi belum tersedia.');
-  if(!(process.env.DATABASE_URL_POOLED||process.env.GREENCAL_POSTGRES_URL||process.env.DATABASE_URL))
+  if(!process.env.GC_ENTERPRISE_DATABASE_URL_POOLED)
    return blocked(res,'ENTERPRISE_DB_NOT_CONFIGURED','Database institusi belum tersedia.');
   if(!req.headers['cf-access-jwt-assertion'])
    return send(res,401,{ok:false,code:'LOGIN_REQUIRED',message:'Sesi SSO institusi diperlukan.'});
   try{
    // A request-supplied header is NOT trusted. The shared implementation
    // verifies RSA signatures, issuer, audience, expiry and tenant membership.
-   const db=await getPostgres();
+   const db=await getEnterprisePostgres();
+   if(!db)throw Error('ENTERPRISE_DB_UNAVAILABLE');
    const host=String(req.headers.host||'');
    if(!/^[a-z0-9.-]+(?::[0-9]{2,5})?$/i.test(host))throw Error('INVALID_HOST');
    const headers=new Headers();
