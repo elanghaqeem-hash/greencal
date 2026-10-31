@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {toPgSql,d1Compatibility,getPostgres} from '../src/vercel/postgres.js';
-import {handler,resolveApiPath,publicNetworkScope} from '../api/bridge.js';
+import {handler,resolveApiPath,publicNetworkScope,vercelEnterpriseEnvironment,VERCEL_ENTERPRISE_FLAGS} from '../api/bridge.js';
 
 test('SQL placeholders do not rewrite literal/question mark or SQL comments',()=>{
  const q=toPgSql("SELECT '?' AS literal, col FROM items WHERE a=? AND b=? -- ? in comment");
@@ -86,4 +86,29 @@ test('public scope endpoint refuses untrusted or absent proxy context',async()=>
  await handler(req,res);
  assert.equal(res.code,503);
  assert.equal(res.data.code,'NETWORK_SCOPE_UNAVAILABLE');
+});
+
+test('all enterprise modules are separately gated on Vercel and cannot be enabled implicitly',()=>{
+ const absent=vercelEnterpriseEnvironment({});
+ assert.equal(absent.GC_ENTERPRISE_ENABLED,'false');
+ for(const key of VERCEL_ENTERPRISE_FLAGS)assert.equal(absent[key],'false',key);
+ const enabled=vercelEnterpriseEnvironment({
+  GC_ENTERPRISE_ENABLED:'true',GC_ENTERPRISE_BOOK6_ENABLED:'true',
+  GC_ENTERPRISE_QUANT_ENABLED:'true',GC_ENTERPRISE_BOOK7_ENABLED:'true',
+  GC_ENTERPRISE_RELEASE_ENABLED:'true',GC_ENTERPRISE_SOURCE_REVIEW_ENABLED:'true',
+  GC_ENTERPRISE_REQUIRE_SOURCE_MANIFEST:'true',
+  GC_ENTERPRISE_ACCESS_DOMAIN:'bank.cloudflareaccess.com',
+  GC_ENTERPRISE_ACCESS_AUD:'fixture-audience'
+ });
+ assert.equal(enabled.GC_ENTERPRISE_ENABLED,'true');
+ for(const key of VERCEL_ENTERPRISE_FLAGS)assert.equal(enabled[key],'true',key);
+ assert.equal(enabled.GC_ENTERPRISE_ACCESS_DOMAIN,'bank.cloudflareaccess.com');
+ assert.equal(enabled.GC_ENTERPRISE_ACCESS_AUD,'fixture-audience');
+ const malformed=vercelEnterpriseEnvironment({GC_ENTERPRISE_BOOK6_ENABLED:'TRUE',
+  GC_ENTERPRISE_BOOK7_ENABLED:'1',GC_ENTERPRISE_RELEASE_ENABLED:'yes'});
+ assert.equal(malformed.GC_ENTERPRISE_BOOK6_ENABLED,'false');
+ assert.equal(malformed.GC_ENTERPRISE_BOOK7_ENABLED,'false');
+ assert.equal(malformed.GC_ENTERPRISE_RELEASE_ENABLED,'false');
+ assert.equal(Object.prototype.hasOwnProperty.call(enabled,'DATABASE_URL'),false);
+ assert.equal(Object.prototype.hasOwnProperty.call(enabled,'IP_SCOPE_SECRET'),false);
 });
