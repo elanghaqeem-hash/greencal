@@ -27,6 +27,9 @@ test('invalid source, sector, period, duplicate, negative, unexpected metric, ty
   assert.throws(()=>validateBook6Draft({...d,figures:[invalid]}));
  }
  assert.throws(()=>validateBook6Draft({...d,figures:[f,f]}));
+ assert.throws(()=>validateBook6Draft({...d,figures:[{section:'B',metric:'pd',period:'t',dimensions:{sector:'NR1'},value:'101',sourceReference:'UAT',sourceSha256:hash}]}));
+ assert.throws(()=>validateBook6Draft({...d,figures:[{section:'G',metric:'operational_transition_cost',period:'2030',dimensions:{expenseType:'training'},value:'1',sourceReference:'UAT',sourceSha256:hash}]}));
+ assert.throws(()=>validateBook6Draft({...d,figures:[{section:'C',metric:'top10_counterparty_credit',period:'2030',dimensions:{sector:'R1',counterpartyRef:'ANON',measure:'EAD'},value:'1',sourceReference:'UAT',sourceSha256:hash}]}));
  assert.throws(()=>validateBook6Draft({...d,answers:{'FAKE.1':{text:'Wrong'}}}));
  assert.equal(validateBook6Draft({...d,officialSubmission:true,readyForBankUse:true}).schema,'greencal-book6-draft-v1');
 });
