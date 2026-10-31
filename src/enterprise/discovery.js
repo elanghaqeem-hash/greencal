@@ -47,7 +47,7 @@ export function analyzeReadiness(payload){
  for(const d of DIMENSIONS)if(dimensions[d.id]?.blocker===true)blockers.push({id:d.id,label:d.name,source:'dimension'});
  for(const t of TOPICS)if(topics[t.id]?.blocker===true)blockers.push({id:t.id,label:t.name,source:'topic'});
  for(const x of INVENTORY)if(inventory[x.id]?.blocker===true)blockers.push({id:x.id,label:x.name,source:'inventory'});
- for(const q of QUALITY_TESTS)if(quality[q.id]?.blocker===true)blockers.push({id:q.id,label:q.name,source:'quality'});
+ for(const q of QUALITY_TESTS)if(quality[q.id]?.blocker===true||(q.criticality==='High'&&quality[q.id]?.status==='fail'))blockers.push({id:q.id,label:q.name,source:'quality'});
  const gaps=DIMENSIONS.filter(d=>!dimensions[d.id]?.score||dimensions[d.id].score<3||dimensions[d.id].blocker).map(d=>({id:d.id,label:d.name,score:dimensions[d.id]?.score||null,priority:dimensions[d.id]?.blocker?'Critical':(!dimensions[d.id]?.score||dimensions[d.id].score<=2?'High':'Medium'),solutions:d.solutions}));
  const candidate=headline.coveragePct===100&&topic.coveragePct===100&&blockers.length===0&&headline.score>=3&&topic.score>=3;
  return {headline,topics:topic,blockers,gaps,indicativeNextStage:candidate?'eligible_for_controlled_bank_review':'remediation_or_assessment_required',note:'Kesiapan indikatif internal saja; bukan kepatuhan OJK, validasi model independen, atau persetujuan produksi Bank.'};
