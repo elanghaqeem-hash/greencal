@@ -23,3 +23,7 @@ The public GreenCal is preserved. Its client-side outputs and IP-scoped browser 
 ## Quantitative development increment — 31 October 2026
 
 [PCAF financed emissions, portfolio ingestion, NGFS scenario interpolation, geospatial screening, PD/LGD/EAD sensitivity, Buku 7 draft mapping and reconciled OJK preview](quant-engine-v3.md). Quantitative operations remain disabled by default and do not constitute regulatory reporting or permission to process bank production data.
+
+## Discovery Readiness increment — 31 October 2026
+
+[Discovery Readiness workbook-derived questionnaire, scoring, data inventory, quality tests, evidence references, RBAC and migration gates](discovery-readiness.md). The module requires dedicated enterprise D1 migration, actual bank identity and access configuration; it is not a declaration that CRMS enterprise is bank-production-ready.
