@@ -1,4 +1,4 @@
-import {book7BorrowerMapping,book7ProductivePd,book7RetailNpl,book7CollateralLgd,book7Npl,book7Ckpn,book7MarketShock,book7Liquidity,book7Capital} from './book7.js';
+import {book7BorrowerMapping,book7ProductivePd,book7RetailNpl,book7CollateralLgd,book7Npl,book7Ckpn,book7MarketShock,book7Liquidity,book7Capital,book7FryeJacobs} from './book7.js';
 import {ApiError} from './policy.js';
 import {handleSourceControls} from './source-control.js';
 import {handleAdvancedAnalytics} from './quant-v2-api.js';
@@ -9,7 +9,7 @@ const json=(v,s=200)=>new Response(JSON.stringify(v),{status:s,headers:{'content
 const deny=()=>{throw new ApiError(403,'QUANT_ROLE_DENIED','Role tidak dapat melakukan operasi ini.');};
 const roles=['institution_administrator','crms_project_administrator','data_maker','risk_analyst','climate_model_analyst','checker','approver','risk_management_head','compliance_reviewer','internal_auditor','sharia_governance_reviewer','executive_viewer'];
 const writers={ngfs_interpolation:['climate_model_analyst'],geospatial_overlay:['risk_analyst','climate_model_analyst'],credit_transmission:['risk_analyst','climate_model_analyst'],book7_standardized:['climate_model_analyst'],ojk_reconciliation:['compliance_reviewer']};
-const book7Functions=Object.freeze({book7_mapping:book7BorrowerMapping,book7_productive_pd:book7ProductivePd,book7_retail_npl:book7RetailNpl,book7_collateral_lgd:book7CollateralLgd,book7_npl:book7Npl,book7_ckpn:book7Ckpn,book7_market:book7MarketShock,book7_liquidity:book7Liquidity,book7_capital:book7Capital});
+const book7Functions=Object.freeze({book7_mapping:book7BorrowerMapping,book7_productive_pd:book7ProductivePd,book7_retail_npl:book7RetailNpl,book7_collateral_lgd:book7CollateralLgd,book7_frye_jacobs:book7FryeJacobs,book7_npl:book7Npl,book7_ckpn:book7Ckpn,book7_market:book7MarketShock,book7_liquidity:book7Liquidity,book7_capital:book7Capital});
 for(const kind of Object.keys(book7Functions))writers[kind]=kind==='book7_mapping'?['data_maker','climate_model_analyst']:['risk_analyst','climate_model_analyst'];
 const funcs={ngfs_interpolation:interpolateScenario,geospatial_overlay:physicalOverlay,credit_transmission:creditTransmission,book7_standardized:standardizedApproach,...book7Functions};
 const digest=async value=>Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(JSON.stringify(value)))),x=>x.toString(16).padStart(2,'0')).join('');
