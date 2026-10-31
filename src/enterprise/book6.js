@@ -114,6 +114,10 @@ export function validateBook6Draft(body){
   const value=r.value;
   if(typeof value!=='string'||!/^[-]?\d{1,17}(\.\d{1,6})?$/.test(value))fail('Nilai harus angka string tepat, maksimum 17 integer dan 6 desimal.');
   if(value.startsWith('-')&&!['bond_fair_value_change'].includes(r.metric))fail('Nilai negatif hanya boleh untuk perubahan harga surat berharga.');
+  if(m.unit==='pct'&&['pd','lgd','financed_share'].includes(r.metric)&&Number(value)>100)fail('PD, LGD dan persentase dibiayai maksimum 100%.');
+  if(r.section==='G'&&r.metric==='operational_transition_cost'&&r.period!=='t+1')fail('Risiko operasional transisi hanya diproyeksikan pada t+1.');
+  if(r.metric==='top10_counterparty_credit'&&!['NR1','NR2','NR3','NR4','NR5','NR6'].includes(dimensions.sector))fail('Top 10 counterparty hanya untuk enam sektor nonritel.');
+  if(Object.hasOwn(dimensions,'stage')&&!['1','2','3','PL','NPL'].includes(dimensions.stage))fail('Stage/kolektibilitas tidak valid.');
   const sourceReference=text(r.sourceReference,250),sourceSha256=text(r.sourceSha256,64);
   if(!/^[a-f0-9]{64}$/.test(sourceSha256))fail('SHA-256 sumber diperlukan pada setiap angka.');
   const key=[r.section,r.metric,r.period,JSON.stringify(Object.entries(dimensions).sort())].join('|');
