@@ -49,6 +49,20 @@ export function analyzeReadiness(payload){
  for(const x of INVENTORY)if(inventory[x.id]?.blocker===true)blockers.push({id:x.id,label:x.name,source:'inventory'});
  for(const q of QUALITY_TESTS)if(quality[q.id]?.blocker===true||(q.criticality==='High'&&quality[q.id]?.status==='fail'))blockers.push({id:q.id,label:q.name,source:'quality'});
  const gaps=DIMENSIONS.filter(d=>!dimensions[d.id]?.score||dimensions[d.id].score<3||dimensions[d.id].blocker).map(d=>({id:d.id,label:d.name,score:dimensions[d.id]?.score||null,priority:dimensions[d.id]?.blocker?'Critical':(!dimensions[d.id]?.score||dimensions[d.id].score<=2?'High':'Medium'),solutions:d.solutions}));
- const candidate=headline.coveragePct===100&&topic.coveragePct===100&&blockers.length===0&&headline.score>=3&&topic.score>=3;
- return {headline,topics:topic,blockers,gaps,indicativeNextStage:candidate?'eligible_for_controlled_bank_review':'remediation_or_assessment_required',note:'Kesiapan indikatif internal saja; bukan kepatuhan OJK, validasi model independen, atau persetujuan produksi Bank.'};
+ const completion=(items,data,defaults,requiresEvidence)=>{
+  const ready=items.filter(x=>{
+   const r=data[x.id],state=r?.status||defaults;
+   if(state===defaults)return false;
+   return !requiresEvidence.includes(state)||Boolean(r?.evidenceRef);
+  }).length;
+  return {ready,total:items.length,coveragePct:Math.round(100*ready/items.length)};
+ };
+ const evidenceCoverage={
+  questionnaire:completion(QUESTIONS,payload?.answers||{},'unknown',['yes','partial']),
+  inventory:completion(INVENTORY,inventory,'unknown',['available','partial']),
+  quality:completion(QUALITY_TESTS,quality,'untested',['pass','partial','fail'])
+ };
+ const fullyCovered=Object.values(evidenceCoverage).every(x=>x.coveragePct===100);
+ const candidate=headline.coveragePct===100&&topic.coveragePct===100&&fullyCovered&&blockers.length===0&&headline.score>=3&&topic.score>=3;
+ return {headline,topics:topic,blockers,gaps,evidenceCoverage,indicativeNextStage:candidate?'eligible_for_controlled_bank_review':'remediation_or_assessment_required',note:'Kesiapan indikatif internal saja; bukan kepatuhan OJK, validasi model independen, atau persetujuan produksi Bank.'};
 }
