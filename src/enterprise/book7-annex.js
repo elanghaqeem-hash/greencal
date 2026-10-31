@@ -58,7 +58,7 @@ function rawLookup(p){
   return {table:t,scenario:'net_zero_2050',year:2026,size:z,locationRisk:l,sector:sec,depositOutflowPercent:row[3],undrawnDrawdownPercent:row[4],depositOutflowFraction:fractionPercent(row[3]),undrawnDrawdownFraction:fractionPercent(row[4]),numericMeaning:'LCR_ADDITIONAL_SHOCKS_PERCENT',...provenance(t,row[5])};
  }
  if(t==='A.7'){
-  const propertyType=value(p,'propertyType'),sizeBand=value(p,'sizeBand').replace(/\\s+/g,''),euiClass=value(p,'euiClass');
+  const propertyType=value(p,'propertyType'),sizeBand=value(p,'sizeBand').replace(/\s+/g,''),euiClass=value(p,'euiClass');
   const permitted=new Set(['office','retail_mall','warehouse','mixed_use','multifamily','budget_hotel','hotel_3plus','residential']);
   if(!permitted.has(propertyType))reject('Jenis CRE/RRE A.7 tidak terdaftar.');
   const row=CRE_RRE.rows.find(r=>r[0]===s&&r[1]===propertyType&&r[2]===sizeBand&&r[3]===euiClass);
