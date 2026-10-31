@@ -39,7 +39,8 @@ export function normalizeExposure(p){
 }
 export function financedEmissions(input){
  const p=normalizeExposure(input),share=divide(dec(p.outstanding,'Outstanding'),dec(p.attributionDenominator,'Denominator'));
- const financed={};for(const [k,v] of Object.entries(p.emissions))financed[k]=v===null?null:format(multiply(share,dec(v,k)));
+ const outstanding=dec(p.outstanding,'Outstanding'),denominator=dec(p.attributionDenominator,'Denominator');
+ const financed={};for(const [k,v] of Object.entries(p.emissions))financed[k]=v===null?null:format((dec(v,k)*outstanding+denominator/2n)/denominator);
  const complete=financed.scope1!==null&&financed.scope2!==null;
  const main=complete?format(dec(financed.scope1,'scope1')+dec(financed.scope2,'scope2')):null;
  return {input:p,attributionFactor:format(share),financedTco2e:financed,mainFinancedScope1And2Tco2e:main,supplementaryFinancedScope3Tco2e:financed.scope3,
