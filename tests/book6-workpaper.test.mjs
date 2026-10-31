@@ -18,6 +18,15 @@ test('draft never fabricates empty data; distinguishes missing from reported zer
  const d=validateBook6Draft(base()),p=book6Preview(d);
  assert.equal(d.figures[0].value,'100.000001');assert.equal(p.answeredCount,1);assert.equal(p.officialSubmission,false);
  assert.ok(p.warnings.some(x=>x.includes('Workbook')));
+ assert.equal(p.qualitative.required,81);
+ assert.equal(p.qualitative.answered,1);
+ assert.equal(p.qualitative.missingQuestionIds.length,80);
+ assert.deepEqual(p.qualitative.answeredMissingEvidenceIds,[]);
+ assert.equal(p.quantitative.rows,1);
+ assert.deepEqual(p.quantitative.missingSections,['C','D','E','F','G','H']);
+ assert.equal(p.quantitative.sourceBytesVerified,false);
+ assert.equal(p.quantitative.glCkpnReconciled,false);
+ assert.equal(p.quantitative.officialWorkbookCellParity,false);
  assert.equal(validateBook6Draft({...base(),figures:[{...base().figures[0],value:'0'}]}).figures[0].value,'0');
  assert.equal(validateBook6Draft({...base(),figures:[]}).figures.length,0);
 });
