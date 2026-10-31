@@ -70,6 +70,7 @@ window.GreenCalDiscovery={async render(root,ctx){
   for(const [key,label] of tabs){const b=btn(label,()=>changePage(key));b.dataset.page=key;nav.append(b);const sec=e('section',undefined,'panel discovery-form-section');sec.dataset.page=key;sections[key]=sec;area.append(sec);}
   const dashboard=sections.summary;
   const kpis=e('div',undefined,'discovery-grid');kpis.append(bar('Kesiapan utama',active.analysis.headline),bar('Readiness topik',active.analysis.topics));
+  const completeness=e('div',undefined,'discovery-kpi');completeness.append(e('span','Kelengkapan 12 topik'),e('strong',active.analysis.topicCompleteness.averagePct===null?'—':active.analysis.topicCompleteness.averagePct+'%'),e('small',active.analysis.topicCompleteness.assessed+' dari 12 topik memiliki ukuran kelengkapan'));kpis.append(completeness);
   const blocker=e('div',undefined,'discovery-kpi');blocker.append(e('span','Critical blocker'),e('strong',String(active.analysis.blockers.length)),e('small',active.analysis.blockers.length?'Ada dependency yang perlu ditutup':'Belum ada yang secara eksplisit ditandai'));kpis.append(blocker);
   dashboard.append(e('h3','Ringkasan hasil asesmen'),kpis);
   dashboard.append(e('h3','Kelengkapan discovery & bukti'));
