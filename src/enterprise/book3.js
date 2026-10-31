@@ -109,7 +109,7 @@ export function book3GasActivity(p){
  const base=book3Activity({...p,factorKgCO2ePerUnit:'0'});
  const fscale=10n**24n;
  function factor(v,label){
-  if(typeof v!=='string'||!/^(?:0|[1-9]\\d{0,17})(?:\\.\\d{1,24})?$/.test(v))
+  if(typeof v!=='string'||!/^(?:0|[1-9]\d{0,17})(?:\.\d{1,24})?$/.test(v))
    bad(label+' harus string desimal nonnegatif maks. 24 angka di belakang koma.');
   const [a,b='']=v.split('.');
   return BigInt(a)*fscale+BigInt(b.padEnd(24,'0'));
