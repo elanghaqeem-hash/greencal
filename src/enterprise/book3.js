@@ -9,6 +9,7 @@ function number(v,label){if(typeof v!=='string'||!/^(?:0|[1-9]\d{0,17})(?:\.\d{1
 function fmt(n){const v=n<0n?-n:n,r=(v%S).toString().padStart(6,'0').replace(/0+$/,'');return (n<0n?'-':'')+(v/S).toString()+(r?'.'+r:'');}
 function product(a,b){const m=a*b;return (m+S/2n)/S;}
 function share(a,b){if(b===0n||a>b)bad('Denominator harus positif dan >= outstanding.');return (a*S+b/2n)/b;}
+function attributed(emission,os,denominator){return (emission*os+denominator/2n)/denominator;}
 function validPeriod(v){if(typeof v!=='string'||!/^(?:20\d{2})$/.test(v))bad('Tahun data emisi tidak valid.');return Number(v);}
 function scopes(p,{requireScope1=false}={}){
  if(!obj(p))bad('Objek emissions Scope 1, 2, 3 diperlukan.');
@@ -53,7 +54,7 @@ export function book3Financed(p){
  if(!/^[A-Z]{3}$/.test(currency)||currency!==denominatorCurrency)bad('Outstanding dan denominator wajib dalam mata uang yang sama dengan FX tersumber.');
  const os=number(p.outstanding,'Baki debet outstanding'),d=number(p.attributionDenominator,'Denominator');
  const factor=share(os,d),e=debtor.emissionsTco2e,financed={};
- for(const k of ['scope1','scope2','scope3'])financed[k]=e[k]===null?null:fmt(product(factor,number(e[k],k)));
+ for(const k of ['scope1','scope2','scope3'])financed[k]=e[k]===null?null:fmt(attributed(number(e[k],k),os,d));
  const complete=financed.scope1!==null&&financed.scope2!==null;
  const main=complete?fmt(number(financed.scope1,'financed Scope1')+number(financed.scope2,'financed Scope2')):null;
  return {assetClass,denominatorBasis:basis,currency,attributionFactor:fmt(factor),
@@ -93,6 +94,7 @@ export function book3Activity(p){
  if(!obj(p))bad('Input aktivitas tidak valid.');
  const qty=number(p.activityQuantity,'Data aktivitas'),f=number(p.factorKgCO2ePerUnit,'Faktor kgCO2e/unit');
  const unit=name(p.activityUnit,'Satuan aktivitas',60),funit=name(p.factorActivityUnit,'Satuan faktor',60);
+ if(!['scope1','scope2','scope3'].includes(p.scope))bad('Scope tidak valid.');
  if(unit!==funit)bad('Satuan aktivitas dan faktor berbeda; konversi wajib eksplisit.');
  const year=validPeriod(p.reportingYear);
  if(validPeriod(p.factorYear)!==year)bad('Faktor emisi harus sesuai tahun pelaporan; pemutakhiran tidak mengubah periode lama.');
