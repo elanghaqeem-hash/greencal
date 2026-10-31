@@ -33,12 +33,12 @@ export function toPgSql(input) {
   throw Error('SQLITE_ONLY_QUERY');
  return {text:out,parameterCount:count};
 }
-function stmt(db,sql,params=[]){
+function stmt(db,sql,params=[],check=false){
  const plan=toPgSql(sql);
- if(plan.parameterCount!==params.length)throw Error('SQL_PARAMETER_COUNT_MISMATCH');
- const run=()=>db.query(plan.text,params);
+ if(check&&plan.parameterCount!==params.length)throw Error('SQL_PARAMETER_COUNT_MISMATCH');
+ const run=()=>{if(plan.parameterCount!==params.length)throw Error('SQL_PARAMETER_COUNT_MISMATCH');return db.query(plan.text,params);};
  return {sql:plan.text,params,
-  bind(...values){return stmt(db,sql,values);},
+  bind(...values){return stmt(db,sql,values,true);},
   async first(column){const r=await run(),row=r.rows[0]??null;return column&&row?row[column]:row;},
   async all(){const r=await run();return {success:true,results:r.rows,meta:{changes:r.rowCount??0}};},
   async run(){const r=await run();return {success:true,meta:{changes:r.rowCount??0},results:r.rows};},
