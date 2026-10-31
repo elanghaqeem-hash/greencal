@@ -81,3 +81,23 @@ export async function getPostgres(){
  }
  return d1Compatibility(singleton);
 }
+
+
+// Distinct institutional database: public GreenCal credentials must never be
+// used as a fallback for CRMS tenant data. Fail closed before opening a socket.
+let enterpriseSingleton=null;
+export async function getEnterprisePostgres(){
+ const url=process.env.GC_ENTERPRISE_DATABASE_URL_POOLED;
+ if(!/^postgres(?:ql)?:\/\//i.test(url||''))return null;
+ const parsed=new URL(url);
+ const publicUrls=[process.env.DATABASE_URL_POOLED,process.env.GREENCAL_POSTGRES_URL,process.env.DATABASE_URL,process.env.POSTGRES_URL]
+  .filter(x=>/^postgres(?:ql)?:\/\//i.test(x||''));
+ const identity=u=>{const p=new URL(u);return p.hostname.toLowerCase()+':'+(p.port||'5432')+p.pathname;};
+ if(publicUrls.some(x=>identity(x)===identity(url)))throw Error('ENTERPRISE_DATABASE_NOT_ISOLATED');
+ if(!enterpriseSingleton){
+  const {Pool}=await import('pg');
+  enterpriseSingleton=new Pool({connectionString:url,max:3,connectionTimeoutMillis:5000,
+    idleTimeoutMillis:10000,ssl:{rejectUnauthorized:true}});
+ }
+ return d1Compatibility(enterpriseSingleton);
+}
