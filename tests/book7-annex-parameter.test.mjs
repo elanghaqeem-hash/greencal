@@ -7,7 +7,7 @@ import {handleQuantApi} from '../src/enterprise/quant-api.js';
 import {enterpriseDb} from './support/enterprise-db.mjs';
 const base={scenario:'net_zero_2050',year:2026,size:'Mikro',locationRisk:'Tinggi',sector:'Pertanian dan Kehutanan',rating:'AA'};
 test('OJK annex PDF tables present complete expected row counts and exact unique keys',()=>{
- assert.deepEqual(STATUS.rows,{A3:1260,A5:36,A6:420,A8:21,B2:3,B3:26,B5:1260,C2:84});
+ assert.deepEqual(STATUS.rows,{A3:1260,A5:36,A6:420,A7:369,A8:21,B2:3,B3:26,B5:1260,C2:84});
  assert.deepEqual(C.years,[2025,2026,2027,2028,2030,2035,2040,2045,2050]);
  assert.deepEqual(C.years,M.years);
  for(const [rows,dim] of [[C.A3,5],[C.A6,4],[C.A5,3],[M.B5,5],[M.C2,3],[C.A8,1],[M.B2,1],[M.B3,1]]){
@@ -38,9 +38,9 @@ test('A.5 physical haircuts expressed in PERCENT in PDF, converted correctly to 
 });
 test('A.6 transition scalar affects collateral valuation, not direct LGD formula',()=>{
  const row=book7AnnexLookup({...base,table:'A.6'});
- assert.equal(row.rawPublishedValue,'0.9998');assert.equal(row.numericMeaning,'COLLATERAL_TRANSITION_MULTIPLIER');
+ assert.equal(row.rawPublishedValue,'0.9997');assert.equal(row.numericMeaning,'COLLATERAL_TRANSITION_MULTIPLIER');
  const r=book7AnnexStress({...base,table:'A.6',collateralValue:'1000000'});
- assert.equal(r.adjustedCollateral,'999800');
+ assert.equal(r.adjustedCollateral,'999700');
 });
 test('A.8 exact rating mapping and boundary evidence',()=>{
  const r=book7AnnexLookup({table:'A.8',granularRating:'Aaa'});
@@ -72,8 +72,12 @@ test('C.2 liquidity shock is ONLY Net Zero 2050 in 2026, and source percentages 
  assert.throws(()=>book7AnnexLookup({...base,table:'C.2',year:2030}));
  assert.throws(()=>book7AnnexLookup({...base,table:'C.2',scenario:'current_policies'}));
 });
-test('No silent sources for A.7 CRE/RRE NaN, no time extrapolation and no invented scenario',()=>{
- assert.throws(()=>book7AnnexLookup({...base,table:'A.7'}),e=>e.code==='BOOK7_ANNEX_LOOKUP_INVALID');
+test('No silent A.7 CRE/RRE NaN cell, no time extrapolation and no invented scenario',()=>{
+ const a=book7AnnexLookup({...base,table:'A.7',propertyType:'office',sizeBand:'0-5',euiClass:'Hijau'});
+ assert.equal(a.transitionCost,'334536487');assert.equal(a.unit,'IDR');
+ const stress=book7AnnexStress({...base,table:'A.7',propertyType:'office',sizeBand:'0-5',euiClass:'Hijau',collateralValue:'1000000000'});
+ assert.equal(stress.adjustedCollateral,'665463513');
+ assert.throws(()=>book7AnnexLookup({...base,table:'A.7',scenario:'delayed_transition',year:2027,propertyType:'retail_mall',sizeBand:'0-5',euiClass:'Tidak Memenuhi Klasifikasi'}));
  assert.throws(()=>book7AnnexLookup({...base,table:'A.5',year:2029,collateralKind:'Komersial'}));
  assert.throws(()=>book7AnnexStress({...base,table:'A.3',baselinePD:'1'}));
 });
