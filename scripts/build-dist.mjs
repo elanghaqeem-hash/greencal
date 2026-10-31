@@ -64,3 +64,22 @@ if(process.env.GC_DEMO_VERIFY_READONLY==='true'&&process.env.VERCEL_ENV==='previ
  console.log('GREENCAL_DEMO_PERSISTED_PROOF',JSON.stringify(proof));
  if(!proof.demoVerified)throw Error('DEMO_READONLY_PROOF_FAILED');
 }
+
+// Bank Sawan synthetic tenant: one-shot Preview-only migration, never Production.
+// Existing public and other demo institutions are protected by independent DB guards.
+if(process.env.GC_SAWAN_SEED_APPLY==='seed-sawan-demo-once-20261031'){
+ const {seedSawanOnPreview}=await import('./vercel/seed-sawan-on-build.mjs');
+ const proof=await seedSawanOnPreview();
+ console.log('GREENCAL_SAWAN_SEED_RESULT',JSON.stringify(proof));
+ if(!proof.applied)throw Error('SAWAN_DEMO_SEED_REJECTED');
+}
+// Independent read-only proof; no passwords, identities or secret values in logs.
+if(process.env.GC_SAWAN_VERIFY_READONLY==='true'&&process.env.VERCEL_ENV==='preview'){
+ const {getSawanDemoSummary}=await import('../src/vercel/sawan-demo.js');
+ const proof=await getSawanDemoSummary();
+ console.log('GREENCAL_SAWAN_VERIFY',JSON.stringify({verified:proof.ok===true,
+  syntheticOnly:proof.tenant?.syntheticOnly===true,
+  book6:proof.book6?.status,book7Runs:proof.book7?.runs,
+  readiness:proof.readiness?.status,bankProductionReady:false}));
+ if(!proof.ok)throw Error('SAWAN_DEMO_PROOF_FAILED');
+}
