@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {toPgSql,d1Compatibility,getPostgres} from '../src/vercel/postgres.js';
+import {toPgSql,d1Compatibility,getPostgres,getEnterprisePostgres} from '../src/vercel/postgres.js';
 import {handler,resolveApiPath,publicNetworkScope} from '../api/bridge.js';
 
 test('SQL placeholders do not rewrite literal/question mark or SQL comments',()=>{
@@ -103,4 +103,19 @@ test('public scope endpoint refuses untrusted or absent proxy context',async()=>
  await handler(req,res);
  assert.equal(res.code,503);
  assert.equal(res.data.code,'NETWORK_SCOPE_UNAVAILABLE');
+});
+
+
+test('enterprise database cannot silently reuse public Vercel PostgreSQL',async()=>{
+ const old={GC_ENTERPRISE_DATABASE_URL_POOLED:process.env.GC_ENTERPRISE_DATABASE_URL_POOLED,
+  DATABASE_URL_POOLED:process.env.DATABASE_URL_POOLED};
+ try{
+  delete process.env.GC_ENTERPRISE_DATABASE_URL_POOLED;
+  assert.equal(await getEnterprisePostgres(),null);
+  process.env.DATABASE_URL_POOLED='postgresql://user:pass@db.example.invalid/public';
+  process.env.GC_ENTERPRISE_DATABASE_URL_POOLED='postgresql://another:pass@db.example.invalid/public';
+  await assert.rejects(()=>getEnterprisePostgres(),/ENTERPRISE_DATABASE_NOT_ISOLATED/);
+ }finally{
+  for(const [k,v] of Object.entries(old)){if(v===undefined)delete process.env[k];else process.env[k]=v;}
+ }
 });
