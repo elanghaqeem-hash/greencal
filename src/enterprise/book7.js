@@ -157,3 +157,34 @@ export function book7Capital(p){
   method:'OJK-CRMS-B7-5.1-to-5.3-Tier1-Tier2-RWA',
   limitation:'Addback Tier 2 dan ATMR adalah input yang telah diverifikasi Bank; bukan mesin ATMR peraturan.'};
 }
+
+const ASSET_CORRELATION=Object.freeze({corporate:0.18,sme:0.14,mortgage:0.15,credit_card:0.04,other_consumer:0.095});
+function normalCdf(x){
+ // Abramowitz-Stegun normal tail approximation, maximum absolute error approx 7.5e-8.
+ const t=1/(1+0.2316419*Math.abs(x)),d=0.3989422804014327*Math.exp(-x*x/2);
+ const upper=d*t*(0.319381530+t*(-0.356563782+t*(1.781477937+t*(-1.821255978+t*1.330274429))));
+ return x>=0?1-upper:upper;
+}
+function normalInv(p){
+ if(!(p>0&&p<1))fail('PD untuk inverse normal harus di antara 0 dan 1, eksklusif.');
+ let low=-9,high=9;
+ for(let i=0;i<75;i++){const mid=(low+high)/2;if(normalCdf(mid)<p)low=mid;else high=mid;}
+ return (low+high)/2;
+}
+export function book7FryeJacobs(p){
+ const m=meta(p);
+ if(!Object.hasOwn(ASSET_CORRELATION,p.assetClass))fail('Kategori aset untuk korelasi Frye-Jacobs tidak dikenali.');
+ const tc=rate(p.ttcPD,'TTC PD'),pit=rate(p.adjustedPitPD,'Climate-adjusted PIT PD'),lgd=rate(p.baselineLGD,'Baseline LGD');
+ if(tc<=0n||tc>=ONE||pit<=0n||pit>=ONE||lgd<=0n||lgd>=ONE)fail('TTC PD, PIT PD dan LGD harus berada di antara 0 dan 1.');
+ if(!['debtor','guarantor','underlying_obligor'].includes(p.riskBearerType))fail('Jenis pihak penanggung risiko harus debtor/guarantor/underlying_obligor.');
+ const rho=ASSET_CORRELATION[p.assetClass],pd=Number(fmt(tc)),stressedPd=Number(fmt(pit)),baseLg=Number(fmt(lgd));
+ const inside=normalInv(stressedPd)-(normalInv(pd)-normalInv(pd*baseLg))/Math.sqrt(1-rho);
+ const adjusted=normalCdf(inside)/stressedPd;
+ if(!Number.isFinite(adjusted)||adjusted<0||adjusted>1)fail('LGD Frye-Jacobs di luar 0..1; perlu kebijakan batas/kalibrasi Bank.');
+ return {...m,assetClass:p.assetClass,riskBearerType:p.riskBearerType,
+  riskBearerRef:text(p.riskBearerRef,'Referensi pihak penanggung risiko anonim'),
+  rho:String(rho),ttcPD:fmt(tc),adjustedPitPD:fmt(pit),baselineLGD:fmt(lgd),
+  adjustedLGD:adjusted.toFixed(6),method:'OJK-CRMS-B7-2.3.3.2-Frye-Jacobs',
+  numericalMethod:'normal-CDF-Abramowitz-Stegun-bisection-inverse',
+  status:'approximation_requires_independent_numeric_validation'};
+}
