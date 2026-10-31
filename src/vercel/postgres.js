@@ -81,3 +81,28 @@ export async function getPostgres(){
  }
  return d1Compatibility(singleton);
 }
+
+// Public AI quota DB must be distinct from the bank's enterprise DB and Cloudflare D1.
+// No fallback to DATABASE_URL: absence of this dedicated connection disables the service.
+let publicSingleton=null;
+export function publicDatabaseIsolation(publicUrl,bankUrl){
+ try{
+  const a=new URL(publicUrl),b=bankUrl?new URL(bankUrl):null;
+  if(!['postgres:','postgresql:'].includes(a.protocol)||!a.hostname||!a.pathname||a.pathname==='/')return false;
+  if(!b)return true;
+  return !(a.hostname.toLowerCase()===b.hostname.toLowerCase()&&
+   (a.port||'5432')===(b.port||'5432')&&
+   decodeURIComponent(a.pathname)===decodeURIComponent(b.pathname));
+ }catch{return false;}
+}
+export async function getPublicPostgres(){
+ const url=process.env.GREENCAL_PUBLIC_DATABASE_URL_POOLED;
+ const bank=process.env.DATABASE_URL_POOLED||process.env.GREENCAL_POSTGRES_URL||process.env.DATABASE_URL;
+ if(!publicDatabaseIsolation(url,bank))return null;
+ if(!publicSingleton){
+  const {Pool}=await import('pg');
+  publicSingleton=new Pool({connectionString:url,max:2,connectionTimeoutMillis:5000,
+   idleTimeoutMillis:10000,ssl:{rejectUnauthorized:true}});
+ }
+ return d1Compatibility(publicSingleton);
+}
