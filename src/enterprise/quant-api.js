@@ -22,21 +22,42 @@ async function batchReport(db,tenant,id){
  if(!batch)throw new ApiError(404,'BATCH_NOT_FOUND','Batch tidak ditemukan.');
  const rows=(await db.prepare('SELECT data_json,result_json FROM gcx_portfolio_positions WHERE tenant_id=? AND batch_id=? ORDER BY facility_ref LIMIT 101').bind(tenant,id).all()).results;
  if(rows.length!==batch.gl_control_count||rows.length>100)throw new ApiError(409,'BATCH_INCOMPLETE','Posisi tidak lengkap.');
- const items=rows.map(x=>{const p=JSON.parse(x.data_json),r=JSON.parse(x.result_json);return {facilityRef:p.facilityRef,outstanding:p.outstanding,financed:format(['scope1','scope2','scope3'].reduce((sum,k)=>sum+(r.financedTco2e[k]===null?0n:scaled(r.financedTco2e[k])),0n))};});
- const report=reconcileOjkDraft({glControlTotal:batch.gl_control_total,items});
- const assetTotals=new Map(),scopeCoverage={scope1:{present:0,missing:0},scope2:{present:0,missing:0},scope3:{present:0,missing:0}};
+ const assetTotals=new Map(),tierTotals=new Map(),scopeCoverage={scope1:{present:0,missing:0},scope2:{present:0,missing:0},scope3:{present:0,missing:0}};
+ const items=[];let knownMain=0n,knownScope3=0n,complete=true;
  for(const item of rows){
-  const p=JSON.parse(item.data_json),r=JSON.parse(item.result_json);
-  const g=assetTotals.get(p.assetClass)||{assetClass:p.assetClass,facilities:0,outstanding:0n,knownFinanced:0n};
+  const p=JSON.parse(item.data_json),r=JSON.parse(item.result_json),f=r.financedTco2e;
+  const g=assetTotals.get(p.assetClass)||{assetClass:p.assetClass,facilities:0,outstanding:0n,knownMain:0n,knownScope3:0n,missingMain:0};
   g.facilities++;g.outstanding+=scaled(p.outstanding);
-  for(const k of Object.keys(scopeCoverage)){
-   if(r.financedTco2e[k]===null)scopeCoverage[k].missing++;
-   else{scopeCoverage[k].present++;g.knownFinanced+=scaled(r.financedTco2e[k]);}
+  let rowMain=0n;
+  for(const k of ['scope1','scope2','scope3']){
+   if(f[k]===null||f[k]===undefined)scopeCoverage[k].missing++;
+   else{scopeCoverage[k].present++;const v=scaled(f[k]);if(k==='scope3'){g.knownScope3+=v;knownScope3+=v;}else{rowMain+=v;g.knownMain+=v;knownMain+=v;}}
   }
+  if(f.scope1===null||f.scope1===undefined||f.scope2===null||f.scope2===undefined){complete=false;g.missingMain++;}
   assetTotals.set(p.assetClass,g);
+  const tier=p.ojkTier===null||p.ojkTier===undefined?'unclassified':String(p.ojkTier);
+  const t=tierTotals.get(tier)||{tier,facilities:0,outstanding:0n};
+  t.facilities++;t.outstanding+=scaled(p.outstanding);tierTotals.set(tier,t);
+  // The technical GL reconciliation sums known Scope 1+2 only; missing is not construed as zero.
+  items.push({facilityRef:p.facilityRef,outstanding:p.outstanding,financed:format(rowMain)});
  }
- const byAssetClass=[...assetTotals.values()].sort((a,b)=>a.assetClass.localeCompare(b.assetClass)).map(x=>({assetClass:x.assetClass,facilities:x.facilities,outstanding:format(x.outstanding),knownFinancedTco2e:format(x.knownFinanced)}));
- return {byAssetClass,scopeCoverage,batchId:id,asOf:batch.as_of,currency:batch.currency,sourceSha256:batch.source_sha256,sourceSystem:batch.source_system,controlReference:batch.gl_reference,reportedDataQuality:'declared_control_not_independently_verified',...report,book6Status:'draft_not_official_template'};
+ const report=reconcileOjkDraft({glControlTotal:batch.gl_control_total,items});
+ const byAssetClass=[...assetTotals.values()].sort((a,b)=>a.assetClass.localeCompare(b.assetClass)).map(x=>({
+  assetClass:x.assetClass,facilities:x.facilities,outstanding:format(x.outstanding),
+  knownFinancedTco2e:format(x.knownMain),knownFinancedScope1And2Tco2e:format(x.knownMain),
+  supplementaryFinancedScope3Tco2e:format(x.knownScope3),missingMainFigureCount:x.missingMain
+ }));
+ const byOjkTier=[...tierTotals.values()].sort((a,b)=>a.tier.localeCompare(b.tier)).map(x=>({ojkTier:x.tier,facilities:x.facilities,outstanding:format(x.outstanding)}));
+ return {...report,financedTco2e:complete?report.financedTco2e:null,
+  knownFinancedScope1And2Tco2e:format(knownMain),supplementaryFinancedScope3Tco2e:format(knownScope3),
+  scope3NotInMainFigure:true,bankOperationalScope1And2NotAggregated:true,
+  mainFigureCoverage:complete?'complete':'incomplete_scope1_or_scope2',scopeCoverage,
+  byAssetClass,byOjkTier,ojkTierCompleteness:!tierTotals.has('unclassified'),
+  batchId:id,asOf:batch.as_of,currency:batch.currency,sourceSha256:batch.source_sha256,
+  sourceSystem:batch.source_system,controlReference:batch.gl_reference,
+  reportedDataQuality:'declared_control_not_independently_verified',
+  reportReadiness:complete&&!tierTotals.has('unclassified')?'requires_independent_validation':'not_ready_missing_scope_or_ojk_tier',
+  book6Status:'draft_not_official_template'};
 }
 export async function handleQuantApi(request,env,db,tenant,actor,path){
  if(env.GC_ENTERPRISE_QUANT_ENABLED!=='true')throw new ApiError(503,'QUANT_DISABLED','Engine kuantitatif belum diaktifkan untuk lingkungan ini.');
