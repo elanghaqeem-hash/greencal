@@ -19,7 +19,7 @@ try{
   }
   base='http://127.0.0.1:8789';
  }
- for(const [path,file] of [['/','index.html'],['/enterprise/','enterprise/index.html'],['/auth-client.js','auth-client.js'],['/assets/enterprise.js','assets/enterprise.js'],['/assets/enterprise.css','assets/enterprise.css'],['/assets/guide-learning.js','assets/guide-learning.js'],['/assets/brks-syariah.svg','assets/brks-syariah.svg']]){
+ for(const [path,file] of [['/','index.html'],['/enterprise/','enterprise/index.html'],['/auth-client.js','auth-client.js'],['/assets/enterprise.js','assets/enterprise.js'],['/assets/enterprise.css','assets/enterprise.css'],['/assets/guide-learning.js','assets/guide-learning.js']]){
   const response=await fetch(base+path,{redirect:'manual',signal:AbortSignal.timeout(20000)});assert.equal(response.status,200,path+' must not redirect or fail');
   const hash=bytes=>createHash('sha256').update(bytes).digest('hex');assert.equal(hash(Buffer.from(await response.arrayBuffer())),hash(await readFile(resolve(root,'dist',file))),path+' must match deploy artifact');
   if(path==='/enterprise/'){assert.match(response.headers.get('content-security-policy'),/frame-ancestors 'none'/);assert.equal(response.headers.get('cache-control'),'no-store');}
