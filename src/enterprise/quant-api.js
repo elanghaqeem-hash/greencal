@@ -1,3 +1,4 @@
+import {book7BorrowerMapping,book7ProductivePd,book7RetailNpl,book7CollateralLgd,book7Npl,book7Ckpn,book7MarketShock,book7Liquidity,book7Capital} from './book7.js';
 import {ApiError} from './policy.js';
 import {handleSourceControls} from './source-control.js';
 import {handleAdvancedAnalytics} from './quant-v2-api.js';
@@ -8,7 +9,9 @@ const json=(v,s=200)=>new Response(JSON.stringify(v),{status:s,headers:{'content
 const deny=()=>{throw new ApiError(403,'QUANT_ROLE_DENIED','Role tidak dapat melakukan operasi ini.');};
 const roles=['institution_administrator','crms_project_administrator','data_maker','risk_analyst','climate_model_analyst','checker','approver','risk_management_head','compliance_reviewer','internal_auditor','sharia_governance_reviewer','executive_viewer'];
 const writers={ngfs_interpolation:['climate_model_analyst'],geospatial_overlay:['risk_analyst','climate_model_analyst'],credit_transmission:['risk_analyst','climate_model_analyst'],book7_standardized:['climate_model_analyst'],ojk_reconciliation:['compliance_reviewer']};
-const funcs={ngfs_interpolation:interpolateScenario,geospatial_overlay:physicalOverlay,credit_transmission:creditTransmission,book7_standardized:standardizedApproach};
+const book7Functions=Object.freeze({book7_mapping:book7BorrowerMapping,book7_productive_pd:book7ProductivePd,book7_retail_npl:book7RetailNpl,book7_collateral_lgd:book7CollateralLgd,book7_npl:book7Npl,book7_ckpn:book7Ckpn,book7_market:book7MarketShock,book7_liquidity:book7Liquidity,book7_capital:book7Capital});
+for(const kind of Object.keys(book7Functions))writers[kind]=kind==='book7_mapping'?['data_maker','climate_model_analyst']:['risk_analyst','climate_model_analyst'];
+const funcs={ngfs_interpolation:interpolateScenario,geospatial_overlay:physicalOverlay,credit_transmission:creditTransmission,book7_standardized:standardizedApproach,...book7Functions};
 const digest=async value=>Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(JSON.stringify(value)))),x=>x.toString(16).padStart(2,'0')).join('');
 function scaled(v){const [a,b='']=v.split('.');return BigInt(a)*1000000n+BigInt(b.padEnd(6,'0'));}
 function format(n){return (n/1000000n).toString()+(n%1000000n?'.'+(n%1000000n).toString().padStart(6,'0').replace(/0+$/,''):'');}
@@ -62,6 +65,7 @@ export async function handleQuantApi(request,env,db,tenant,actor,path){
  if(path==='/analytics/runs'&&request.method==='POST'){
   const body=await readJson(request),kind=body.kind;
   if(!Object.hasOwn(writers,kind)||!writers[kind].includes(actor.role))deny();
+  if(Object.hasOwn(book7Functions,kind) && env.GC_ENTERPRISE_BOOK7_ENABLED!=='true')throw new ApiError(503,'BOOK7_DISABLED','Buku 7 Standardized Engine belum diaktifkan oleh institusi.');
   const result=kind==='ojk_reconciliation'?await batchReport(db,tenant,body.input?.batchId):funcs[kind](body.input);
   const id=crypto.randomUUID(),hash=await digest({kind,input:body.input,result}),now=new Date().toISOString();
   await db.prepare('INSERT INTO gcx_analytic_runs(tenant_id,id,kind,request_json,result_json,source_sha256,actor,occurred_at) VALUES(?,?,?,?,?,?,?,?)').bind(tenant,id,kind,JSON.stringify(body.input),JSON.stringify(result),hash,actor.subject,now).run();
