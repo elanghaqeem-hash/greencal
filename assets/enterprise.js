@@ -1,7 +1,7 @@
 /* Enterprise UI: no localStorage, tokens, bank data, or provider secrets. */
 (()=>{'use strict';
  const $=s=>document.querySelector(s),el=(tag,text,cls)=>{const e=document.createElement(tag);if(text!==undefined)e.textContent=text;if(cls)e.className=cls;return e;};
- const labels={overview:'Ringkasan workspace',analytics:'Analitik kuantitatif',release:'Persetujuan rilis Bank',risk:'Register risiko iklim',factor:'Faktor emisi',emission:'Aktivitas & kalkulasi',regulatory_document:'Pustaka dokumen OJK',requirement:'Pemetaan persyaratan',governance:'Kebijakan & risk appetite',portfolio:'Eksposur pembiayaan',scenario:'Katalog skenario iklim',physical:'Screening risiko fisik',transition:'Asesmen risiko transisi',report_package:'Paket laporan internal',audit:'Audit institusi',manual:'Panduan pengguna'};
+ const labels={overview:'Ringkasan workspace',analytics:'Analitik kuantitatif',book7:'Buku 7 · Pendekatan Standar',release:'Persetujuan rilis Bank',risk:'Register risiko iklim',factor:'Faktor emisi',emission:'Aktivitas & kalkulasi',regulatory_document:'Pustaka dokumen OJK',requirement:'Pemetaan persyaratan',governance:'Kebijakan & risk appetite',portfolio:'Eksposur pembiayaan',scenario:'Katalog skenario iklim',physical:'Screening risiko fisik',transition:'Asesmen risiko transisi',report_package:'Paket laporan internal',audit:'Audit institusi',manual:'Panduan pengguna'};
  // label, control type, choices; all values sent through server validation.
  const schema={
  governance:{policyArea:['Area kebijakan','select',['strategy','risk_appetite','governance','sharia','disclosure']],owner:['Pemilik kebijakan'],riskAppetite:['Risk appetite / ambang toleransi','textarea'],controls:['Kontrol & mitigasi','textarea'],shariaConsiderations:['Pertimbangan risiko syariah','textarea'],approvalReference:['Rujukan persetujuan internal'],effectiveFrom:['Mulai berlaku','date'],reviewDate:['Tanggal review','date']},
@@ -48,9 +48,9 @@
     if(!window.GreenCalRelease)throw Error('Komponen release gate belum tersedia.');
     await window.GreenCalRelease.render(root,{api,membership,notice});return;
    }
-   if(view==='analytics'){
+   if(view==='analytics'||view==='book7'){
     if(!window.GreenCalAnalytics)throw Error('Komponen analitik tidak ditemukan; periksa aset deployment.');
-    await window.GreenCalAnalytics.render(root,{api,membership,notice});return;
+    await window.GreenCalAnalytics.render(root,{api,membership,notice,mode:view});return;
    }
    if(view==='overview'){
     const data=await api('/summary');if(current!==generation||tenant!==selectedTenant)return;
