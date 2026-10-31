@@ -1,3 +1,4 @@
+import {CRE_RRE_PDF_PRESENTATION as CRE_RRE} from './book7-annex-cre-rre-data.js';
 // GreenCal CRMS Book 7 annex catalog: user-uploaded OJK PDFs, not full-precision workbooks.
 // All values have at most the displayed PDF precision. Only exact dimensional matches allowed.
 import {ApiError} from './policy.js';
@@ -20,7 +21,7 @@ const provenance=(table,page)=>({table,sourceDocument:table.startsWith('B')||tab
 const fractionPercent=v=>display(amount(v,'Persen')/100n); // source 0.5988% -> fraction 0.005988, exact at 6 dp
 function rawLookup(p){
  if(!p||typeof p!=='object'||Array.isArray(p))reject('Objek lookup diperlukan.');
- const t=value(p,'table'),y=t==='C.2'?2026:t==='A.8'?null:t==='B.3'?p.year:year(p),s=['A.3','A.5','A.6','B.2','B.5'].includes(t)?scen(p):null;
+ const t=value(p,'table'),y=t==='C.2'?2026:t==='A.8'?null:t==='B.3'?p.year:year(p),s=['A.3','A.5','A.6','A.7','B.2','B.5'].includes(t)?scen(p):null;
  if(t==='A.3'||t==='B.5'){
   const k=t==='A.3'?CREDIT.A3:MARKET.B5,z=size(p),l=location(p),sec=sector(p),rat=rating(p);
   const row=k.find(r=>r[0]===s&&r[1]===z&&r[2]===l&&r[3]===sec&&r[4]===rat);
@@ -56,6 +57,17 @@ function rawLookup(p){
   if(!row)reject('Shock C.2 tidak ditemukan.');
   return {table:t,scenario:'net_zero_2050',year:2026,size:z,locationRisk:l,sector:sec,depositOutflowPercent:row[3],undrawnDrawdownPercent:row[4],depositOutflowFraction:fractionPercent(row[3]),undrawnDrawdownFraction:fractionPercent(row[4]),numericMeaning:'LCR_ADDITIONAL_SHOCKS_PERCENT',...provenance(t,row[5])};
  }
+ if(t==='A.7'){
+  const propertyType=value(p,'propertyType'),sizeBand=value(p,'sizeBand').replace(/\\s+/g,''),euiClass=value(p,'euiClass');
+  const permitted=new Set(['office','retail_mall','warehouse','mixed_use','multifamily','budget_hotel','hotel_3plus','residential']);
+  if(!permitted.has(propertyType))reject('Jenis CRE/RRE A.7 tidak terdaftar.');
+  const row=CRE_RRE.rows.find(r=>r[0]===s&&r[1]===propertyType&&r[2]===sizeBand&&r[3]===euiClass);
+  if(!row)reject('Bucket properti A.7 tidak ditemukan. Masukkan kategori ukuran/EUI tepat sebagaimana PDF.');
+  const v=row[4][years.indexOf(y)];
+  if(v===null)reject('Nilai A.7 ini berisi NaN dalam sumber PDF; blokir dan periksa workbook asli.');
+  return {table:t,scenario:s,year:y,propertyType,sizeBand,euiClass,transitionCost: v,
+   numericMeaning:'CRE_RRE_TRANSITION_COST_IDR',unit:'IDR',...provenance(t,row[5])};
+ }
  if(t==='A.8'){
   const grade=value(p,'granularRating'),row=CREDIT.A8.find(r=>r[0]===grade);
   if(!row)reject('Peringkat granular tidak tercakup di Tabel A.8.');
@@ -81,6 +93,11 @@ export function book7AnnexStress(p){
   const base=positive(p.collateralValue),adjusted=times(base,1000000n-amount(row.decimalFraction,'Haircut'));
   return {...row,collateralValue:display(base),adjustedCollateral:display(adjusted),physicalValueLoss:display(base-adjusted),method:'PDF-displayed-physical-haircut-percent'};
  }
+ if(row.table==='A.7'){
+  const base=positive(p.collateralValue),cost=amount(row.transitionCost,'Biaya A.7 CRE/RRE');
+  if(cost>base)reject('Biaya transisi melebihi nilai agunan; keputusan perhitungan perlu penelaahan Bank.');
+  return {...row,collateralValue:display(base),adjustedCollateral:display(base-cost),method:'OJK-B7-A7-sourced-CRE-RRE-transition-cost'};
+ }
  if(row.table==='C.2'){
   const balance=positive(p.balance),baselineRunoff=rate(p.baselineRate),fraction=amount(p.component==='undrawn'?row.undrawnDrawdownFraction:row.depositOutflowFraction,'LCR shock');
   if(!['deposit','undrawn'].includes(p.component))reject('Komponen deposit/undrawn diperlukan.');
@@ -93,8 +110,8 @@ export function book7AnnexStress(p){
  return row;
 }
 export const BOOK7_ANNEX_PDF_CATALOG_STATUS=Object.freeze({
- tables:['A.3','A.5','A.6','A.8','B.2','B.3','B.5','C.2'],
- rows:{A3:1260,A5:36,A6:420,A8:21,B2:3,B3:26,B5:1260,C2:84},
- sourcePrecision:'PDF_PUBLISHED_ROUNDED',creRreA7:'quarantined_pending_original_workbook_and_NaN_review',
+ tables:['A.3','A.5','A.6','A.7','A.8','B.2','B.3','B.5','C.2'],
+ rows:{A3:1260,A5:36,A6:420,A7:369,A8:21,B2:3,B3:26,B5:1260,C2:84},
+ sourcePrecision:'PDF_PUBLISHED_ROUNDED',creRreA7:'369_PDF_ROWS_STAGED_ONE_NaN_YEAR_BLOCKED_AND_FULL_PRECISION_WORKBOOK_REQUIRED',
  noExtrapolation:true,externalInstitutionApprovalRequired:true
 });
