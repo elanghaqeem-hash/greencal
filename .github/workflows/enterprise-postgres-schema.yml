@@ -1,0 +1,43 @@
+name: GreenCal PostgreSQL Enterprise schema CI (synthetic)
+on:
+  pull_request:
+    paths:
+      - 'migrations/postgres/**'
+      - 'scripts/vercel/apply-pg-schema.mjs'
+      - 'tests/postgres/enterprise.test.mjs'
+      - '.github/workflows/enterprise-postgres-schema.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'migrations/postgres/**'
+      - 'scripts/vercel/apply-pg-schema.mjs'
+      - 'tests/postgres/enterprise.test.mjs'
+permissions:
+  contents: read
+jobs:
+  postgres-schema:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: ci-only-not-a-bank-secret
+          POSTGRES_DB: greencal_synthetic
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U postgres -d greencal_synthetic"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      GREENCAL_TEST_POSTGRES_URL: postgresql://postgres:ci-only-not-a-bank-secret@127.0.0.1:5432/greencal_synthetic
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: '24'
+      - run: npm install --no-audit --no-fund
+      - name: Apply schema and assert PostgreSQL transactional/review controls
+        run: node tests/postgres/enterprise.test.mjs
+      - name: Confirm CLI guard refuses missing bank-approved connection
+        run: node scripts/vercel/apply-pg-schema.mjs
