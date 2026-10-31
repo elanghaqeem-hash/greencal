@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {DIMENSIONS,TOPICS,QUESTIONS,INVENTORY,QUALITY_TESTS,weighted,analyzeReadiness,readinessLevel} from '../src/enterprise/discovery.js';
 import {validatePayload} from '../src/enterprise/discovery-api.js';
+import {spawnSync} from 'node:child_process';
 
 const ready = ()=>{
  const dimensions=Object.fromEntries(DIMENSIONS.map(x=>[x.id,{score:3,evidenceRef:'synthetic:reviewed-evidence'}]));
@@ -83,4 +84,12 @@ test('unknown IDs, arbitrary fields, invalid percentages and evidence-free high 
 test('does not treat an unassessed score as zero',()=>{
  const r=weighted(DIMENSIONS,{data:{score:2}});
  assert.equal(r.score,2);assert.equal(r.coveragePct,20);
+});
+
+test('Discovery browser asset and API entry point have valid JavaScript syntax',()=>{
+ for(const path of ['../assets/enterprise-discovery.js','../src/enterprise/discovery-api.js','../src/enterprise/discovery.js']){
+  const f=new URL(path,import.meta.url);
+  const process=spawnSync(globalThis.process.execPath,['--check',f.pathname],{encoding:'utf8'});
+  assert.equal(process.status,0,f.pathname+': '+process.stderr);
+ }
 });
