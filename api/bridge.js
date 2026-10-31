@@ -16,6 +16,25 @@ export function resolveApiPath(query){
  if(!/^[a-zA-Z0-9/_-]{1,200}$/.test(path)||path.includes('//')||path.split('/').includes('..'))return null;
  return '/api/'+path.replace(/^\/+/,'');
 }
+// Only explicit, supported enterprise switches are forwarded to the common
+// backend. An omitted or malformed environment variable always means OFF.
+export const VERCEL_ENTERPRISE_FLAGS=Object.freeze([
+ 'GC_ENTERPRISE_QUANT_ENABLED',
+ 'GC_ENTERPRISE_BOOK6_ENABLED',
+ 'GC_ENTERPRISE_BOOK7_ENABLED',
+ 'GC_ENTERPRISE_RELEASE_ENABLED',
+ 'GC_ENTERPRISE_SOURCE_REVIEW_ENABLED',
+ 'GC_ENTERPRISE_REQUIRE_SOURCE_MANIFEST'
+]);
+export function vercelEnterpriseEnvironment(config=process.env){
+ const flags=Object.fromEntries(VERCEL_ENTERPRISE_FLAGS.map(key=>[
+  key,config[key]==='true'?'true':'false'
+ ]));
+ return {GC_ENTERPRISE_ENABLED:config.GC_ENTERPRISE_ENABLED==='true'?'true':'false',
+  GC_ENTERPRISE_ACCESS_DOMAIN:config.GC_ENTERPRISE_ACCESS_DOMAIN,
+  GC_ENTERPRISE_ACCESS_AUD:config.GC_ENTERPRISE_ACCESS_AUD,
+  ...flags};
+}
 export function publicNetworkScope(req,secret){
  const raw=req.headers?.['x-vercel-forwarded-for']||req.headers?.['x-forwarded-for'];
  const ip=(typeof raw==='string'?raw.split(',')[0].trim():'');
@@ -66,9 +85,7 @@ export async function handler(req,res){
    const isBody=!['GET','HEAD'].includes(req.method);
    const payload=isBody?(typeof req.body==='string'?req.body:JSON.stringify(req.body??{})):undefined;
    const request=new Request('https://'+host+path,{method:req.method,headers,body:payload});
-   const env={GC_ENTERPRISE_ENABLED:'true',ENTERPRISE_DB:db,
-      GC_ENTERPRISE_ACCESS_DOMAIN:process.env.GC_ENTERPRISE_ACCESS_DOMAIN,
-      GC_ENTERPRISE_ACCESS_AUD:process.env.GC_ENTERPRISE_ACCESS_AUD};
+   const env={...vercelEnterpriseEnvironment(),ENTERPRISE_DB:db};
    const response=await handleEnterpriseApi(request,env);
    for(const [key,value] of response.headers){
     if(['content-type','cache-control','x-content-type-options','referrer-policy'].includes(key))res.setHeader(key,value);
