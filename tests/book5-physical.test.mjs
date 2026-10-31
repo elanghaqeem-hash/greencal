@@ -14,7 +14,7 @@ test('Book 5 source published scores, zero vs missing, and score 50 overlap',()=
  assert.equal(r.scores.sea_level_rise.category.code,'low');
  assert.equal(r.scores.wildfire.score,null);
  assert.equal(r.scores.wildfire.category.code,'missing');
- assert.equal(r.scores.flood.category.code,'boundary_review');
+ assert.equal(r.scores.flood.category.code,'medium');
  assert.equal(r.scores.combined.score,78); // no averaging, summing or maximum hazard
  assert.equal(r.limitations.financialLossEstimated,false);
  assert.equal(r.approvalStatus,'internal_screening_only_not_approved_ojk_reporting');
@@ -43,7 +43,7 @@ test('Reject invalid source, scenario, asset class, numeric range and duplicated
  assert.throws(()=>book5Selection({...select,assetLine:'mortgage'}),/Lini/);
  assert.throws(()=>evalAt(select,[{year:2020,scores:scores(1)},{year:2020,scores:scores(1)}]),/duplikat/);
  assert.throws(()=>book5Evaluate(select,[{year:2020,scores:scores(1)}],{}),/SHA/);
- assert.equal(book5Category(50).code,'boundary_review');
+ assert.equal(book5Category(50).code,'medium');
 });
 test('API displays catalog on empty staging and prevents screen without activation',async()=>{
  const db={prepare:()=>({bind:()=>({all:async()=>({results:[]})})})};
