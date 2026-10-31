@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import {migrationGate,migrateDummyOnPreview,sourceInventory,DEMO_BRANCH,DEMO_TRIGGER,DEMO_SCHEMA}
  from '../scripts/vercel/migrate-demo-on-build.mjs';
 import {book6Preview} from '../src/enterprise/book6.js';
+import {verifyPersistedDemo} from '../scripts/vercel/verify-demo-on-build.mjs';
 const gate={
  GC_DEMO_MIGRATION_APPLY:DEMO_TRIGGER,
  VERCEL_ENV:'preview',
@@ -49,6 +50,12 @@ test('real disposable Postgres receives isolated demo-only schema and audit hist
  assert.equal(r.legacyAccountHashesMigrated,false);
  assert.equal(r.bankProductionReady,false);
  assert.equal(r.book6OfficialWorkbookParity,false);
+ const proof=await verifyPersistedDemo({DATABASE_URL_POOLED:url,CI:'true',GC_DEMO_LOCAL_CI_ONLY:'true'});
+ assert.equal(proof.readOnly,true);
+ assert.equal(proof.demoVerified,true,JSON.stringify(proof));
+ assert.equal(proof.enterpriseTables,21);
+ assert.equal(proof.publicTableCount,0);
+ assert.equal(proof.bankProductionReady,false);
  const {Client}=await import('pg');
  const db=new Client({connectionString:url,ssl:false});
  await db.connect();
