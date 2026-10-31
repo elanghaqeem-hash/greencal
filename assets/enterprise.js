@@ -1,7 +1,7 @@
 /* Enterprise UI: no localStorage, tokens, bank data, or provider secrets. */
 (()=>{'use strict';
  const $=s=>document.querySelector(s),el=(tag,text,cls)=>{const e=document.createElement(tag);if(text!==undefined)e.textContent=text;if(cls)e.className=cls;return e;};
- const labels={overview:'Ringkasan workspace',discovery:'Discovery Readiness',analytics:'Analitik kuantitatif',book7:'Buku 7 · Pendekatan Standar',book6:'Buku 6 · Kertas Kerja OJK',release:'Persetujuan rilis Bank',risk:'Register risiko iklim',factor:'Faktor emisi',emission:'Aktivitas & kalkulasi',regulatory_document:'Pustaka dokumen OJK',requirement:'Pemetaan persyaratan',governance:'Kebijakan & risk appetite',portfolio:'Eksposur pembiayaan',scenario:'Katalog skenario iklim',physical:'Screening risiko fisik',transition:'Asesmen risiko transisi',report_package:'Paket laporan internal',audit:'Audit institusi',manual:'Panduan pengguna'};
+ const labels={overview:'Ringkasan workspace',discovery:'Discovery Readiness',analytics:'Analitik kuantitatif',book7:'Buku 7 · Pendekatan Standar',book6:'Buku 6 · Kertas Kerja OJK',books124:'Buku 1, 2 & 4 · Integrasi CRMS',release:'Persetujuan rilis Bank',risk:'Register risiko iklim',factor:'Faktor emisi',emission:'Aktivitas & kalkulasi',regulatory_document:'Pustaka dokumen OJK',requirement:'Pemetaan persyaratan',governance:'Kebijakan & risk appetite',portfolio:'Eksposur pembiayaan',scenario:'Katalog skenario iklim',physical:'Screening risiko fisik',transition:'Asesmen risiko transisi',report_package:'Paket laporan internal',audit:'Audit institusi',manual:'Panduan pengguna'};
  // label, control type, choices; all values sent through server validation.
  const schema={
  governance:{policyArea:['Area kebijakan','select',['strategy','risk_appetite','governance','sharia','disclosure']],owner:['Pemilik kebijakan'],riskAppetite:['Risk appetite / ambang toleransi','textarea'],controls:['Kontrol & mitigasi','textarea'],shariaConsiderations:['Pertimbangan risiko syariah','textarea'],approvalReference:['Rujukan persetujuan internal'],effectiveFrom:['Mulai berlaku','date'],reviewDate:['Tanggal review','date']},
@@ -51,6 +51,10 @@
    if(view==='release'){
     if(!window.GreenCalRelease)throw Error('Komponen release gate belum tersedia.');
     await window.GreenCalRelease.render(root,{api,membership,notice});return;
+   }
+   if(view==='books124'){
+    if(!window.GreenCalBooks124)throw Error('Komponen Buku 1/2/4 belum tersedia.');
+    await window.GreenCalBooks124.render(root,{api,membership,notice});return;
    }
    if(view==='book6'){
     if(!window.GreenCalBook6)throw Error('Komponen Buku 6 belum tersedia; periksa paket deployment.');

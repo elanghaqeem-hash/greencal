@@ -1,0 +1,45 @@
+name: OJK CRMS Books 1-2-4 Validation
+on:
+  pull_request:
+    paths:
+      - 'src/enterprise/books124.js'
+      - 'src/enterprise/books124-api.js'
+      - 'src/enterprise/api.js'
+      - 'api/bridge.js'
+      - 'assets/enterprise-books124.js'
+      - 'assets/enterprise.js'
+      - 'enterprise.html'
+      - 'scripts/build-dist.mjs'
+      - 'tests/books124.test.mjs'
+      - '.github/workflows/books124.yml'
+  push:
+    paths:
+      - 'src/enterprise/books124.js'
+      - 'src/enterprise/books124-api.js'
+      - 'src/enterprise/api.js'
+      - 'api/bridge.js'
+      - 'assets/enterprise-books124.js'
+      - 'assets/enterprise.js'
+      - 'enterprise.html'
+      - 'scripts/build-dist.mjs'
+      - 'tests/books124.test.mjs'
+      - '.github/workflows/books124.yml'
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Test exact source and scenario controls
+        run: node --test tests/books124.test.mjs
+      - name: Verify enterprise assets and packaging
+        run: |
+          node --check src/enterprise/books124.js
+          node --check src/enterprise/books124-api.js
+          node --check assets/enterprise-books124.js
+          node scripts/build-dist.mjs
+          test -s dist/assets/enterprise-books124.js
