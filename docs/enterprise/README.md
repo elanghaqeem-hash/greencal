@@ -31,3 +31,7 @@ The public GreenCal is preserved. Its client-side outputs and IP-scoped browser 
 ## OJK CRMS Buku 3 — 31 October 2026
 
 [Methodology, exact-decimal financed emissions, Scope 3 separation, Tier 1–4, CRSA carbon cost, traceability and release gates](ojk-book3-20261031.md). Internal feature-gated implementation; official Annex C Excel calculator and independent bank UAT remain pending.
+
+## Lampiran C Buku 3 — workbook Excel terenkripsi
+
+[Hasil inventaris 35 sheet, faktor GWP AR5, adapter emisi per gas, pengujian dan isu atribusi Scope 3 Cat 15](ojk-book3-annex-c-audit.md). **Terbatas pada sandbox**; faktor/vintage dan seluruh formula workbook belum diotorisasi untuk pelaporan bank.

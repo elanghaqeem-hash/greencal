@@ -17,15 +17,20 @@
     debtorRevenue:'8000000000000',scenarioReference:'SIMULASI: Net Zero 2050',includeScope2:false},
   activity:{activityQuantity:'1000',activityUnit:'kWh',factorKgCO2ePerUnit:'0.5',factorActivityUnit:'kWh',
     scope:'scope2',reportingYear:'2025',factorYear:'2025',factorSourceTier:'national',
-    factorSource:'SIMULASI ONLY — bukan faktor resmi OJK',factorVersion:'SIMULASI',factorEvidence:'SIMULASI TEST'}
+    factorSource:'SIMULASI ONLY — bukan faktor resmi OJK',factorVersion:'SIMULASI',factorEvidence:'SIMULASI TEST'},
+  gas_activity:{activityQuantity:'100',activityUnit:'gallons',factorActivityUnit:'gallons',scope:'scope1',
+    reportingYear:'2024',factorYear:'2024',factorSourceTier:'international',
+    factorSource:'SIMULASI — Annex C Faktor Emisi B9:G9, effective year requires independent review',
+    factorVersion:'ANNEX-C-USER-UPLOADED-UNVERIFIED',factorEvidence:'Faktor Emisi!A9:H9',
+    co2KgPerUnit:'10.21',ch4GramPerUnit:'0.41',n2oGramPerUnit:'0.08',gwpVersion:'IPCC_AR5_100_YEAR'}
  };
  const display={debtor:'Emisi debitur & OJK Tier',financed:'Financed Emissions · Atribusi PCAF',
-  carbon_cost:'Biaya karbon CRSA · Scope 1',activity:'Aktivitas × faktor emisi'};
+  carbon_cost:'Biaya karbon CRSA · Scope 1',activity:'Aktivitas × faktor emisi',gas_activity:'Lampiran C · Per gas CO₂/CH₄/N₂O (GWP AR5)'};
  window.GreenCalBook3={async render(root,{api,notice}){
   root.replaceChildren();
   const intro=el('section');intro.className='panel';intro.append(el('h2','Buku 3 · Metode Penghitungan Emisi'));
   intro.append(el('p','Dua output wajib dipisahkan: emisi penuh debitur untuk CRSA dan porsi financed emissions untuk metrik portofolio. Angka utama financed emissions hanya Scope 1+2, Scope 3 terpisah. Biaya karbon menghitung Scope 1 debitur penuh.'));
-  intro.append(el('p','Kualitas data OJK menggunakan Tier 1–4, bukan skor PCAF 1–5. Faktor emisi harus sesuai periode laporan. Contoh di bawah ini SIMULASI saja, bukan data atau faktor emisi terverifikasi.'));
+  intro.append(el('p','Kualitas data OJK menggunakan Tier 1–4, bukan skor PCAF 1–5. Faktor emisi harus sesuai periode laporan. Contoh di bawah ini SIMULASI saja; faktor gas dan GWP AR5 merujuk workbook terlampir tetapi tahun berlaku, lisensi, dan seluruh rumus belum direkonsiliasi untuk produksi.'));
   root.append(intro);
   const catalog=await api('/book3/catalog');
   const section=el('section');section.className='panel';

@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {book3Debtor,book3Financed,book3CarbonCost,book3Activity} from '../src/enterprise/book3.js';
+import {book3Debtor,book3Financed,book3CarbonCost,book3Activity,book3GasActivity} from '../src/enterprise/book3.js';
 import {handleBook3Api} from '../src/enterprise/book3-api.js';
 import {financedEmissions} from '../src/enterprise/quant.js';
 const debtor=(overrides={})=>({debtorRef:'SIM-ABC',year:'2025',sourceMethod:'borrower_report',ojkTier:2,
@@ -73,6 +73,26 @@ test('Activity estimate factor vintage, source priority and units are explicit',
  assert.throws(()=>book3Activity({...p,factorSourceTier:'ipcc',hasApplicableNationalFactor:true}),/nasional/);
  assert.throws(()=>book3Activity({...p,scope:'unknown'}),/Scope/);
 });
+
+test('Annex C gas-resolved factors use AR5 GWP and preserve gram-vs-kilogram units',()=>{
+ const p={activityQuantity:'100',activityUnit:'gallons',factorActivityUnit:'gallons',
+  scope:'scope1',reportingYear:'2024',factorYear:'2024',factorSourceTier:'international',
+  factorSource:'Annex C Faktor Emisi row 9 — UAT example only',factorVersion:'annex-c-upload',
+  factorEvidence:'Faktor Emisi!A9:H9',gwpVersion:'IPCC_AR5_100_YEAR',
+  co2KgPerUnit:'10.21',ch4GramPerUnit:'0.41',n2oGramPerUnit:'0.08'};
+ const r=book3GasActivity(p);
+ assert.equal(r.estimatedTco2e,'1.024268');
+ assert.deepEqual(r.gwp,{basis:'IPCC_AR5_100_YEAR',co2:1,ch4:28,n2o:265});
+ assert.equal(r.officialSubmission,false);
+ assert.throws(()=>book3GasActivity({...p,gwpVersion:'IPCC_AR6'}),/GWP AR5/);
+ assert.throws(()=>book3GasActivity({...p,co2KgPerUnit:null}),/CO2 kg/);
+ assert.throws(()=>book3GasActivity({...p,activityUnit:'liters'}),/Satuan/);
+ assert.throws(()=>book3GasActivity({...p,factorYear:'2023'}),/tahun pelaporan/);
+ assert.equal(book3GasActivity({...p,ch4GramPerUnit:'0.000028571428571428574',n2oGramPerUnit:'0'}).gasFactors.ch4GramPerUnit,
+  '0.000028571428571428574');
+ assert.throws(()=>book3GasActivity({...p,co2KgPerUnit:'1e3'}),/CO2 kg/);
+});
+
 test('Book3 API is tenant-auth inherited, role and feature gated; no persistence',async()=>{
  const req=(kind,payload)=>new Request('https://test.invalid/api/enterprise/book3/validate',{method:'POST',
   headers:{'content-type':'application/json'},body:JSON.stringify({kind,payload})});
@@ -84,7 +104,7 @@ test('Book3 API is tenant-auth inherited, role and feature gated; no persistence
  await assert.rejects(()=>handleBook3Api(req('debtor',debtor()),env,null,'demo-tenant',{role:'external_auditor'},path),/hak/);
  r=await handleBook3Api(new Request('https://test.invalid/api/enterprise/book3/catalog'),{},null,'demo-tenant',
   {role:'external_auditor'},'/book3/catalog');
- assert.equal((await r.json()).methods.length,4);
+ assert.equal((await r.json()).methods.length,5);
 });
 
 test('Tier 4 peer provenance is retained through the financed-emissions audit response',()=>{

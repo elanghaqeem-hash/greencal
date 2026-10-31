@@ -96,6 +96,40 @@ export function book3CarbonCost(p){
   scenarioReference:name(p.scenarioReference,'Referensi skenario Buku 4',300),
   method:'book3_scope1_debtor_carbon_cost_linked_to_book2',status:'internal_sensitivity_requires_crsa_model_validation',officialSubmission:false};
 }
+
+/**
+ * Annex C workbook uses gas-specific factors: CO2 in kg/unit, CH4 and N2O in g/unit.
+ * GWP100 is pinned to workbook IPCC AR5 (CO2=1, CH4=28, N2O=265).
+ * Factor inputs retain up to 24 decimal places to avoid truncating small grid factors.
+ * This is a factor-by-factor simulation, NOT certification of the full OJK workbook.
+ */
+export function book3GasActivity(p){
+ if(!obj(p))bad('Input gas activity tidak valid.');
+ if(p.gwpVersion!=='IPCC_AR5_100_YEAR')bad('Gunakan referensi GWP AR5 100 tahun dari workbook yang sudah diverifikasi.');
+ const base=book3Activity({...p,factorKgCO2ePerUnit:'0'});
+ const fscale=10n**24n;
+ function factor(v,label){
+  if(typeof v!=='string'||!/^(?:0|[1-9]\d{0,17})(?:\.\d{1,24})?$/.test(v))
+   bad(label+' harus string desimal nonnegatif maks. 24 angka di belakang koma.');
+  const [a,b='']=v.split('.');
+  return BigInt(a)*fscale+BigInt(b.padEnd(24,'0'));
+ }
+ const co2=factor(p.co2KgPerUnit,'CO2 kg/unit');
+ const ch4=factor(p.ch4GramPerUnit,'CH4 gram/unit');
+ const n2o=factor(p.n2oGramPerUnit,'N2O gram/unit');
+ // Round ONCE: (quantity × [CO2 kg + CH4 g/1000×28 + N2O g/1000×265]) / 1000.
+ const q=number(p.activityQuantity,'Data aktivitas');
+ const divisor=1000000n*fscale;
+ const numerator=q*(co2*1000n+ch4*28n+n2o*265n);
+ const t=(numerator+divisor/2n)/divisor;
+ return {...base,estimatedTco2e:fmt(t),
+  formula:'quantity × (CO2 kg/unit + CH4 g/unit × 28 / 1000 + N2O g/unit × 265 / 1000) / 1000',
+  gasFactors:{co2KgPerUnit:p.co2KgPerUnit,ch4GramPerUnit:p.ch4GramPerUnit,n2oGramPerUnit:p.n2oGramPerUnit},
+  gwp:{basis:'IPCC_AR5_100_YEAR',co2:1,ch4:28,n2o:265},
+  annexCStatus:'workbook_formula_units_reproduced_factor_vintage_and_cell_reconciliation_pending',
+  officialSubmission:false};
+}
+
 export function book3Activity(p){
  if(!obj(p))bad('Input aktivitas tidak valid.');
  const qty=number(p.activityQuantity,'Data aktivitas'),f=number(p.factorKgCO2ePerUnit,'Faktor kgCO2e/unit');
