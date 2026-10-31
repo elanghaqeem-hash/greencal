@@ -72,6 +72,15 @@ window.GreenCalDiscovery={async render(root,ctx){
   const kpis=e('div',undefined,'discovery-grid');kpis.append(bar('Kesiapan utama',active.analysis.headline),bar('Readiness topik',active.analysis.topics));
   const blocker=e('div',undefined,'discovery-kpi');blocker.append(e('span','Critical blocker'),e('strong',String(active.analysis.blockers.length)),e('small',active.analysis.blockers.length?'Ada dependency yang perlu ditutup':'Belum ada yang secara eksplisit ditandai'));kpis.append(blocker);
   dashboard.append(e('h3','Ringkasan hasil asesmen'),kpis);
+  dashboard.append(e('h3','Kelengkapan discovery & bukti'));
+  const evidenceGrid=e('div',undefined,'discovery-grid');
+  for(const [id,label] of [['questionnaire','Questionnaire (111)'],['inventory','Inventaris data (35)'],['quality','Uji kualitas (20)']]){
+   const c=active.analysis.evidenceCoverage[id],p=e('div',undefined,'discovery-kpi'),meter=e('progress');
+   meter.max=100;meter.value=c.coveragePct;meter.setAttribute('aria-label',label);
+   p.append(e('span',label),e('strong',c.coveragePct+'%'),e('small',c.ready+' dari '+c.total+' telah dijawab dan memiliki bukti bila diperlukan'),meter);
+   evidenceGrid.append(p);
+  }
+  dashboard.append(evidenceGrid);
   paragraph(dashboard,active.analysis.note);
   paragraph(dashboard,'Status tindak lanjut: '+(active.analysis.indicativeNextStage==='eligible_for_controlled_bank_review'?'Indikatif layak dibawa ke review bank; belum otorisasi go-live.':'Masih memerlukan asesmen atau remediation.'));
   const blockerHead=e('h3','Blocker & critical dependencies');dashboard.append(blockerHead);
