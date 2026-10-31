@@ -27,18 +27,18 @@ const verified=(a,id)=>a?.controlId===id&&a.status==='verified'&&a.scope==='bank
  Number.isFinite(Date.parse(a.verifiedAt))&&a.officialSourceVerified===true&&a.bankApproved===true;
 // Attestations MUST originate from verified server-side reviewer and source registries,
 // never browser requests, synthetic users, environment feature flags, or plain JSON claims.
-export function evaluateOjk2026({attestations=[],bankReleaseAuthorized=false}={}){
+export function evaluateOjk2026({attestations=[],bankReleaseAuthorized=false,verifyAttestation=()=>false,verifyBankRelease=()=>false}={}){
  if(!Array.isArray(attestations))throw new TypeError('Attestation collection must be server verified');
  const byId=new Map();
  for(const a of attestations)if(a&&typeof a.controlId==='string')byId.set(a.controlId,[...(byId.get(a.controlId)||[]),a]);
- const check=c=>{const items=byId.get(c.id)||[];return {...c,verified:items.length===1&&verified(items[0],c.id)};};
+ const check=c=>{const items=byId.get(c.id)||[];return {...c,verified:items.length===1&&verified(items[0],c.id)&&verifyAttestation(items[0])===true};};
  const books=OJK_2026_BOOK_CONTROLS.map(b=>{
   const controls=b.controls.map(check),verifiedCount=controls.filter(c=>c.verified).length;
   return {book:b.book,title:b.title,status:verifiedCount===controls.length?'PASS':verifiedCount?'PARTIAL':'NOT_VERIFIED',
    verified:verifiedCount,total:controls.length,controls};
  });
  const global=OJK_2026_GLOBAL_CONTROLS.map(check);
- const pass=books.every(b=>b.status==='PASS')&&global.every(c=>c.verified)&&bankReleaseAuthorized===true;
+ const pass=books.every(b=>b.status==='PASS')&&global.every(c=>c.verified)&&bankReleaseAuthorized===true&&verifyBankRelease()===true;
  return {framework:'OJK CRMS Perbankan 2026',status:pass?'PASS':'NOT_READY',
   officialOjkCertification:false,bankProductionReady:pass,books,global,
   counts:{booksPassed:books.filter(b=>b.status==='PASS').length,booksTotal:7,
