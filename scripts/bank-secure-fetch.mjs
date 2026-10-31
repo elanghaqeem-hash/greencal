@@ -3,7 +3,7 @@
 import {createHash} from 'node:crypto';
 import {readFile,writeFile} from 'node:fs/promises';
 import {pathToFileURL} from 'node:url';
-import {convertCsvToBatches} from './portfolio-cbs-adapter.mjs';
+import {convertCsvToBatches,parseCsv} from './portfolio-cbs-adapter.mjs';
 import {reconcileCkpn} from './ckpn-reconciliation.mjs';
 
 const sources=['CBS','GL','CKPN'];
@@ -44,9 +44,26 @@ export async function retrieveApprovedBankSource(config,{fetchImpl=fetch,secrets
  if(body.includes('\0'))throw Error('Binary/invalid export is prohibited');
  return {source:manifest.source,text:body,sha256:digest,sizeBytes:count,sourceUrl:new URL(manifest.url).origin+'/[redacted-approved-endpoint]',status:'bytes_verified_pending_business_and_bank_acceptance'};
 }
-export function prepareBankPackage({cbs,glControl,ckpn,ckpnControl,eclResults}){
+export function parseGlSource(gl){
+ if(!gl||gl.source!=='GL'||typeof gl.text!=='string'||!HEX.test(gl.sha256||''))throw Error('Byte-verified GL source required');
+ const actual=createHash('sha256').update(gl.text).digest('hex');
+ if(actual!==gl.sha256.toLowerCase())throw Error('GL source bytes changed after retrieval');
+ const rows=parseCsv(gl.text.replace(/^\uFEFF/,''));
+ const head=['asOf','currency','sourceSystem','glControlTotal','glControlCount','controlReference'];
+ if(rows.length!==2||JSON.stringify(rows[0])!==JSON.stringify(head)||rows[1].length!==head.length)throw Error('Unexpected GL schema/PII/rows in signed control export');
+ const [asOf,currency,sourceSystem,glControlTotal,count,controlReference]=rows[1];
+ if(!/^\d{4}-\d{2}-\d{2}$/.test(asOf)||!/^[A-Z]{3}$/.test(currency)||!sourceSystem||!controlReference||!/^\d{1,15}(?:\.\d{1,6})?$/.test(glControlTotal)||!/^[1-9]\d{0,9}$/.test(count))throw Error('Invalid GL source controls');
+ return {asOf,currency,sourceSystem,glControlTotal,glControlCount:Number(count),controlReference,sourceSha256:actual};
+}
+export function prepareBankPackage({cbs,gl,glControl,ckpn,ckpnControl,eclResults,requireSourceGL=false}){
  if(!cbs||cbs.source!=='CBS'||!cbs.text||!HEX.test(cbs.sha256||''))throw Error('Byte-verified CBS source required');
  if(createHash('sha256').update(cbs.text).digest('hex')!==cbs.sha256.toLowerCase())throw Error('CBS source bytes changed after retrieval');
+ if(requireSourceGL&&!gl)throw Error('Bank production requires an independent byte-verified GL extract');
+ if(gl){
+  const verified=parseGlSource(gl);
+  if(glControl&&Object.keys(verified).filter(k=>k!=='sourceSha256').some(k=>String(verified[k])!==String(glControl[k])))throw Error('Independent GL control differs from signed GL extract');
+  glControl=verified;
+ }
  if(!glControl||typeof glControl!=='object'||!glControl.controlReference||!glControl.glControlTotal)throw Error('Approved GL control required');
  if(!ckpn||ckpn.source!=='CKPN'||!ckpn.text||!HEX.test(ckpn.sha256||''))throw Error('Byte-verified CKPN source required');
  if(createHash('sha256').update(ckpn.text).digest('hex')!==ckpn.sha256.toLowerCase())throw Error('CKPN source bytes changed after retrieval');
