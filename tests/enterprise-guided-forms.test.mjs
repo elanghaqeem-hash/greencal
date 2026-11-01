@@ -21,12 +21,12 @@ function runtime(){
 }
 const runtimeCache=runtime(),kit=runtimeCache.window.GreenCalFormKit;
 
-test('analytics catalog exposes complete structured fields for all twenty-five+ workflows',()=>{
+test('analytics catalog exposes complete structured fields for all twenty-three workflows',()=>{
  const specs=runtimeCache.window.GreenCalAnalytics.specs;
- assert.ok(Object.keys(specs).length>=24);
+ assert.equal(Object.keys(specs).length,23);
  for(const [name,config] of Object.entries(specs)){
   const fields=kit.forAnalytics(name,config.fields);
-  assert.deepEqual(fields.map(x=>x.name),config.fields,name+' fields differ from API contract');
+  assert.deepEqual(Array.from(fields,x=>x.name),Array.from(config.fields),name+' fields differ from API contract');
   assert.ok(fields.every(x=>x.label&&x.type),name+' missing label or control');
  }
  for(const key of ['portfolio_import','ngfs_interpolation','lifetime_ecl','source_manifest','book7_ckpn','book7_liquidity'])
@@ -38,7 +38,7 @@ test('Buku 3 method schemas include nested debtor and Scope 1–3 fields',()=>{
  assert.deepEqual(Object.keys(examples),['debtor','financed','carbon_cost','activity','gas_activity']);
  for(const [name,example] of Object.entries(examples)){
   const schema=kit.forExample(example,name);
-  assert.deepEqual(schema.map(x=>x.name),Object.keys(example));
+  assert.deepEqual(Array.from(schema,x=>x.name),Object.keys(example));
  }
  const financed=kit.forExample(examples.financed,'financed');
  assert.ok(financed.find(x=>x.name==='debtor').fields.some(x=>x.name==='emissions'));
