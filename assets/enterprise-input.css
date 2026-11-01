@@ -1,0 +1,29 @@
+/* CRMS seven-book forms: mobile-first, scoped to the institutional UI. */
+.input-hero{background:linear-gradient(116deg,#e7f6f1,#f8fbfc);border-color:#bfded4}
+.input-eyebrow{font-size:12px;letter-spacing:1.2px;font-weight:750;color:#066b5a}
+.input-hero h2{margin:9px 0 12px}
+.input-caution{color:#83551e!important;font-size:13px}
+.input-book-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(245px,1fr));gap:12px;margin:18px 0}
+.input-book-card{background:#fff;border:1px solid #d3e5df;border-radius:12px;padding:18px;min-width:0}
+.input-book-card h3{font-size:16px;margin:0 0 8px;color:#13584b}
+.input-book-card p{font-size:13px;color:#4b6a62;margin:0 0 12px}
+.input-tags{display:flex;gap:7px;flex-wrap:wrap}
+.input-tags button{font-size:12px;min-height:36px;border-color:#c1dfd4;background:#f4faf7;padding:7px 10px}
+.input-tags button:hover{background:#e3f3ea}
+.input-detail>label{max-width:550px;margin:14px 0 24px}
+.input-form-area{min-width:0}
+.input-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.input-fields label{min-width:0;overflow-wrap:anywhere;font-size:14px}
+.input-fields .input-full{grid-column:1/-1}
+.input-fields input,.input-fields textarea,.input-fields select{min-height:44px;font-size:16px}
+.input-actions{display:flex;flex-wrap:wrap;gap:10px;justify-content:flex-end;margin:20px 0 10px}
+.input-actions button{min-height:46px}
+.input-status{font-size:13px;color:#315e53}
+.input-special{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:12px}
+.input-special-row{background:#f7faf9;border:1px solid #e0ece7;padding:15px;border-radius:9px}
+.input-special-row strong{color:#13584b}
+.input-special-row p{font-size:13px;margin:6px 0}
+.input-special-row small{display:block;font-size:12px}
+.input-locked{color:#a05925}
+#preview{max-width:100%;min-width:0}
+@media(max-width:800px){.input-book-grid,.input-special,.input-fields{grid-template-columns:minmax(0,1fr)}.input-fields .input-full{grid-column:auto}.input-actions button{width:100%}.input-detail>label{max-width:none}}
