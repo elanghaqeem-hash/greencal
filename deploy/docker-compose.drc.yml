@@ -120,3 +120,10 @@ networks:
 volumes:
   db-standby-data:
   cache-data:
+
+# Rahasia DRC disiapkan operator pada host DRC, sama seperti pada DC, dan tidak
+# pernah masuk repositori. Berkas passfile replikasi wajib ada sebelum
+# `docker compose up`, karena tanpanya standby tidak dapat menyambung ke DC.
+secrets:
+  db_replication_password:
+    file: ./secrets/db_replication_password

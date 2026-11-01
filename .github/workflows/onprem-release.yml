@@ -60,7 +60,17 @@ jobs:
             exit 1
           fi
       - name: Validasi registry CRMS 2026
-        run: npm run registry:validate
+        # Registry parameter tiba bersama WP04. Selama berkasnya belum ada di
+        # cabang ini, langkah dilewati dengan catatan, bukan digagalkan:
+        # kegagalan karena berkas yang memang belum ada menyembunyikan
+        # kegagalan yang sesungguhnya.
+        run: |
+          if [ -f scripts/registry/validate-crms26.mjs ]; then
+            npm run registry:validate
+          else
+            echo "scripts/registry/validate-crms26.mjs belum ada di cabang ini (tiba bersama WP04); dilewati." \
+              >> "$GITHUB_STEP_SUMMARY"
+          fi
       - name: Gate kontras WCAG 2.2 AA pada mode terang dan gelap
         # Kontras dihitung dari token yang benar-benar dipakai stylesheet.
         run: npm run design:contrast
@@ -114,14 +124,24 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
       - name: Validasi sintaks compose
         run: |
+          set -euo pipefail
           cp deploy/app.env.example deploy/app.env
           cp deploy/migrator.env.example deploy/migrator.env
           cp deploy/app.drc.env.example deploy/app.drc.env
+          # compose menuntut setiap berkas rahasia benar-benar ada sebelum ia
+          # mau memvalidasi proyek. Placeholder CI ini TIDAK pernah dipakai di
+          # mana pun selain validasi sintaks, dan dibuang di langkah yang sama.
+          for f in db_bootstrap_password db_replication_password \
+                   objects_access_key objects_secret_key server.crt server.key; do
+            echo "ci-placeholder-not-a-secret" > "deploy/secrets/$f"
+          done
           GREENCAL_VERSION=ci GREENCAL_DC_DB_HOST=db.dc.invalid \
             docker compose -f deploy/docker-compose.dc.yml config --quiet
           GREENCAL_VERSION=ci GREENCAL_DC_DB_HOST=db.dc.invalid \
             docker compose -f deploy/docker-compose.drc.yml config --quiet
           rm -f deploy/app.env deploy/migrator.env deploy/app.drc.env
+          find deploy/secrets -type f ! -name README.md -delete
+          echo "compose DC dan DRC lulus validasi sintaks" >> "$GITHUB_STEP_SUMMARY"
       - name: Gate pengerasan on-premise
         # Gate ini SENGAJA gagal selama digest citra masih placeholder.
         # continue-on-error menjaga CI tetap informatif tanpa mengaburkan
@@ -148,28 +168,49 @@ jobs:
   sast:
     name: SAST Semgrep
     runs-on: ubuntu-24.04
-    permissions:
-      contents: read
-      security-events: write
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
       - uses: actions/setup-python@0b93645e9fea7318ecaed2b359559ac225c90a2b # v5.3.0
         with:
           python-version: '3.12'
+      # Python 3.12 tidak lagi memasang setuptools, dan semgrep masih
+      # membutuhkan pkg_resources. Tanpa baris ini, semgrep gagal diimpor.
       # Versi disematkan: pemindai yang berubah sendiri membuat hasil gate
       # tidak dapat dibandingkan antar rilis.
-      - run: pip install semgrep==1.97.0
+      - run: pip install --no-cache-dir setuptools==75.6.0 semgrep==1.97.0
       - name: Jalankan Semgrep
+        id: semgrep
         run: |
-          semgrep scan --config p/javascript --config p/nodejs --config p/sql-injection \
-            --config p/secrets --sarif --output semgrep.sarif \
-            --metrics=off --error --severity ERROR || echo "SEMGREP_FOUND_ISSUES=1" >> "$GITHUB_ENV"
-      - uses: github/codeql-action/upload-sarif@f09c1c0a94de965c15400f5634aa42fac8fb8f88 # v3.27.5
+          set -o pipefail
+          semgrep scan \
+            --config p/javascript --config p/nodejs --config p/sql-injection --config p/secrets \
+            --sarif --output semgrep.sarif --metrics=off --severity ERROR \
+            --error 2>&1 | tee semgrep.log || echo "found=1" >> "$GITHUB_OUTPUT"
+      - name: Ringkas temuan
         if: always()
+        run: |
+          {
+            echo "## SAST Semgrep"
+            echo
+            if [ -f semgrep.sarif ]; then
+              count=$(node -e "const r=require('./semgrep.sarif');console.log((r.runs?.[0]?.results||[]).length)")
+              echo "Temuan severity ERROR: $count"
+            else
+              echo "Semgrep tidak menghasilkan SARIF; lihat log langkah."
+            fi
+            echo
+            echo '```'
+            tail -40 semgrep.log 2>/dev/null || true
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@6f51ac03b9356f520e9adb1b1b7802705f340c2b # v4.5.0
+        if: always() && hashFiles('semgrep.sarif') != ''
         with:
-          sarif_file: semgrep.sarif
+          name: semgrep-sarif
+          path: semgrep.sarif
+          retention-days: 90
       - name: Gagalkan bila ada temuan severity ERROR
-        if: env.SEMGREP_FOUND_ISSUES == '1'
+        if: steps.semgrep.outputs.found == '1'
         run: |
           echo "Semgrep menemukan temuan severity ERROR; tutup temuan sebelum rilis." >&2
           exit 1
@@ -186,18 +227,33 @@ jobs:
       - run: npm ci
       - name: npm audit untuk kerentanan high dan critical
         run: npm audit --audit-level=high --omit=dev
+      # Syft dan Grype dipasang sebagai biner berversi tetap, bukan lewat aksi
+      # pihak ketiga. Alasannya: pin commit SHA sebuah aksi hanya dapat
+      # diverifikasi dengan membaca repositori aksi itu, sedangkan biner dapat
+      # diverifikasi terhadap berkas checksum yang diterbitkan rilisnya sendiri.
+      # Pola ini juga yang dipakai bank saat membangun paket offline.
+      - name: Pasang Syft dan Grype dengan verifikasi checksum
+        run: |
+          set -euo pipefail
+          install_tool() {
+            local repo="$1" version="$2" archive="$3"
+            local base="https://github.com/${repo}/releases/download/v${version}"
+            curl -fsSL --retry 3 -o "$archive" "${base}/${archive}"
+            curl -fsSL --retry 3 -o checksums.txt "${base}/${repo#*/}_${version}_checksums.txt"
+            # Verifikasi terhadap checksum resmi rilis; gagal berarti arsip
+            # tidak utuh atau bukan arsip yang diterbitkan.
+            grep " ${archive}\$" checksums.txt | sha256sum -c -
+            tar xzf "$archive"
+            rm -f "$archive" checksums.txt
+          }
+          install_tool anchore/syft 1.18.1 syft_1.18.1_linux_amd64.tar.gz
+          install_tool anchore/grype 0.86.1 grype_0.86.1_linux_amd64.tar.gz
+          ./syft version
+          ./grype version
       - name: Hasilkan SBOM CycloneDX
-        uses: anchore/sbom-action@df80a981bc6edbc4e220a492d3cbe9f5547a6e75 # v0.17.9
-        with:
-          format: cyclonedx-json
-          artifact-name: greencal-crms-sbom.cyclonedx.json
-          output-file: greencal-crms-sbom.cyclonedx.json
-      - name: Pindai SBOM dengan Grype
-        uses: anchore/scan-action@abae52d4e4ebd8bbb7cc33ce1b5a525a3cd93120 # v5.3.0
-        with:
-          sbom: greencal-crms-sbom.cyclonedx.json
-          fail-build: true
-          severity-cutoff: high
+        run: ./syft scan dir:. --output cyclonedx-json=greencal-crms-sbom.cyclonedx.json
+      - name: Pindai SBOM, gagalkan pada high atau critical
+        run: ./grype sbom:greencal-crms-sbom.cyclonedx.json --fail-on high --output table
       - uses: actions/upload-artifact@6f51ac03b9356f520e9adb1b1b7802705f340c2b # v4.5.0
         if: always()
         with:
@@ -214,10 +270,38 @@ jobs:
           # Riwayat penuh: rahasia yang sudah dihapus dari HEAD tetap ada di
           # riwayat dan tetap harus dicabut.
           fetch-depth: 0
-      - uses: gitleaks/gitleaks-action@44c470ffc35caa8b1eb3e8012ca53c2f9bea4eb5 # v2.3.7
-        env:
-          GITLEAKS_ENABLE_UPLOAD_ARTIFACT: 'true'
-          GITLEAKS_ENABLE_SUMMARY: 'true'
+      - name: Pasang gitleaks dengan verifikasi checksum
+        run: |
+          set -euo pipefail
+          version=8.21.2
+          archive="gitleaks_${version}_linux_x64.tar.gz"
+          base="https://github.com/gitleaks/gitleaks/releases/download/v${version}"
+          curl -fsSL --retry 3 -o "$archive" "${base}/${archive}"
+          curl -fsSL --retry 3 -o checksums.txt "${base}/gitleaks_${version}_checksums.txt"
+          grep " ${archive}\$" checksums.txt | sha256sum -c -
+          tar xzf "$archive" gitleaks
+          ./gitleaks version
+      - name: Pindai seluruh riwayat
+        run: |
+          set -o pipefail
+          ./gitleaks git . --redact --report-format sarif --report-path gitleaks.sarif \
+            --log-level info 2>&1 | tee gitleaks.log
+      - name: Ringkas hasil
+        if: always()
+        run: |
+          {
+            echo "## Pemindaian rahasia"
+            echo
+            echo '```'
+            tail -20 gitleaks.log 2>/dev/null || true
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@6f51ac03b9356f520e9adb1b1b7802705f340c2b # v4.5.0
+        if: always() && hashFiles('gitleaks.sarif') != ''
+        with:
+          name: gitleaks-sarif
+          path: gitleaks.sarif
+          retention-days: 90
 
   container-scan:
     name: Bangun dan pindai citra kontainer
@@ -226,12 +310,18 @@ jobs:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
       - name: Bangun citra runtime
         run: docker build --target runtime -t greencal/crms-enterprise:ci .
-      - name: Pindai citra dengan Grype
-        uses: anchore/scan-action@abae52d4e4ebd8bbb7cc33ce1b5a525a3cd93120 # v5.3.0
-        with:
-          image: greencal/crms-enterprise:ci
-          fail-build: true
-          severity-cutoff: high
+      - name: Pasang Grype dengan verifikasi checksum
+        run: |
+          set -euo pipefail
+          version=0.86.1
+          archive="grype_${version}_linux_amd64.tar.gz"
+          base="https://github.com/anchore/grype/releases/download/v${version}"
+          curl -fsSL --retry 3 -o "$archive" "${base}/${archive}"
+          curl -fsSL --retry 3 -o checksums.txt "${base}/grype_${version}_checksums.txt"
+          grep " ${archive}\$" checksums.txt | sha256sum -c -
+          tar xzf "$archive" grype
+      - name: Pindai citra, gagalkan pada high atau critical
+        run: ./grype greencal/crms-enterprise:ci --fail-on high --output table
       - name: Pastikan citra tidak berjalan sebagai root
         run: |
           user=$(docker inspect -f '{{.Config.User}}' greencal/crms-enterprise:ci)
