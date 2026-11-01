@@ -25,7 +25,7 @@
   const url=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{type:'application/json'}));
   const anchor=el('a');anchor.href=url;anchor.download=file;document.body.append(anchor);anchor.click();anchor.remove();URL.revokeObjectURL(url);
  };
- const kindSchema=()=>Object.fromEntries(catalog.flatMap(g=>g.records).map(k=>[k,g.name]));
+ const kindSchema=()=>Object.fromEntries(catalog.flatMap(g=>g.records.map(k=>[k,g.name])));
  function render(root,{schema,labels,mode='preview',initial='risk',canCreate=()=>false,onOpenRecord=()=>{},onNavigate=()=>{}}){
   if(!root||!schema)throw Error('Form centre requires a container and field schema.');
   const live=mode==='live';
