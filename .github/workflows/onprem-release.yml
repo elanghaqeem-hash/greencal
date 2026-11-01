@@ -45,8 +45,27 @@ jobs:
         run: npm run test:onprem
       - name: Uji paket rilis
         run: node --test tests/onprem-release-bundle.test.mjs
+      - name: Gate inventaris aksi dua arah
+        # Menolak endpoint di kode yang tidak terdaftar DAN baris inventaris
+        # yang rutenya tidak ada. Keduanya adalah penyimpangan dokumentasi.
+        run: npm run inventory:check
+      - name: Uji inventaris dan OpenAPI
+        run: node --test tests/inventory-openapi.test.mjs
+      - name: Pastikan OpenAPI tidak basi
+        run: |
+          npm run openapi:build
+          if ! git diff --quiet -- docs/api/openapi.json; then
+            echo "docs/api/openapi.json basi; jalankan npm run openapi:build dan commit hasilnya." >&2
+            git --no-pager diff -- docs/api/openapi.json
+            exit 1
+          fi
       - name: Validasi registry CRMS 2026
         run: npm run registry:validate
+      - name: Gate kontras WCAG 2.2 AA pada mode terang dan gelap
+        # Kontras dihitung dari token yang benar-benar dipakai stylesheet.
+        run: npm run design:contrast
+      - name: Uji design system
+        run: node --test tests/design-system.test.mjs
       - name: Uji warisan Vercel dan Cloudflare
         run: npm run test:vercel
 

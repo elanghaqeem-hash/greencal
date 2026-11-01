@@ -13,9 +13,16 @@
 // uji di bawah menulis data lewat klien aplikasi, bukan lewat pemilik.
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { createHash } from 'node:crypto';
+import { createHash, randomUUID } from 'node:crypto';
 
 const url = process.env.GREENCAL_ONPREM_PG_URL;
+
+// Setiap eksekusi memakai pengenal sendiri. Tanpa ini, rangkaian uji hanya
+// lulus pada basis data yang baru dibuat, dan uji yang hanya lulus sekali
+// adalah uji yang tidak dapat dipercaya saat menyelidiki kegagalan.
+const RUN = (process.env.GREENCAL_TEST_RUN_ID || randomUUID().replace(/-/g, '').slice(0, 8)).toUpperCase();
+const CODE_A = `CI-A-${RUN}`;
+const CODE_B = `CI-B-${RUN}`;
 const sha = (s) => createHash('sha256').update(s).digest('hex');
 const GENESIS = '0'.repeat(64);
 
@@ -66,17 +73,18 @@ test('setup: dua institusi sintetis terdaftar oleh peran platform', async (t) =>
   await withOwner(async (owner) => {
     // Tidak memakai TRUNCATE: tabel ini bertaut ke log audit yang menolak
     // TRUNCATE, dan basis data CI memang dibuat ulang setiap kali.
-    for (const [code, name, type] of [['CI-A', 'SINTETIS A', 'BUS'], ['CI-B', 'SINTETIS B', 'BUK']]) {
+    for (const [code, name, type] of [[CODE_A, 'SINTETIS A', 'BUS'], [CODE_B, 'SINTETIS B', 'BUK']]) {
       await owner.query(
         `INSERT INTO crms.institutions(code,name,institution_type,currency,created_by)
          VALUES($1,$2,$3,'IDR','ci-platform') ON CONFLICT (code) DO NOTHING`, [code, name, type]);
     }
     const sharia = await owner.query(
-      "SELECT code,is_sharia_entity FROM crms.institutions WHERE code LIKE 'CI-%' ORDER BY code");
+      'SELECT code,is_sharia_entity FROM crms.institutions WHERE code = ANY($1) ORDER BY code',
+      [[CODE_A, CODE_B]]);
     // Entitas syariah dihitung skema, bukan diisi manual.
     assert.deepEqual(sharia.rows, [
-      { code: 'CI-A', is_sharia_entity: true },
-      { code: 'CI-B', is_sharia_entity: false },
+      { code: CODE_A, is_sharia_entity: true },
+      { code: CODE_B, is_sharia_entity: false },
     ]);
   });
 });
@@ -96,13 +104,13 @@ test('tanpa konteks tenant, kueri gagal keras alih-alih membaca semua tenant', a
 test('pemilik objek tidak dapat menyentuh data bisnis tanpa jalur aplikasi', async (t) => {
   if (skipIfNoDb(t)) return;
   await withOwner(async (owner) => {
-    const tenant = (await owner.query("SELECT id FROM crms.institutions WHERE code='CI-A'")).rows[0].id;
+    const tenant = (await owner.query('SELECT id FROM crms.institutions WHERE code=$1', [CODE_A])).rows[0].id;
     // FORCE ROW LEVEL SECURITY berlaku juga bagi pemilik tabel, dan pemilik
     // tidak punya policy pada tabel data, sehingga insert ditolak.
     await assert.rejects(
       () => owner.query(
         `INSERT INTO crms.regulatory_documents(tenant_id,id,title,version,effective_from,registered_by)
-         VALUES($1,'selundupan','Dokumen Selundupan','2026','2026-01-01','owner')`, [tenant]),
+         VALUES($1,'selundupan-${RUN}','Dokumen Selundupan','2026','2026-01-01','owner')`, [tenant]),
       (e) => /row-level security/i.test(e.message),
       'pemilik tabel pun tidak boleh menulis data bisnis di luar jalur aplikasi bertenant');
   });
@@ -110,7 +118,7 @@ test('pemilik objek tidak dapat menyentuh data bisnis tanpa jalur aplikasi', asy
 
 test('dokumen dan parameter awal dimuat lewat jalur aplikasi bertenant', async (t) => {
   if (skipIfNoDb(t)) return;
-  for (const code of ['CI-A', 'CI-B']) {
+  for (const code of [CODE_A, CODE_B]) {
     await withApp(code, 'loader-1', async (app, tenantId) => {
       await app.query(
         `INSERT INTO crms.regulatory_documents
@@ -126,9 +134,9 @@ test('dokumen dan parameter awal dimuat lewat jalur aplikasi bertenant', async (
 test('RLS mengisolasi tenant: tenant A tidak dapat melihat atau menulis data tenant B', async (t) => {
   if (skipIfNoDb(t)) return;
   const bId = await withOwner(async (owner) =>
-    (await owner.query("SELECT id FROM crms.institutions WHERE code='CI-B'")).rows[0].id);
+    (await owner.query('SELECT id FROM crms.institutions WHERE code=$1', [CODE_B])).rows[0].id);
 
-  await withApp('CI-A', 'u-a', async (app, aId) => {
+  await withApp(CODE_A, 'u-a', async (app, aId) => {
     const own = (await app.query('SELECT tenant_id FROM crms.regulatory_documents')).rows;
     assert.equal(own.length, 1);
     assert.equal(own[0].tenant_id, aId);
@@ -142,7 +150,7 @@ test('RLS mengisolasi tenant: tenant A tidak dapat melihat atau menulis data ten
     await assert.rejects(
       () => app.query(
         `INSERT INTO crms.data_snapshots(tenant_id,id,source_system,as_of_date,row_count,snapshot_hash,ingested_by)
-         VALUES($1,'snap-selundup','core','2026-12-31',1,$2,'u-a')`, [bId, sha('x')]),
+         VALUES($1,'snap-selundup-${RUN}','core','2026-12-31',1,$2,'u-a')`, [bId, sha('x')]),
       (e) => /row-level security/i.test(e.message),
       'insert lintas tenant wajib ditolak policy');
 
@@ -153,7 +161,7 @@ test('RLS mengisolasi tenant: tenant A tidak dapat melihat atau menulis data ten
   });
 
   // Data tenant B tetap utuh.
-  await withApp('CI-B', 'u-b', async (app) => {
+  await withApp(CODE_B, 'u-b', async (app) => {
     const r = (await app.query('SELECT title FROM crms.regulatory_documents')).rows;
     assert.equal(r.length, 1);
     assert.equal(r[0].title, 'Panduan Teknis CRMS Perbankan 2026');
@@ -214,7 +222,7 @@ test('nilai melebihi skala 12 dibulatkan oleh domain, bukan ditolak diam-diam', 
 
 test('parameter tidak dapat APPROVED tanpa dua ekstraksi yang cocok dan tiga orang berbeda', async (t) => {
   if (skipIfNoDb(t)) return;
-  await withApp('CI-A', 'extractor-1', async (app, tenant) => {
+  await withApp(CODE_A, 'extractor-1', async (app, tenant) => {
     const ins = (over = {}) => {
       const p = {
         key: 'book2.table_3.pd_bucket_1.upper', doc: 'buku-2', page: 'hal. 41', version: 1,
@@ -275,7 +283,7 @@ test('parameter tidak dapat APPROVED tanpa dua ekstraksi yang cocok dan tiga ora
 
 test('parameter APPROVED tidak dapat diubah nilainya maupun diturunkan statusnya', async (t) => {
   if (skipIfNoDb(t)) return;
-  await withApp('CI-A', 'extractor-1', async (app) => {
+  await withApp(CODE_A, 'extractor-1', async (app) => {
     await assert.rejects(
       () => app.query(
         `UPDATE crms.regulatory_parameters SET value_numeric='9.000000000000' WHERE version=14`),
@@ -293,18 +301,18 @@ test('parameter APPROVED tidak dapat diubah nilainya maupun diturunkan statusnya
 
 test('parameter tidak dapat naik status bila dokumen sumbernya belum berchecksum', async (t) => {
   if (skipIfNoDb(t)) return;
-  await withApp('CI-A', 'extractor-1', async (app, tenant) => {
+  await withApp(CODE_A, 'extractor-1', async (app, tenant) => {
     await app.query(
       `INSERT INTO crms.regulatory_documents
          (tenant_id,id,title,book_no,annex_ref,version,effective_from,registered_by)
-       VALUES($1,'buku-7-annex-a','Lampiran Buku 7 Annex A Risiko Kredit',7,'Annex A','2026','2026-01-01','loader-1')
+       VALUES($1,'buku-7-annex-a-${RUN}','Lampiran Buku 7 Annex A Risiko Kredit',7,'Annex A','2026','2026-01-01','loader-1')
        ON CONFLICT DO NOTHING`, [tenant]);
     await assert.rejects(
       () => app.query(
         `INSERT INTO crms.regulatory_parameters
            (tenant_id,parameter_key,version,value_numeric,status,document_id,page_ref,
             extraction_a_digest,extraction_b_digest,verified_by,verified_at,created_by)
-         VALUES($1,'book7.table_a5.cell_1_1',1,'0.350000000000','VERIFIED_DUAL','buku-7-annex-a','hal. 12',
+         VALUES($1,'book7.table_a5.cell_1_1',1,'0.350000000000','VERIFIED_DUAL','buku-7-annex-a-${RUN}','hal. 12',
                 $2,$2,'verifier-1',now(),'extractor-1')`, [tenant, sha('e')]),
       (e) => /SOURCE_CHECKSUM_MISSING/.test(e.message),
       'status VERIFIED_DUAL tanpa checksum sumber wajib ditolak');
@@ -314,14 +322,14 @@ test('parameter tidak dapat naik status bila dokumen sumbernya belum berchecksum
     await app.query(
       `INSERT INTO crms.regulatory_parameters
          (tenant_id,parameter_key,version,value_numeric,status,document_id,page_ref,created_by)
-       VALUES($1,'book7.table_a5.cell_1_1',1,'0.350000000000','SOURCE_PENDING','buku-7-annex-a','hal. 12','extractor-1')`,
+       VALUES($1,'book7.table_a5.cell_1_1',1,'0.350000000000','SOURCE_PENDING','buku-7-annex-a-${RUN}','hal. 12','extractor-1')`,
       [tenant]);
   });
 });
 
 test('hanya satu versi APPROVED per parameter yang boleh hidup', async (t) => {
   if (skipIfNoDb(t)) return;
-  await withApp('CI-A', 'extractor-1', async (app, tenant) => {
+  await withApp(CODE_A, 'extractor-1', async (app, tenant) => {
     const ins = (version) => app.query(
       `INSERT INTO crms.regulatory_parameters
          (tenant_id,parameter_key,version,value_numeric,status,document_id,page_ref,
@@ -336,10 +344,10 @@ test('hanya satu versi APPROVED per parameter yang boleh hidup', async (t) => {
 
 test('calculation_run bersifat immutable kecuali bukti reproduksi independen', async (t) => {
   if (skipIfNoDb(t)) return;
-  await withApp('CI-A', 'analyst-1', async (app, tenant) => {
+  await withApp(CODE_A, 'analyst-1', async (app, tenant) => {
     await app.query(
       `INSERT INTO crms.data_snapshots(tenant_id,id,source_system,as_of_date,row_count,snapshot_hash,ingested_by)
-       VALUES($1,'snap-1','core_banking','2026-12-31',1000,$2,'u-a') ON CONFLICT DO NOTHING`,
+       VALUES($1,'snap-1-${RUN}','core_banking','2026-12-31',1000,$2,'u-a') ON CONFLICT DO NOTHING`,
       [tenant, sha('snap')]);
     const h = sha('x');
     await app.query(
@@ -347,43 +355,43 @@ test('calculation_run bersifat immutable kecuali bukti reproduksi independen', a
          (tenant_id,run_id,mode,scenario,projection_year,snapshot_id,snapshot_hash,
           parameter_set_digest,formula_set_digest,input_digest,output_digest,manifest_digest,
           engine_contract,executed_by,executed_at)
-       VALUES($1,'RUN-1','standardised','net_zero_2050',2030,'snap-1',$2,$2,$2,$2,$2,$2,
+       VALUES($1,'RUN-1-${RUN}','standardised','net_zero_2050',2030,'snap-1-${RUN}',$2,$2,$2,$2,$2,$2,
               'greencal-onprem-run/1','analyst-1',now()) ON CONFLICT DO NOTHING`, [tenant, h]);
 
     await assert.rejects(
-      () => app.query(`UPDATE crms.calculation_runs SET output_digest=$1 WHERE run_id='RUN-1'`, [sha('diubah')]),
+      () => app.query(`UPDATE crms.calculation_runs SET output_digest=$1 WHERE run_id='RUN-1-${RUN}'`, [sha('diubah')]),
       (e) => /RUN_IMMUTABLE/.test(e.message));
 
     await assert.rejects(
       () => app.query(
         `UPDATE crms.calculation_runs SET reproduced_by='analyst-1',reproduced_at=now(),reproduction_matched=true
-          WHERE run_id='RUN-1'`),
+          WHERE run_id='RUN-1-${RUN}'`),
       (e) => /reproduction_independent/.test(e.message),
       'pelaksana run tidak boleh menjadi validator independennya sendiri');
 
     await assert.rejects(
       () => app.query(
-        `UPDATE crms.calculation_runs SET reproduced_by='validator-1' WHERE run_id='RUN-1'`),
+        `UPDATE crms.calculation_runs SET reproduced_by='validator-1' WHERE run_id='RUN-1-${RUN}'`),
       (e) => /reproduction_evidence_complete/.test(e.message),
       'bukti reproduksi wajib lengkap: siapa, kapan, dan hasilnya');
 
     await app.query(
       `UPDATE crms.calculation_runs SET reproduced_by='validator-1',reproduced_at=now(),reproduction_matched=true
-        WHERE run_id='RUN-1'`);
-    const r = await app.query(`SELECT reproduction_matched FROM crms.calculation_runs WHERE run_id='RUN-1'`);
+        WHERE run_id='RUN-1-${RUN}'`);
+    const r = await app.query(`SELECT reproduction_matched FROM crms.calculation_runs WHERE run_id='RUN-1-${RUN}'`);
     assert.equal(r.rows[0].reproduction_matched, true);
   });
 });
 
 test('engine_contract dan mode di luar kontrak ditolak', async (t) => {
   if (skipIfNoDb(t)) return;
-  await withApp('CI-A', 'analyst-1', async (app, tenant) => {
+  await withApp(CODE_A, 'analyst-1', async (app, tenant) => {
     const h = sha('y');
     const ins = (engine, mode) => app.query(
       `INSERT INTO crms.calculation_runs
          (tenant_id,run_id,mode,snapshot_id,snapshot_hash,parameter_set_digest,formula_set_digest,
           input_digest,output_digest,manifest_digest,engine_contract,executed_by,executed_at)
-       VALUES($1,$2,$3,'snap-1',$4,$4,$4,$4,$4,$4,$5,'analyst-1',now())`,
+       VALUES($1,$2,$3,'snap-1-${RUN}',$4,$4,$4,$4,$4,$4,$5,'analyst-1',now())`,
       [tenant, `RUN-${engine}-${mode}`, mode, h, engine]);
     await assert.rejects(() => ins('engine-lain', 'standardised'), (e) => /engine_contract/.test(e.message));
     await assert.rejects(() => ins('greencal-onprem-run/1', 'mode-karangan'), (e) => /run_mode/.test(e.message));
@@ -392,21 +400,21 @@ test('engine_contract dan mode di luar kontrak ditolak', async (t) => {
 
 test('snapshot_hash yang bukan SHA-256 heksadesimal ditolak domain', async (t) => {
   if (skipIfNoDb(t)) return;
-  await withApp('CI-A', 'analyst-1', async (app, tenant) => {
+  await withApp(CODE_A, 'analyst-1', async (app, tenant) => {
     await assert.rejects(
       () => app.query(
         `INSERT INTO crms.data_snapshots(tenant_id,id,source_system,as_of_date,row_count,snapshot_hash,ingested_by)
-         VALUES($1,'snap-bad','core','2026-12-31',1,'bukan-hash','u-a')`, [tenant]),
+         VALUES($1,'snap-bad-${RUN}','core','2026-12-31',1,'bukan-hash','u-a')`, [tenant]),
       (e) => /sha256_hex/.test(e.message));
   });
 });
 
 test('komponen tidak dapat dihitung pada pasangan kanal terlarang', async (t) => {
   if (skipIfNoDb(t)) return;
-  await withApp('CI-A', 'analyst-1', async (app, tenant) => {
+  await withApp(CODE_A, 'analyst-1', async (app, tenant) => {
     const add = (component, channel) => app.query(
       `INSERT INTO crms.aggregation_components(tenant_id,aggregation_id,component_id,channel,source_run_id,value)
-       VALUES($1,'AGG-1',$2,$3,'RUN-1','1.000000000000')`, [tenant, component, channel]);
+       VALUES($1,'AGG-1-${RUN}',$2,$3,'RUN-1-${RUN}','1.000000000000')`, [tenant, component, channel]);
 
     await add('collateral_physical_haircut', 'lgd');
     await assert.rejects(() => add('collateral_physical_haircut', 'bank_physical_loss'),
@@ -428,13 +436,13 @@ test('komponen tidak dapat dihitung pada pasangan kanal terlarang', async (t) =>
     // Agregasi berbeda tidak saling mengunci.
     await app.query(
       `INSERT INTO crms.aggregation_components(tenant_id,aggregation_id,component_id,channel,source_run_id,value)
-       VALUES($1,'AGG-2','collateral_physical_haircut','bank_physical_loss','RUN-1','1.000000000000')`, [tenant]);
+       VALUES($1,'AGG-2-${RUN}','collateral_physical_haircut','bank_physical_loss','RUN-1-${RUN}','1.000000000000')`, [tenant]);
   });
 });
 
 test('log audit menegakkan rantai hash: sequence menerus dan prev_hash menautkan', async (t) => {
   if (skipIfNoDb(t)) return;
-  await withApp('CI-B', 'u1', async (app, tenant) => {
+  await withApp(CODE_B, 'u1', async (app, tenant) => {
     const append = (sequence, prevHash, hash, extra = {}) => app.query(
       `INSERT INTO crms_audit.event_log
          (tenant_id,sequence,occurred_at,event_type,actor_subject,actor_role,resource_kind,resource_id,
@@ -468,7 +476,7 @@ test('log audit menegakkan rantai hash: sequence menerus dan prev_hash menautkan
 
 test('penolakan akses wajib menyertakan alasan', async (t) => {
   if (skipIfNoDb(t)) return;
-  await withApp('CI-B', 'u1', async (app, tenant) => {
+  await withApp(CODE_B, 'u1', async (app, tenant) => {
     const last = (await app.query(
       'SELECT sequence,hash FROM crms_audit.event_log ORDER BY sequence DESC LIMIT 1')).rows[0];
     await assert.rejects(
@@ -483,7 +491,7 @@ test('penolakan akses wajib menyertakan alasan', async (t) => {
 
 test('log audit append-only: UPDATE, DELETE, dan TRUNCATE semuanya ditolak', async (t) => {
   if (skipIfNoDb(t)) return;
-  await withApp('CI-B', 'u1', async (app) => {
+  await withApp(CODE_B, 'u1', async (app) => {
     // Hak UPDATE dan DELETE tidak diberikan kepada crms_app, sehingga galatnya
     // sudah muncul di lapis hak akses sebelum trigger diuji.
     await assert.rejects(
@@ -557,11 +565,11 @@ test('peran aplikasi tidak memiliki hak DELETE maupun BYPASSRLS', async (t) => {
 
 test('submission tidak dapat berstatus SUBMITTED tanpa tanda terima OJK', async (t) => {
   if (skipIfNoDb(t)) return;
-  await withApp('CI-A', 'compliance-1', async (app, tenant) => {
+  await withApp(CODE_A, 'compliance-1', async (app, tenant) => {
     await app.query(
       `INSERT INTO crms.reporting_cycles
          (tenant_id,id,period_label,cut_off_date,book_versions,mandatory_scenarios,opened_by)
-       VALUES($1,'CY-2026','Tahunan 2026','2026-12-31',$2,$3,'head-1') ON CONFLICT DO NOTHING`,
+       VALUES($1,'CY-2026-${RUN}','Tahunan 2026','2026-12-31',$2,$3,'head-1') ON CONFLICT DO NOTHING`,
       [tenant, JSON.stringify(['B1@2026', 'B2@2026', 'B3@2026', 'B4@2026', 'B5@2026', 'B6@2026', 'B7@2026']),
         JSON.stringify(['net_zero_2050', 'delayed_transition', 'current_policies'])]);
 
@@ -569,7 +577,7 @@ test('submission tidak dapat berstatus SUBMITTED tanpa tanda terima OJK', async 
       () => app.query(
         `INSERT INTO crms.reporting_cycles
            (tenant_id,id,period_label,cut_off_date,book_versions,mandatory_scenarios,opened_by)
-         VALUES($1,'CY-KURANG','Tahunan','2026-12-31',$2,$3,'head-1')`,
+         VALUES($1,'CY-KURANG-${RUN}','Tahunan','2026-12-31',$2,$3,'head-1')`,
         [tenant, JSON.stringify(['B1', 'B2']), JSON.stringify(['a', 'b', 'c'])]),
       (e) => /book_versions/.test(e.message),
       'siklus wajib mencatat versi ketujuh Buku');
@@ -578,7 +586,7 @@ test('submission tidak dapat berstatus SUBMITTED tanpa tanda terima OJK', async 
       () => app.query(
         `INSERT INTO crms.reporting_cycles
            (tenant_id,id,period_label,cut_off_date,book_versions,mandatory_scenarios,opened_by)
-         VALUES($1,'CY-SKENARIO','Tahunan','2026-12-31',$2,$3,'head-1')`,
+         VALUES($1,'CY-SKENARIO-${RUN}','Tahunan','2026-12-31',$2,$3,'head-1')`,
         [tenant, JSON.stringify(['B1', 'B2', 'B3', 'B4', 'B5', 'B6', 'B7']), JSON.stringify(['net_zero_2050'])]),
       (e) => /mandatory_scenarios/.test(e.message),
       'tiga skenario NGFS wajib minimum');
@@ -586,38 +594,38 @@ test('submission tidak dapat berstatus SUBMITTED tanpa tanda terima OJK', async 
     await assert.rejects(
       () => app.query(
         `INSERT INTO crms.report_submissions(tenant_id,cycle_id,id,status,package_checksum,ojk_receipt_ref)
-         VALUES($1,'CY-2026','SUB-1','SUBMITTED',$2,'OJK/2026/0001')`, [tenant, sha('paket')]),
+         VALUES($1,'CY-2026-${RUN}','SUB-1-${RUN}','SUBMITTED',$2,'OJK/2026/0001')`, [tenant, sha('paket')]),
       (e) => /submitted_requires_receipt/.test(e.message),
       'nomor referensi saja tidak cukup; lampiran tanda terima wajib ada');
 
     await app.query(
       `INSERT INTO crms.report_submissions
          (tenant_id,cycle_id,id,status,package_checksum,ojk_receipt_ref,receipt_attachment_ref,submitted_at)
-       VALUES($1,'CY-2026','SUB-1','SUBMITTED',$2,'OJK/2026/0001','blob://receipt-1',now())`,
+       VALUES($1,'CY-2026-${RUN}','SUB-1-${RUN}','SUBMITTED',$2,'OJK/2026/0001','blob://receipt-1',now())`,
       [tenant, sha('paket')]);
   });
 });
 
 test('gate tahap tidak dapat berstatus PASSED tanpa bukti tersimpan', async (t) => {
   if (skipIfNoDb(t)) return;
-  await withApp('CI-A', 'compliance-1', async (app, tenant) => {
+  await withApp(CODE_A, 'compliance-1', async (app, tenant) => {
     await assert.rejects(
       () => app.query(
         `INSERT INTO crms.cycle_stages(tenant_id,cycle_id,stage_no,stage_key,gate_status)
-         VALUES($1,'CY-2026',1,'onboarding','PASSED')`, [tenant]),
+         VALUES($1,'CY-2026-${RUN}',1,'onboarding','PASSED')`, [tenant]),
       (e) => /gate_pass_requires_evidence/.test(e.message),
       'PASSED tanpa bukti adalah pelanggaran "evidence or it did not happen"');
 
     await app.query(
       `INSERT INTO crms.cycle_stages
          (tenant_id,cycle_id,stage_no,stage_key,gate_status,gate_evidence,passed_by,passed_at)
-       VALUES($1,'CY-2026',1,'onboarding','PASSED',$2,'compliance-1',now())`,
+       VALUES($1,'CY-2026-${RUN}',1,'onboarding','PASSED',$2,'compliance-1',now())`,
       [tenant, JSON.stringify({ institutionVerified: true, sandboxUatSignedOff: true, ssoActive: true, mfaEnforced: true })]);
 
     for (const bad of [0, 17]) {
       await assert.rejects(
         () => app.query(
-          `INSERT INTO crms.cycle_stages(tenant_id,cycle_id,stage_no,stage_key) VALUES($1,'CY-2026',$2,$3)`,
+          `INSERT INTO crms.cycle_stages(tenant_id,cycle_id,stage_no,stage_key) VALUES($1,'CY-2026-${RUN}',$2,$3)`,
           [tenant, bad, `x${bad}`]),
         (e) => /stage_no/.test(e.message), `stage_no ${bad} wajib ditolak`);
     }
@@ -630,7 +638,7 @@ test('residensi data selain ID ditolak skema', async (t) => {
     await assert.rejects(
       () => owner.query(
         `INSERT INTO crms.institutions(code,name,institution_type,currency,data_residency,created_by)
-         VALUES('CI-X','SINTETIS X','BUK','IDR','SG','ci-platform')`),
+         VALUES($1,'SINTETIS X','BUK','IDR','SG','ci-platform')`, [`CI-X-${RUN}`]),
       (e) => /data_residency/.test(e.message));
   });
 });
@@ -651,14 +659,14 @@ test('enum peran basis data identik dengan 27 peran aplikasi', async (t) => {
 test('pemberi hak tidak boleh memberi hak kepada dirinya sendiri', async (t) => {
   if (skipIfNoDb(t)) return;
   await withOwner(async (owner) => {
-    const tenant = (await owner.query("SELECT id FROM crms.institutions WHERE code='CI-A'")).rows[0].id;
+    const tenant = (await owner.query('SELECT id FROM crms.institutions WHERE code=$1', [CODE_A])).rows[0].id;
     await assert.rejects(
       () => owner.query(
         `INSERT INTO crms.memberships(tenant_id,subject,email,role,granted_by)
-         VALUES($1,'u-self','u-self@ci.invalid','approver','u-self')`, [tenant]),
+         VALUES($1,'u-self-${RUN}','u-self@ci.invalid','approver','u-self-${RUN}')`, [tenant]),
       (e) => /granted_by_not_self/.test(e.message));
     await owner.query(
       `INSERT INTO crms.memberships(tenant_id,subject,email,role,granted_by)
-       VALUES($1,'u-self','u-self@ci.invalid','approver','admin-1') ON CONFLICT DO NOTHING`, [tenant]);
+       VALUES($1,'u-self-${RUN}','u-self@ci.invalid','approver','admin-1') ON CONFLICT DO NOTHING`, [tenant]);
   });
 });

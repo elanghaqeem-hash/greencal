@@ -14,10 +14,15 @@
     "test:onprem": "node --test tests/onprem-precision.test.mjs tests/onprem-iam.test.mjs tests/onprem-audit-cycle.test.mjs tests/onprem-deployment.test.mjs",
     "test:onprem-postgres": "node --test tests/onprem-postgres.test.mjs",
     "registry:validate": "node scripts/registry/validate-crms26.mjs",
+    "inventory:list": "node scripts/inventory/extract-actions.mjs",
+    "inventory:check": "node scripts/inventory/extract-actions.mjs --check",
+    "openapi:build": "node scripts/inventory/build-openapi.mjs",
     "migrate:onprem": "node scripts/onprem/apply-migrations.mjs",
     "migrate:onprem:plan": "node scripts/onprem/apply-migrations.mjs --dry-run",
     "release:verify-onprem": "node scripts/release/verify-onprem.mjs",
-    "release:bundle": "node scripts/release/build-offline-bundle.mjs"
+    "release:bundle": "node scripts/release/build-offline-bundle.mjs",
+    "design:contrast": "node scripts/design/contrast.mjs",
+    "test:ux": "node --test tests/design-system.test.mjs tests/inventory-openapi.test.mjs"
   },
   "dependencies": {
     "pg": "8.23.1"

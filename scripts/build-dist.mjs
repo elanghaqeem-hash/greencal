@@ -24,8 +24,14 @@ for (const asset of required.slice(1)) {
 }
 await rm(dist, { recursive: true, force: true });
 await mkdir(dist, { recursive: true });
+const designSystemAssets = ["assets/design-tokens.css",
+  "assets/fonts/inter-latin-400-normal.woff2",
+  "assets/fonts/inter-latin-500-normal.woff2",
+  "assets/fonts/inter-latin-600-normal.woff2",
+  "assets/fonts/inter-latin-700-normal.woff2",
+  "assets/fonts/inter-OFL-1.1.txt"];
 const enterpriseAssets = ["enterprise.html", "assets/enterprise.css", "assets/enterprise.js", "assets/enterprise-analytics.js", "assets/enterprise-release.js", "assets/enterprise-ojk-readiness.js", "assets/enterprise-book6.js", "assets/enterprise-books124.js", "assets/enterprise-book3.js", "assets/enterprise-book5.js", "assets/enterprise-discovery.js", "assets/enterprise-discovery.css", "assets/enterprise-input.js", "assets/enterprise-input.css", "assets/enterprise-formkit.js", "assets/enterprise-formkit.css"];
-for (const asset of [...required, ...enterpriseAssets]) {
+for (const asset of [...required, ...enterpriseAssets, ...designSystemAssets]) {
   const target = join(dist, asset === "enterprise.html" ? "enterprise/index.html" : asset);
   await mkdir(dirname(target), { recursive: true });
   await copyFile(join(root, asset), target);
