@@ -1,0 +1,229 @@
+{
+  "registry_schema_version": "1.0.0",
+  "document": {
+    "document_id": "OJK-CRMS-2026-B2",
+    "official_title": "Buku 2 Panduan Teknis CRMS Perbankan 2026",
+    "publication_date": "2026-10-06",
+    "version": "2026",
+    "source_channel": "project_upload",
+    "source_filename": "Buku 2 Panduan Teknis CRMS Perbankan 2026_compressed.pdf",
+    "source_sha256": "SOURCE_PENDING",
+    "source_integrity_note": "File di project sudah dikompresi ulang (akhiran _compressed), bukan unduhan asli OJK. Checksum resmi belum diverifikasi.",
+    "extraction_method": "single_text_layer",
+    "extraction_date": "2026-11-01",
+    "extractor": "wp04-agent",
+    "verifier": null,
+    "approver": null
+  },
+  "scenarios": {
+    "long_term_horizon_years": [2030, 2040, 2050],
+    "short_term_horizon": "n+1, n+2, n+3 (neraca dinamis mengikuti RBB)",
+    "long_term_balance_sheet": "neraca statis pada posisi akhir tahun pelaporan; eksposur jatuh tempo diasumsikan diperpanjang; tindakan manajemen yang direncanakan tidak boleh diperhitungkan",
+    "credit_risk": ["net_zero_2050", "delayed_transition", "current_policies"],
+    "market_risk": ["net_zero_2050", "delayed_transition", "current_policies", "indonesia_policies"],
+    "liquidity_risk": ["net_zero_2050"],
+    "operational_risk_physical": ["current_policies"],
+    "operational_risk_transition": "rencana transisi NZE bank sendiri; bila belum ada, memakai RAKB yang telah disampaikan ke OJK",
+    "scenario_count_conflict": "Buku 1 dan Buku 2 Tabel 2 menetapkan 3 skenario. Buku 2 Tabel 13 (risiko pasar) memuat skenario keempat 'Indonesia Policies'. Lihat ANOM-B02-001."
+  },
+  "sektor_prioritas": [
+    "Konstruksi, termasuk Real Estate",
+    "Pengadaan Listrik, Gas, Uap/Air Panas, dan Udara Dingin, termasuk utilitas lainnya",
+    "Pertambangan dan Penggalian",
+    "Industri Pengolahan",
+    "Transportasi dan Pergudangan",
+    "Pertanian dan Peternakan"
+  ],
+  "sektor_lainnya_rule": "Sektor dengan intensitas emisi relatif rendah dimasukkan ke kategori 'Lainnya' agar analisis mencakup seluruh portofolio.",
+  "portofolio_konsumer_segments": ["Kredit Pemilikan Rumah (KPR)", "Kredit Kendaraan Bermotor dan Kredit Konsumtif Lainnya"],
+  "emission_data_tiers": {
+    "unit": "ordinal_quality_rank",
+    "Tier 1": "Data emisi langsung dari debitur atau laporan tahunan/keberlanjutan yang mencakup Scope 1, Scope 2, dan SELURUH kategori Scope 3, serta telah diverifikasi pihak ketiga.",
+    "Tier 2": "Scope 1 dan 2 serta sebagian atau seluruh Scope 3, namun belum mencakup seluruh kategori Scope 3 yang material dan/atau belum diverifikasi pihak ketiga.",
+    "Tier 3": "Estimasi memakai metodologi nasional/internasional berdasarkan informasi pendukung dari debitur (mis. kalkulator karbon).",
+    "Tier 4": "Estimasi berdasarkan nilai emisi perusahaan lain dengan karakteristik sama atau sektor sama."
+  },
+  "table_3_pd_buckets": {
+    "unit": "percent",
+    "source_reference": "Krink et al., 'The optimal structure of PD buckets', https://doi.org/10.1016/j.jbankfin.2007.12.042",
+    "worked_example_in_source": "PT XYZ pada Bucket 2 memakai PD baseline 1,19%",
+    "mapping_conflict": "Buku 2 memakai 15 PD bucket (Krink). Lampiran Buku 7 Tabel A.8 memakai 5 bucket rating (AA/A/BA/B/C) dari 21 rating Moody's. Pemetaan antar kedua sistem tidak diberikan. Lihat ANOM-B02-002.",
+    "buckets": [
+      { "bucket": 1, "pooled_pd": 0.38 },
+      { "bucket": 2, "pooled_pd": 1.19 },
+      { "bucket": 3, "pooled_pd": 2.06 },
+      { "bucket": 4, "pooled_pd": 2.99 },
+      { "bucket": 5, "pooled_pd": 4.04 },
+      { "bucket": 6, "pooled_pd": 5.24 },
+      { "bucket": 7, "pooled_pd": 6.58 },
+      { "bucket": 8, "pooled_pd": 8.11 },
+      { "bucket": 9, "pooled_pd": 9.76 },
+      { "bucket": 10, "pooled_pd": 11.53 },
+      { "bucket": 11, "pooled_pd": 13.32 },
+      { "bucket": 12, "pooled_pd": 14.87 },
+      { "bucket": 13, "pooled_pd": 16.24 },
+      { "bucket": 14, "pooled_pd": 17.75 },
+      { "bucket": 15, "pooled_pd": 19.72 }
+    ]
+  },
+  "table_15_girr_delta_risk_weights": {
+    "unit": "percent",
+    "regulatory_basis": "SEOJK 23/SEOJK.03/2022",
+    "cross_check": "basel_frtb_mar21_girr_delta",
+    "rows": [
+      { "tenor_years": 0.25, "risk_weight": 1.70 },
+      { "tenor_years": 0.5, "risk_weight": 1.70 },
+      { "tenor_years": 1, "risk_weight": 1.60 },
+      { "tenor_years": 2, "risk_weight": 1.30 },
+      { "tenor_years": 3, "risk_weight": 1.20 },
+      { "tenor_years": 5, "risk_weight": 1.10 },
+      { "tenor_years": 10, "risk_weight": 1.10 },
+      { "tenor_years": 15, "risk_weight": 1.10 },
+      { "tenor_years": 20, "risk_weight": 1.10 },
+      { "tenor_years": 30, "risk_weight": 1.10 }
+    ]
+  },
+  "table_16_csr_delta_risk_weights": {
+    "unit": "percent",
+    "regulatory_basis": "SEOJK 23/SEOJK.03/2022",
+    "cross_check": "basel_frtb_mar21_csr_delta",
+    "rows": [
+      { "bucket": 1, "credit_quality": "IG", "sector": "Pemerintah Pusat, termasuk Bank Sentral dan Bank Pembangunan Multilateral", "risk_weight": 0.50 },
+      { "bucket": 2, "credit_quality": "IG", "sector": "Pemerintah Daerah, Perusahaan Non-Keuangan Termasuk BUMN, Pendidikan, dan Administrasi Publik", "risk_weight": 1.00 },
+      { "bucket": 3, "credit_quality": "IG", "sector": "Perusahaan Keuangan (termasuk BUMN sektor keuangan)", "risk_weight": 5.00 },
+      { "bucket": 4, "credit_quality": "IG", "sector": "Perusahaan Bahan Baku Mineral, Energi, Industri, Pertanian, Manufaktur, Pertambangan", "risk_weight": 3.00 },
+      { "bucket": 5, "credit_quality": "IG", "sector": "Barang Konsumsi, Transportasi dan Pergudangan, Aktivitas Administratif dan Jasa Pendukung", "risk_weight": 3.00 },
+      { "bucket": 6, "credit_quality": "IG", "sector": "Teknologi dan Telekomunikasi", "risk_weight": 2.00 },
+      { "bucket": 7, "credit_quality": "IG", "sector": "Perusahaan Kesehatan, Utilitas, serta Jasa/Aktivitas Profesional dan Teknis", "risk_weight": 1.50 },
+      { "bucket": 8, "credit_quality": "IG", "sector": "Covered Bonds", "risk_weight": 2.50 },
+      { "bucket": 9, "credit_quality": "HY/NR", "sector": "Pemerintah Pusat, termasuk Bank Sentral dan Bank Pembangunan Multilateral", "risk_weight": 2.00 },
+      { "bucket": 10, "credit_quality": "HY/NR", "sector": "Pemerintah Daerah, Perusahaan Non-Keuangan Termasuk BUMN, Pendidikan, dan Administrasi Publik", "risk_weight": 4.00 },
+      { "bucket": 11, "credit_quality": "HY/NR", "sector": "Perusahaan Keuangan (termasuk BUMN sektor keuangan)", "risk_weight": 12.00 },
+      { "bucket": 12, "credit_quality": "HY/NR", "sector": "Perusahaan Bahan Baku Mineral, Energi, Industri, Pertanian, Manufaktur, Pertambangan", "risk_weight": 7.00 },
+      { "bucket": 13, "credit_quality": "HY/NR", "sector": "Barang Konsumsi, Transportasi dan Pergudangan, Aktivitas Administratif dan Jasa Pendukung", "risk_weight": 8.50 },
+      { "bucket": 14, "credit_quality": "HY/NR", "sector": "Teknologi dan Telekomunikasi", "risk_weight": 5.50 },
+      { "bucket": 15, "credit_quality": "HY/NR", "sector": "Perusahaan Kesehatan, Utilitas, serta Jasa/Aktivitas Profesional dan Teknis", "risk_weight": 5.00 },
+      { "bucket": 16, "credit_quality": "HY/NR", "sector": "Sektor Lainnya", "risk_weight": 12.00 },
+      { "bucket": 17, "credit_quality": "index", "sector": "Indeks IG", "risk_weight": 1.50 },
+      { "bucket": 18, "credit_quality": "index", "sector": "Indeks HY", "risk_weight": 5.00 }
+    ]
+  },
+  "table_18_equity_delta_risk_weights": {
+    "unit": "percent",
+    "regulatory_basis": "SEOJK 23/SEOJK.03/2022",
+    "cross_check": "basel_frtb_mar21_equity_delta",
+    "rows": [
+      { "bucket": 1, "spot_risk_weight": 55, "repo_risk_weight": 0.55 },
+      { "bucket": 2, "spot_risk_weight": 60, "repo_risk_weight": 0.60 },
+      { "bucket": 3, "spot_risk_weight": 45, "repo_risk_weight": 0.45 },
+      { "bucket": 4, "spot_risk_weight": 55, "repo_risk_weight": 0.55 },
+      { "bucket": 5, "spot_risk_weight": 30, "repo_risk_weight": 0.30 },
+      { "bucket": 6, "spot_risk_weight": 35, "repo_risk_weight": 0.35 },
+      { "bucket": 7, "spot_risk_weight": 40, "repo_risk_weight": 0.40 },
+      { "bucket": 8, "spot_risk_weight": 50, "repo_risk_weight": 0.50 },
+      { "bucket": 9, "spot_risk_weight": 70, "repo_risk_weight": 0.70 },
+      { "bucket": 10, "spot_risk_weight": 50, "repo_risk_weight": 0.50 },
+      { "bucket": 11, "spot_risk_weight": 70, "repo_risk_weight": 0.70 },
+      { "bucket": 12, "spot_risk_weight": 15, "repo_risk_weight": 0.15 },
+      { "bucket": 13, "spot_risk_weight": 25, "repo_risk_weight": 0.25 }
+    ]
+  },
+  "table_19_drc_default_risk_weights": {
+    "unit": "percent",
+    "regulatory_basis": "SEOJK 23/SEOJK.03/2022",
+    "cross_check": "basel_frtb_mar22_drc",
+    "rows": [
+      { "rating": "AAA", "risk_weight": 0.5 },
+      { "rating": "AA", "risk_weight": 2 },
+      { "rating": "A", "risk_weight": 3 },
+      { "rating": "BBB", "risk_weight": 6 },
+      { "rating": "BB", "risk_weight": 15 },
+      { "rating": "B", "risk_weight": 30 },
+      { "rating": "CCC", "risk_weight": 50 },
+      { "rating": "Tidak memiliki peringkat", "risk_weight": 15 },
+      { "rating": "Gagal bayar", "risk_weight": 100 }
+    ]
+  },
+  "table_10_atmr_credit_risk_weights": {
+    "status": "SOURCE_PENDING",
+    "reason": "Perataan kolom LTV pada lapisan teks tidak dapat dipulihkan secara andal. Bobot risiko properti komersial dan rumah tinggal harus diambil dari SEOJK yang berlaku atau dari PDF asli dengan ekstraksi berbasis layout.",
+    "partially_recovered": {
+      "pembiayaan_korporasi_berperingkat": { "AAA s.d. AA": 20, "A+ s.d. A-": 50, "BBB+ s.d. BBB-": 75, "BB+ s.d. BB-": 100, "kurang dari BB-": 150 },
+      "tanpa_peringkat": { "Pembiayaan Korporasi": 100, "Pembiayaan Proyek": 100, "Pembiayaan Komoditas": 100 },
+      "kredit_beragun_properti_komersial_ltv": { "LTV <= 60%": 70, "60% < LTV <= 80%": 90, "LTV > 80%": 110 },
+      "pembiayaan_personal_kartu_kredit": { "Transaktor": 45, "Non-transaktor": 75 }
+    },
+    "unrecovered": "Skedul LTV properti rumah tinggal (nilai 30/35/45/60/75/105/150 persen tidak dapat dipasangkan ke bucket LTV secara andal)."
+  },
+  "materiality_thresholds": {
+    "reksa_dana_etf": { "value": 5, "unit": "percent_of_total_eligible_capital", "rule": "Ambang batas minimum. Bank boleh memakai ambang internal yang LEBIH konservatif; bila ambang internal kurang konservatif, wajib memakai 5%." }
+  },
+  "liquidity_scope": {
+    "metrics": ["LCR", "LDR"],
+    "horizon": "hanya tahun n+1 (LDR dihitung pada n+1 + 30 hari)",
+    "components": ["HQLA", "pendanaan nasabah korporasi", "fasilitas kredit korporasi belum ditarik", "arus kas masuk dari pinjaman dan tagihan"],
+    "not_material_by_assumption": ["simpanan nasabah perorangan", "simpanan usaha mikro dan kecil", "komitmen pinjaman nasabah perorangan"],
+    "ldr_computation": "Tidak dihitung bank secara terpisah; dihitung otomatis dalam Buku 6 dari komponen likuiditas yang disampaikan."
+  },
+  "market_risk_scope": {
+    "in_scope": [
+      "Obligasi Negara dan Sukuk Negara terbitan Pemerintah Indonesia denominasi IDR",
+      "Obligasi Negara terbitan Pemerintah Indonesia denominasi USD",
+      "Obligasi Korporasi dan Sukuk Korporasi denominasi IDR",
+      "Reksa Dana dan ETF denominasi IDR (naratif, bila melewati ambang materialitas)"
+    ],
+    "accounting_classifications": ["FVOCI", "FVTPL"],
+    "excluded": ["eksposur derivatif", "eksposur langsung terhadap instrumen ekuitas"],
+    "sensitivity_components": { "required": ["Delta"], "optional": ["Vega", "Curvature"], "note": "Bank boleh mengecualikan Vega dan Curvature. Bila model internal tidak memungkinkan pengecualian, terapkan asumsi best effort yang konsisten." },
+    "additional_components": ["DRC", "RRAO", "CVA"]
+  },
+  "formulas": {
+    "biaya_karbon_debitur": {
+      "expression": "Biaya Karbon = Tingkat Emisi yang Harus Diturunkan * Harga Karbon",
+      "deviation_from_master_prompt": "Master prompt v2.0 Bagian 05.3 menambahkan faktor (1 - pass_through) dan (1 - abatement) pada level debitur. Buku 2 TIDAK menerapkan pass-through di level debitur; pass-through hanya muncul pada biaya karbon AGUNAN. Ketentuan buku yang dipakai.",
+      "emission_proxy": "Selisih antara total fossil fuel emission setiap skenario NGFS dengan reference-nya pada Buku 4."
+    },
+    "total_konsumsi_energi_agunan": { "expression": "Total Konsumsi Energi (kWh) = Luas lantai kotor (m2) * EUI (kWh/m2)" },
+    "total_emisi_karbon_agunan": { "expression": "Total Emisi Karbon (tCO2e) = Total Konsumsi Energi (kWh) * Faktor Emisi Grid (kgCO2e/kWh) / 1000 * (1 + Faktor T&D Loss)", "t_and_d_loss_source": "Statistik Ketenagalistrikan Kementerian ESDM terkini" },
+    "total_biaya_karbon_agunan": { "expression": "Total Biaya Karbon (Rp) = Total Emisi Karbon (tCO2e) * Harga Karbon (Rp/tCO2e)" },
+    "total_biaya_karbon_final_agunan": { "expression": "Total Biaya Final (Rp) = Total Biaya Karbon (Rp) * (1 - Pass Through Rate)" },
+    "biaya_retrofit": { "expression": "Biaya Retrofit (Rp) = Biaya Retrofit per Luas Lantai Bangunan (Rp/m2) * Luas Lantai Bangunan (m2)" },
+    "total_biaya_transisi_agunan": { "expression": "Total Biaya Transisi (Rp) = Komponen Biaya A (nilai kini biaya karbon 10 tahun) + Komponen Biaya B (biaya retrofit)" },
+    "ecl": { "expression": "ECL = SUM_t [ PD_t * LGD_t * EAD_t * DF_t ]", "stage_1": "penjumlahan atas 12 bulan", "stage_2_and_3": "penjumlahan atas sisa umur aset keuangan", "climate_variant": "ECL = SUM_t [ PD_t_adj * LGD_t_adj * EAD_t * DF_t ]", "scenario_weighting": "TIDAK ADA pembobotan probabilitas antarskenario; setiap skenario dihitung terpisah." },
+    "frye_jacobs_worked_example": { "base_lgd": 45.00, "base_pd": 0.15, "pit_pd": 0.65, "result_lgd": 45.29, "unit": "percent", "use": "Vektor uji parity untuk implementasi Frye-Jacobs." },
+    "nii_adjusted": { "expression": "NII_Adjusted = Total NII * (1 - PD_weighted)", "pd_weighted": "PD_weighted = SUM(NII * Status Default Pinjaman) / SUM(NII)", "worked_example": { "nii_juta_rupiah": [100, 10, 50, 200, 30, 10, 100], "default_status": [0, 1, 0, 0, 1, 1, 0], "pd_weighted_percent": 10, "adjusted_nii_juta_rupiah": 450 } },
+    "bond_fair_value_change": { "expression": "dV_it = (CS_Shock_it * CS01) + (RF_Shock_it * PV01)", "cs01_pv01_derivation": "nilai pasar belum disesuaikan iklim * sensitivitas yang telah disesuaikan iklim (persen)", "usd_two_stage": ["Climate Adjusted Bond Value (USD) = Baseline Bond Value (USD) - dV (USD)", "dV (IDR) dihitung dengan memperhitungkan perubahan nilai tukar skenario dari Buku 4"] },
+    "reksa_dana_no_look_through": { "expression": "dV_it = Equity Index Shock_it * Baseline Exposure", "index": "IHSG / IDX Composite", "bucket": "risiko ekuitas 'Sektor Lainnya'" },
+    "tarif_pajak_aktual": { "expression": "Tarif Pajak Aktual_t = (1 - Laba Setelah Pajak_t / Laba Sebelum Pajak_t) * 100%" },
+    "tarif_pajak_efektif": { "expression": "rata-rata Tarif Pajak Aktual lima tahun terakhir, bila proyeksi internal tidak tersedia" },
+    "oploss_physical": { "expression": "estimasi berdasarkan kerusakan aset, gangguan operasional Bank, dan gangguan operasional penyedia jasa pihak ketiga; ditambah biaya fasilitas operasional alternatif dan tambahan biaya asuransi bila data tersedia" }
+  },
+  "retrofit_exemptions": [
+    "Properti yang telah diklasifikasikan Hijau berdasarkan TKBI",
+    "Properti non-residensial, skenario jangka pendek: luas < 50.000 m2",
+    "Properti non-residensial, skenario jangka panjang: luas < 50.000 m2 DAN tahun pelaporan sebelum 2030",
+    "Properti residensial, skenario jangka pendek: tidak berlaku",
+    "Properti residensial, skenario jangka panjang: tahun pelaporan sebelum 2030"
+  ],
+  "transition_risk_exclusions": ["Agunan berupa tanah kosong dikecualikan dari penilaian dampak risiko transisi"],
+  "building_classification": {
+    "table_5": [
+      { "jenis_klasifikasi": "Ritel - Pusat Perbelanjaan", "penggunaan": "Ritel - Pusat Perbelanjaan", "kategori": "Real Estat Komersial" },
+      { "jenis_klasifikasi": "Ritel - Ruang Kantor", "penggunaan": "Ruang Kantor", "kategori": "Real Estat Komersial" },
+      { "jenis_klasifikasi": "Real Estat lainnya", "penggunaan": "Mixed Use", "kategori": "Real Estat Komersial" },
+      { "jenis_klasifikasi": "Industrial/Warehouse", "penggunaan": "Gudang/Warehouse", "kategori": "Real Estat Komersial" },
+      { "jenis_klasifikasi": "Hotel", "penggunaan": "Perhotelan", "kategori": "Real Estat Komersial" },
+      { "jenis_klasifikasi": "Residensial", "penggunaan": "Real Estat Residensial", "kategori": "Real Estat Residensial" }
+    ],
+    "eui_tiering": "Bila sertifikasi/klasifikasi TKBI tersedia, pakai EUI kategori Hijau atau Transisi. Bila tidak tersedia, pakai EUI kategori 'Tidak Memenuhi Klasifikasi' sebagai pendekatan konservatif."
+  },
+  "physical_hazards": [
+    "Banjir",
+    "Heat Stress",
+    "Kenaikan Permukaan Air Laut",
+    "Water Stress",
+    "Kebakaran Hutan dan Lahan",
+    "Badai/Topan"
+  ],
+  "physical_analysis_granularity": "Tingkat kabupaten/kota; bank didorong sampai tingkat kode pos bila data dan metodologi memungkinkan. Cakupan dibatasi pada wilayah Indonesia."
+}

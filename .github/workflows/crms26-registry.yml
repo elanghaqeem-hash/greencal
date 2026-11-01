@@ -1,0 +1,32 @@
+name: CRMS26 regulatory parameter registry
+
+on:
+  push:
+    paths:
+      - 'docs/enterprise/registry/**'
+      - 'docs/enterprise/requirements/**'
+      - 'docs/enterprise/wp04-source-extraction-*.md'
+      - 'scripts/registry/**'
+      - 'tests/registry-crms26.test.mjs'
+      - '.github/workflows/crms26-registry.yml'
+  pull_request:
+    paths:
+      - 'docs/enterprise/registry/**'
+      - 'docs/enterprise/requirements/**'
+      - 'docs/enterprise/wp04-source-extraction-*.md'
+      - 'scripts/registry/**'
+      - 'tests/registry-crms26.test.mjs'
+      - '.github/workflows/crms26-registry.yml'
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Validator registry
+        run: node scripts/registry/validate-crms26.mjs
+      - name: Uji registry
+        run: node --test tests/registry-crms26.test.mjs
