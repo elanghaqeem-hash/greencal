@@ -43,13 +43,12 @@
    const tags=el('p',undefined,'input-tags');
    for(const kind of [...new Set(group.records)]){
     const b=el('button',labels[kind]||kind);b.type='button';
-    b.onclick=()=>{if(live){onOpenRecord(kind);}else{chooser.value=kind;displayForm(kind);}};
+    b.onclick=()=>{if(live){onOpenRecord(kind);}else{chooser.value=kind;displayForm(kind);detailed.scrollIntoView?.({behavior:'smooth',block:'start'});}};
     if(live&&!canCreate(kind))b.disabled=true;
     tags.append(b);
    }
    section.append(tags);boxes.append(section);
   }
-  root.append(boxes);
   const detailed=el('section',undefined,'panel input-detail');
   const heading=el('h2',live?'Buat draf langsung di workspace':'Isi & unduh draf simulasi');
   const guide=el('p',live?'Pilih jenis record; form tersimpan di database institusi melalui menu yang sesuai.':'Semua field wajib diisi dan mengikuti tipe dasar API institusi. Tidak ada kalkulasi atau persetujuan regulatori yang dihasilkan dari preview ini.');
@@ -59,7 +58,7 @@
   chooser.value=keys.includes(initial)?initial:'risk';
   const selector=el('label','Jenis input CRMS');selector.append(chooser);
   const formArea=el('div',undefined,'input-form-area');
-  detailed.append(heading,guide,selector,formArea);root.append(detailed);
+  detailed.append(heading,guide,selector,formArea);root.append(detailed,boxes);
   chooser.onchange=()=>displayForm(chooser.value);
   function displayForm(kind){
    formArea.replaceChildren();
