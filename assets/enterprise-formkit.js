@@ -69,8 +69,8 @@
   book7_liquidity:{hqlaSecurityChanges:arrays.hqlaSecurityChanges,corporateDeposits:arrays.corporateDeposits,undrawnCommitments:arrays.undrawnCommitments,cashInflows:arrays.cashInflows}
  };
  const overrides={
-  book7_annex_lookup:{year:{min:2025,max:2100},table:{label:'Kode tabel Lampiran Buku 7'}},
-  book7_annex_stress:{year:{min:2025,max:2100}},
+  book7_annex_lookup:{year:{min:2025,max:2100},table:{label:'Kode tabel Lampiran Buku 7'},size:{optional:true},locationRisk:{optional:true},sector:{optional:true},rating:{optional:true},collateralKind:{optional:true},propertyType:{optional:true},sizeBand:{optional:true},euiClass:{optional:true},granularRating:{optional:true}},
+  book7_annex_stress:{year:{min:2025,max:2100},size:{optional:true},locationRisk:{optional:true},sector:{optional:true},rating:{optional:true},collateralKind:{optional:true},propertyType:{optional:true},sizeBand:{optional:true},euiClass:{optional:true},baselinePD:{optional:true},collateralValue:{optional:true},balance:{optional:true},baselineRate:{optional:true},component:{optional:true}},
   book7_mapping:{annualSales:{optional:true,nullable:true},totalAssets:{optional:true,nullable:true},impactScore:{min:0,max:100}},
   book7_ckpn:{remainingYears:{min:1,max:30,optional:true}},
   book7_collateral_lgd:{transitionCost:{optional:true},transitionScalar:{optional:true}},
@@ -191,6 +191,7 @@
      if(def.type==='date'&&(!/^\d{4}-\d{2}-\d{2}$/.test(raw)||!Number.isFinite(Date.parse(raw))||new Date(raw).toISOString().slice(0,10)!==raw))throw Error(label+' tanggal tidak valid.');
      if(def.pattern&&!(new RegExp('^(?:'+def.pattern+')$')).test(raw))throw Error(label+' format tidak sesuai.');
      if(def.type==='select'&&!(def.choices||[]).includes(raw))throw Error(label+' pilih nilai valid.');
+     if(def.name==='stage'&&def.type==='select')return Number(raw);
      if(def.type==='json'){let p;try{p=JSON.parse(raw);}catch{throw Error(label+' JSON tidak valid.');}return p;}
      return raw;
     };
