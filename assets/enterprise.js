@@ -127,7 +127,7 @@
    if(type==='url')input.placeholder='https://...';
    if(type==='textarea')input.maxLength=4000;
    if(type==='text'&&!['currency','sha256'].includes(key))input.maxLength=2000;
-   input.value=record?.payload[key]??'';
+   input.value=record?.payload[key]??(type==='select'?choices[0]:'');
    l.append(input);fields.append(l);
   });
   const references=['physical','transition'].includes(view)?[['portfolioId','portfolio'],['scenarioId','scenario']]:
