@@ -100,4 +100,5 @@ window.GreenCalAnalytics={async render(root,ctx){
  }
  await loadHistory();
 }};
+window.GreenCalAnalytics.specs=specs;
 })();
