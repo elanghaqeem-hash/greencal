@@ -1,0 +1,128 @@
+{
+  "registry_schema_version": "1.0.0",
+  "document": {
+    "document_id": "OJK-CRMS-2026-B7-LAMP-A",
+    "official_title": "Lampiran Buku 7 - Parameter Pendekatan Standar Penilaian Risiko Kredit",
+    "parent_book": 7,
+    "annex": "A",
+    "publication_date": "2026-10-06",
+    "version": "2026",
+    "source_channel": "project_upload",
+    "source_filename": "Lampiran 1 - Risiko Kredit.pdf",
+    "source_sha256": "SOURCE_PENDING",
+    "extraction_method": "single_text_layer",
+    "extraction_date": "2026-11-01",
+    "extractor": "wp04-agent",
+    "verifier": null,
+    "approver": null,
+    "precision_caveat": "Dokumen menyatakan: 'Angka dibulatkan untuk keperluan penyajian; nilai dengan presisi penuh tersedia pada kertas kerja Lampiran Buku 7 - Risiko Kredit.' Kertas kerja presisi penuh BELUM tersedia. Nilai di file ini TIDAK BOLEH dipakai untuk output resmi Buku 6.",
+    "number_format": "Sumber memakai titik sebagai pemisah ribuan dan koma sebagai pemisah desimal. Seluruh nilai di file ini sudah dinormalisasi ke notasi desimal titik."
+  },
+  "projection_years": [2025, 2026, 2027, 2028, 2030, 2035, 2040, 2045, 2050],
+  "scenarios": ["net_zero_2050", "delayed_transition", "current_policies"],
+  "table_inventory": [
+    { "table": "A.1", "title": "Kebutuhan data input perhitungan PD kredit produktif", "kind": "data_spec", "status": "EXTRACTED", "in_this_file": true },
+    { "table": "A.2", "title": "Format template input perhitungan PD kredit produktif", "kind": "template", "status": "EXTRACTED", "in_this_file": false, "note": "Baris contoh mengandung anomali monotonisitas; lihat anomaly register ANOM-B7A-005." },
+    { "table": "A.3.a", "title": "PD Scalar kredit produktif - Net Zero 2050", "kind": "parameter", "status": "SOURCE_PENDING", "in_this_file": false, "expected_cells": 3780, "dimensions": ["portofolio(4)", "risiko_lokasi(3)", "sektor(7)", "rating(5)", "tahun(9)"] },
+    { "table": "A.3.b", "title": "PD Scalar kredit produktif - Delayed Transition", "kind": "parameter", "status": "SOURCE_PENDING", "in_this_file": false, "expected_cells": 3780 },
+    { "table": "A.3.c", "title": "PD Scalar kredit produktif - Current Policies", "kind": "parameter", "status": "SOURCE_PENDING", "in_this_file": false, "expected_cells": 3780 },
+    { "table": "A.4", "title": "Kebutuhan data input perhitungan LGD", "kind": "data_spec", "status": "EXTRACTED", "in_this_file": true },
+    { "table": "A.5", "title": "Haircut LGD akibat risiko fisik menurut jenis agunan dan kategori risiko", "kind": "parameter", "status": "EXTRACTED_SINGLE", "in_this_file": true, "expected_cells": 324 },
+    { "table": "A.6.a", "title": "LGD Scalar risiko transisi - Net Zero 2050", "kind": "parameter", "status": "SOURCE_PENDING", "in_this_file": false, "expected_cells": 1260, "dimensions": ["portofolio(4)", "sektor(7)", "rating(5)", "tahun(9)"] },
+    { "table": "A.6.b", "title": "LGD Scalar risiko transisi - Delayed Transition", "kind": "parameter", "status": "SOURCE_PENDING", "in_this_file": false, "expected_cells": 1260 },
+    { "table": "A.6.c", "title": "LGD Scalar risiko transisi - Current Policies", "kind": "parameter", "status": "SOURCE_PENDING", "in_this_file": false, "expected_cells": 1260 },
+    { "table": "A.7.a", "title": "Matriks biaya CRE-RRE - Ruang Kantor", "kind": "parameter", "status": "SOURCE_PENDING", "in_this_file": false },
+    { "table": "A.7.b", "title": "Matriks biaya CRE-RRE - Ritel Pusat Perbelanjaan", "kind": "parameter", "status": "BLOCKED", "in_this_file": false, "note": "Mengandung sel NaN; lihat ANOM-B7A-002." },
+    { "table": "A.7.c", "title": "Matriks biaya CRE-RRE - Gudang/Warehouse", "kind": "parameter", "status": "SOURCE_PENDING", "in_this_file": false },
+    { "table": "A.7.d", "title": "Matriks biaya CRE-RRE - Mixed Use Property", "kind": "parameter", "status": "SOURCE_PENDING", "in_this_file": false },
+    { "table": "A.7.e", "title": "Matriks biaya CRE-RRE - Hunian Multi-keluarga", "kind": "parameter", "status": "SOURCE_PENDING", "in_this_file": false },
+    { "table": "A.7.f", "title": "Matriks biaya CRE-RRE - Hotel Budget", "kind": "parameter", "status": "SOURCE_PENDING", "in_this_file": false },
+    { "table": "A.7.g", "title": "Matriks biaya CRE-RRE - Hotel Bintang 3 ke atas", "kind": "parameter", "status": "SOURCE_PENDING", "in_this_file": false },
+    { "table": "A.7.h", "title": "Matriks biaya CRE-RRE - Properti Hunian", "kind": "parameter", "status": "SOURCE_PENDING", "in_this_file": false },
+    { "table": "A.8", "title": "Pemetaan TTC PD ke bucket rating", "kind": "parameter", "status": "VERIFIED_DUAL", "in_this_file": true, "expected_cells": 21 }
+  ],
+  "enumerations": {
+    "sektor_ekonomi": [
+      "Pertanian dan Kehutanan",
+      "Pertambangan",
+      "Konstruksi",
+      "Transportasi dan Pergudangan",
+      "Listrik, Gas, Uap/Air Panas, dan Udara Dingin",
+      "Industri Pengolahan",
+      "Lainnya"
+    ],
+    "portofolio": ["Mikro", "Kecil", "Menengah", "Korporasi"],
+    "portofolio_basis": "Ditentukan berdasarkan nilai penjualan; bila tidak tersedia, berdasarkan total aset. AMBANG BATAS TIDAK DIBERIKAN DALAM LAMPIRAN - lihat ANOM-B7A-003.",
+    "risiko_lokasi": ["Tinggi", "Menengah", "Rendah"],
+    "rating_bucket": ["AA", "A", "BA", "B", "C"],
+    "jenis_agunan": ["Komersial", "Industrial", "Residensial", "Lainnya"],
+    "kategori_risiko_fisik": ["Tinggi", "Menengah", "Rendah"]
+  },
+  "table_A1_pd_input_spec": [
+    { "no": 1, "column": "ID", "description": "Identitas unik setiap debitur", "response_type": "alphanumeric" },
+    { "no": 2, "column": "Sektor Ekonomi", "description": "Sektor ekonomi debitur", "response_type": "enum", "enum_ref": "sektor_ekonomi" },
+    { "no": 3, "column": "TTC PD", "description": "Nilai dasar Probability of Default Through-the-Cycle debitur", "response_type": "numeric", "range": [0, 100], "unit": "percent" },
+    { "no": 4, "column": "Nilai Penjualan", "description": "Total penjualan tahunan debitur", "response_type": "numeric", "unit": "IDR" },
+    { "no": 5, "column": "Total Aset", "description": "Total aset debitur", "response_type": "numeric", "unit": "IDR" },
+    { "no": 6, "column": "Lokasi", "description": "Kabupaten atau kota tempat fasilitas atau kegiatan usaha debitur berlokasi, ditentukan berdasarkan lokasi geografis yang memberikan kontribusi terbesar terhadap pendapatan atau menjadi pusat kegiatan operasional utama", "response_type": "text", "note": "Contoh dalam sumber ('Arongan Lambalek') adalah kecamatan, bukan kabupaten/kota. Lihat ANOM-B7A-004." },
+    { "no": 7, "column": "Baseline PD Term Structure", "description": "Term structure PD baseline sepanjang periode proyeksi", "response_type": "numeric_series", "range": [0, 100], "unit": "percent", "series_ref": "projection_years" }
+  ],
+  "table_A4_lgd_input_spec": [
+    { "no": 1, "column": "Jenis Agunan", "description": "Aset fisik yang dijadikan jaminan. Klasifikasi berdasarkan fungsi utama aset dengan mengacu pada pemetaan aktivitas dalam Lampiran Buku 5.", "response_type": "enum", "enum_ref": "jenis_agunan" },
+    { "no": 2, "column": "Kategori Risiko Fisik", "description": "Klasifikasi berdasarkan skor Risiko Dampak (Impact Risk Score) dalam Lampiran Buku 5", "response_type": "enum", "enum_ref": "kategori_risiko_fisik", "derivation": [
+      { "condition": "impact_score > 50", "category": "Tinggi" },
+      { "condition": "impact_score >= 1 && impact_score <= 50", "category": "Menengah" },
+      { "condition": "impact_score == 0", "category": "Rendah" }
+    ] }
+  ],
+  "table_A5_lgd_physical_haircut": {
+    "unit": "percent",
+    "applies_to": "Portofolio yang dijamin dengan agunan fisik",
+    "net_zero_2050": {
+      "Komersial":   { "Tinggi": [2.0598, 2.0633, 2.0671, 2.0710, 2.0751, 2.0751, 2.0751, 2.0751, 2.0751], "Menengah": [0.0272, 0.0278, 0.0285, 0.0292, 0.0303, 0.0327, 0.0351, 0.0355, 0.0358], "Rendah": [0, 0, 0, 0, 0, 0, 0, 0, 0] },
+      "Industrial":  { "Tinggi": [1.7258, 1.7273, 1.7288, 1.7304, 1.7329, 1.7370, 1.7413, 1.7418, 1.7424], "Menengah": [0.0979, 0.0989, 0.0999, 0.1010, 0.1026, 0.1054, 0.1083, 0.1088, 0.1093], "Rendah": [0, 0, 0, 0, 0, 0, 0, 0, 0] },
+      "Lainnya":     { "Tinggi": [1.9505, 1.9522, 1.9540, 1.9559, 1.9579, 1.9579, 1.9579, 1.9579, 1.9579], "Menengah": [0.0545, 0.0553, 0.0561, 0.0570, 0.0584, 0.0609, 0.0635, 0.0639, 0.0643], "Rendah": [0, 0, 0, 0, 0, 0, 0, 0, 0] },
+      "Residensial": { "Tinggi": [2.0017, 2.0105, 2.0198, 2.0295, 2.0399, 2.0411, 2.0423, 2.0431, 2.0438], "Menengah": [0.0527, 0.0548, 0.0570, 0.0593, 0.0629, 0.0694, 0.0762, 0.0773, 0.0784], "Rendah": [0, 0, 0, 0, 0, 0, 0, 0, 0] }
+    },
+    "delayed_transition": {
+      "Komersial":   { "Tinggi": [2.0628, 2.0670, 2.0713, 2.0759, 2.0806, 2.0806, 2.0806, 2.0806, 2.0806], "Menengah": [0.0270, 0.0277, 0.0283, 0.0290, 0.0303, 0.0342, 0.0384, 0.0403, 0.0421], "Rendah": [0, 0, 0, 0, 0, 0, 0, 0, 0] },
+      "Industrial":  { "Tinggi": [1.7259, 1.7274, 1.7289, 1.7306, 1.7333, 1.7389, 1.7446, 1.7446, 1.7446], "Menengah": [0.0977, 0.0987, 0.0996, 0.1007, 0.1026, 0.1073, 0.1125, 0.1146, 0.1167], "Rendah": [0, 0, 0, 0, 0, 0, 0, 0, 0] },
+      "Lainnya":     { "Tinggi": [1.9512, 1.9530, 1.9549, 1.9569, 1.9590, 1.9590, 1.9590, 1.9590, 1.9590], "Menengah": [0.0543, 0.0551, 0.0559, 0.0567, 0.0583, 0.0625, 0.0670, 0.0692, 0.0713], "Rendah": [0, 0, 0, 0, 0, 0, 0, 0, 0] },
+      "Residensial": { "Tinggi": [2.0012, 2.0100, 2.0192, 2.0288, 2.0392, 2.0408, 2.0450, 2.0599, 2.0747], "Menengah": [0.0523, 0.0543, 0.0564, 0.0586, 0.0628, 0.0736, 0.0852, 0.0900, 0.0946], "Rendah": [0, 0, 0, 0, 0, 0, 0, 0, 0] }
+    },
+    "current_policies": {
+      "Komersial":   { "Tinggi": [2.0636, 2.0679, 2.0724, 2.0771, 2.0821, 2.0821, 2.0867, 2.1131, 2.1395], "Menengah": [0.0267, 0.0273, 0.0278, 0.0284, 0.0298, 0.0338, 0.0386, 0.0434, 0.0481], "Rendah": [0, 0, 0, 0, 0, 0, 0, 0, 0] },
+      "Industrial":  { "Tinggi": [1.7254, 1.7268, 1.7283, 1.7299, 1.7326, 1.7388, 1.7461, 1.7527, 1.7593], "Menengah": [0.0973, 0.0982, 0.0991, 0.1000, 0.1019, 0.1069, 0.1127, 0.1179, 0.1231], "Rendah": [0, 0, 0, 0, 0, 0, 0, 0, 0] },
+      "Lainnya":     { "Tinggi": [1.9510, 1.9528, 1.9546, 1.9566, 1.9587, 1.9587, 1.9631, 1.9891, 2.0150], "Menengah": [0.0540, 0.0547, 0.0554, 0.0562, 0.0577, 0.0621, 0.0673, 0.0727, 0.0780], "Rendah": [0, 0, 0, 0, 0, 0, 0, 0, 0] },
+      "Residensial": { "Tinggi": [2.0005, 2.0091, 2.0181, 2.0276, 2.0380, 2.0405, 2.0524, 2.1070, 2.1614], "Menengah": [0.0516, 0.0535, 0.0555, 0.0575, 0.0616, 0.0727, 0.0858, 0.0977, 0.1095], "Rendah": [0, 0, 0, 0, 0, 0, 0, 0, 0] }
+    }
+  },
+  "table_A8_rating_map": {
+    "unit": "percent",
+    "purpose": "Memetakan TTC PD debitur ke bucket rating (AA, A, BA, B, C) yang dipakai pada tabel PD Scalar dan LGD Scalar.",
+    "verification": "Batas bawah/atas setiap baris terbukti merupakan rata-rata geometrik PD baseline dua rating yang berdekatan: bound = sqrt(PD[i] * PD[i+1]). Seluruh 20 batas internal cocok pada 4 desimal. Ini menjadi verifikasi independen kedua atas transkripsi.",
+    "rows": [
+      { "rating": "Aaa",  "baseline_pd": 0.02,  "bucket": "AA", "lower": 0.0000,  "upper": 0.0245 },
+      { "rating": "Aa1",  "baseline_pd": 0.03,  "bucket": "AA", "lower": 0.0245,  "upper": 0.0387 },
+      { "rating": "Aa2",  "baseline_pd": 0.05,  "bucket": "AA", "lower": 0.0387,  "upper": 0.0592 },
+      { "rating": "Aa3",  "baseline_pd": 0.07,  "bucket": "AA", "lower": 0.0592,  "upper": 0.0837 },
+      { "rating": "A1",   "baseline_pd": 0.10,  "bucket": "A",  "lower": 0.0837,  "upper": 0.1183 },
+      { "rating": "A2",   "baseline_pd": 0.14,  "bucket": "A",  "lower": 0.1183,  "upper": 0.1673 },
+      { "rating": "A3",   "baseline_pd": 0.20,  "bucket": "A",  "lower": 0.1673,  "upper": 0.2366 },
+      { "rating": "Baa1", "baseline_pd": 0.28,  "bucket": "BA", "lower": 0.2366,  "upper": 0.3305 },
+      { "rating": "Baa2", "baseline_pd": 0.39,  "bucket": "BA", "lower": 0.3305,  "upper": 0.4631 },
+      { "rating": "Baa3", "baseline_pd": 0.55,  "bucket": "BA", "lower": 0.4631,  "upper": 0.6465 },
+      { "rating": "Ba1",  "baseline_pd": 0.76,  "bucket": "BA", "lower": 0.6465,  "upper": 0.9018 },
+      { "rating": "Ba2",  "baseline_pd": 1.07,  "bucket": "BA", "lower": 0.9018,  "upper": 1.2627 },
+      { "rating": "Ba3",  "baseline_pd": 1.49,  "bucket": "BA", "lower": 1.2627,  "upper": 1.7647 },
+      { "rating": "B1",   "baseline_pd": 2.09,  "bucket": "B",  "lower": 1.7647,  "upper": 2.4746 },
+      { "rating": "B2",   "baseline_pd": 2.93,  "bucket": "B",  "lower": 2.4746,  "upper": 3.4660 },
+      { "rating": "B3",   "baseline_pd": 4.10,  "bucket": "B",  "lower": 3.4660,  "upper": 4.8512 },
+      { "rating": "Caa1", "baseline_pd": 5.74,  "bucket": "C",  "lower": 4.8512,  "upper": 6.7933 },
+      { "rating": "Caa2", "baseline_pd": 8.04,  "bucket": "C",  "lower": 6.7933,  "upper": 9.5105 },
+      { "rating": "Caa3", "baseline_pd": 11.25, "bucket": "C",  "lower": 9.5105,  "upper": 13.3112 },
+      { "rating": "Ca",   "baseline_pd": 15.75, "bucket": "C",  "lower": 13.3112, "upper": 18.6357 },
+      { "rating": "C",    "baseline_pd": 22.05, "bucket": "C",  "lower": 18.6357, "upper": 100.0000 }
+    ]
+  }
+}
