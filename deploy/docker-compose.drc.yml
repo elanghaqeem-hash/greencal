@@ -1,0 +1,122 @@
+# GreenCal CRMS Enterprise — Disaster Recovery Center (DRC), on-premise.
+# WP02. Master Execution Prompt v2.0 Bagian 02.1.
+#
+# DRC berjalan sebagai hot standby: basis data mereplikasi streaming dari DC,
+# aplikasi menyala tetapi TIDAK melayani lalu lintas sampai failover
+# dinyatakan, dan tidak ada migrasi yang pernah dijalankan dari sisi DRC.
+#
+# Dua hal yang membedakan berkas ini dari DC dan sengaja dibuat eksplisit:
+#   1. Tidak ada layanan "migrator". Skema DRC datang dari replikasi, bukan dari
+#      migrasi paralel; menjalankan migrasi di kedua sisi adalah cara paling
+#      cepat memecah replikasi.
+#   2. Standby bersifat read-only sampai promosi, dan aplikasi membawa
+#      GREENCAL_ROLE=standby sehingga seluruh rute tulis menolak permintaan.
+#
+# RPO dan RTO tidak dinyatakan di sini. Keduanya hanya boleh ditulis setelah
+# uji restore nyata terdokumentasi (DoD butir 27), dan hasilnya dicatat di
+# docs/enterprise/release/dr-test-report.md.
+
+name: greencal-crms-drc
+
+x-hardening: &hardening
+  restart: unless-stopped
+  read_only: true
+  security_opt:
+    - no-new-privileges:true
+  cap_drop:
+    - ALL
+  ulimits:
+    nofile: { soft: 8192, hard: 8192 }
+  logging:
+    driver: json-file
+    options: { max-size: "50m", max-file: "10" }
+
+services:
+  app:
+    <<: *hardening
+    image: greencal/crms-enterprise:${GREENCAL_VERSION:?GREENCAL_VERSION wajib ditetapkan}
+    user: "10001:10001"
+    environment:
+      NODE_ENV: production
+      GREENCAL_DEPLOYMENT: onprem
+      GREENCAL_EGRESS: deny
+      # Standby: seluruh rute tulis menolak permintaan sampai promosi.
+      GREENCAL_ROLE: standby
+      PORT: "8080"
+      HOST: "0.0.0.0"
+      TZ: Asia/Jakarta
+    env_file:
+      - path: ./app.drc.env
+        required: true
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,size=256m
+    depends_on:
+      db-standby: { condition: service_healthy }
+    healthcheck:
+      test: ["CMD", "node", "scripts/onprem/healthcheck.mjs"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+    networks: [internal]
+
+  db-standby:
+    <<: *hardening
+    image: postgres:16.10-bookworm@sha256:0000000000000000000000000000000000000000000000000000000000000000
+    # CATATAN OPERATOR: ganti digest placeholder sebelum rilis.
+    command:
+      - postgres
+      - -c
+      - config_file=/etc/postgresql/postgresql.conf
+      - -c
+      - hba_file=/etc/postgresql/pg_hba.conf
+      - -c
+      - hot_standby=on
+      - -c
+      - primary_conninfo=host=${GREENCAL_DC_DB_HOST:?host basis data DC wajib ditetapkan} port=5432 user=crms_replicator application_name=drc sslmode=verify-full passfile=/run/secrets/db_replication_password
+    environment:
+      PGDATA: /var/lib/postgresql/data/pgdata
+    volumes:
+      - db-standby-data:/var/lib/postgresql/data
+      - ./postgres/postgresql.conf:/etc/postgresql/postgresql.conf:ro
+      - ./postgres/pg_hba.conf:/etc/postgresql/pg_hba.conf:ro
+      - ./postgres/standby.signal:/var/lib/postgresql/data/pgdata/standby.signal:ro
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,size=128m
+      - /var/run/postgresql:rw,nosuid,size=64m
+    secrets: [db_replication_password]
+    healthcheck:
+      # Standby dianggap sehat hanya bila benar-benar dalam mode pemulihan.
+      test: ["CMD-SHELL", "psql -U crms_bootstrap -d crms_onprem -tAc 'SELECT pg_is_in_recovery()' | grep -q t"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 60s
+    networks: [internal, replication]
+
+  cache:
+    <<: *hardening
+    image: redis:7.4.1-bookworm@sha256:0000000000000000000000000000000000000000000000000000000000000000
+    command: ["redis-server", "/usr/local/etc/redis/redis.conf"]
+    volumes:
+      - ./redis/redis.conf:/usr/local/etc/redis/redis.conf:ro
+      - cache-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    networks: [internal]
+
+networks:
+  internal:
+    driver: bridge
+    internal: true
+  # Satu-satunya jaringan DRC dengan rute keluar, dan hanya menuju DC lewat
+  # tautan antar-situs bank. Rute dibatasi operator pada tingkat firewall.
+  replication:
+    driver: bridge
+
+volumes:
+  db-standby-data:
+  cache-data:

@@ -1,0 +1,229 @@
+# GreenCal CRMS Enterprise — Data Center (DC) utama, on-premise.
+# WP02. Master Execution Prompt v2.0 Bagian 02.1.
+#
+# Topologi jaringan yang ditegakkan berkas ini:
+#
+#   intranet bank ──▶ [edge: nginx + ModSecurity] ──▶ [app] ──▶ [db] [cache] [objek]
+#                          jaringan "edge"              jaringan "internal"
+#
+#   - Jaringan "internal" dideklarasikan internal: true, sehingga Docker tidak
+#     memasang gateway ke luar. Kontainer di dalamnya TIDAK DAPAT menghubungi
+#     internet, bahkan bila kodenya mencoba. Inilah egress deny lapis jaringan.
+#   - Hanya edge yang terhubung ke kedua jaringan, dan hanya edge yang
+#     memublikasikan porta, terikat ke alamat intranet, bukan 0.0.0.0.
+#   - Tidak ada satu pun layanan memakai tag citra "latest"; semuanya disematkan
+#     pada digest agar paket rilis offline dapat direproduksi.
+#
+# Rahasia tidak pernah ada di berkas ini. Seluruh kata sandi dan kunci dibaca
+# dari Docker secrets yang disiapkan operator di luar repositori.
+
+name: greencal-crms-dc
+
+x-hardening: &hardening
+  restart: unless-stopped
+  read_only: true
+  security_opt:
+    - no-new-privileges:true
+  cap_drop:
+    - ALL
+  ulimits:
+    nofile: { soft: 8192, hard: 8192 }
+  logging:
+    driver: json-file
+    options: { max-size: "50m", max-file: "10" }
+
+services:
+  edge:
+    <<: *hardening
+    image: owasp/modsecurity-crs:4.7.0-nginx-202411130602@sha256:0000000000000000000000000000000000000000000000000000000000000000
+    # CATATAN OPERATOR: digest di atas adalah placeholder yang WAJIB diganti
+    # dengan digest citra yang benar-benar diaudit bank sebelum rilis. Rilis
+    # ditolak gate bila masih berisi nol; lihat scripts/release/verify-onprem.mjs.
+    depends_on:
+      app: { condition: service_healthy }
+    ports:
+      # Terikat ke alamat intranet, bukan 0.0.0.0. Operator mengganti nilainya
+      # lewat GREENCAL_BIND_ADDR pada .env di host.
+      - "${GREENCAL_BIND_ADDR:-127.0.0.1}:443:8443"
+    environment:
+      PARANOIA: "2"
+      ANOMALY_INBOUND: "5"
+      ANOMALY_OUTBOUND: "4"
+      MODSEC_RULE_ENGINE: "On"
+      MODSEC_REQ_BODY_ACCESS: "On"
+      MODSEC_AUDIT_ENGINE: "RelevantOnly"
+      BACKEND: "http://app:8080"
+      SERVER_NAME: "${GREENCAL_SERVER_NAME:-crms.intranet.local}"
+      SSL_PORT: "8443"
+      PORT: "8080"
+    volumes:
+      - ./nginx/crms.conf:/etc/nginx/templates/conf.d/crms.conf.template:ro
+      - ./nginx/modsecurity-overrides.conf:/etc/modsecurity.d/owasp-crs/rules/REQUEST-900-EXCLUSION-RULES-BEFORE-CRS.conf:ro
+      - edge-tmp:/tmp
+      - edge-run:/var/run
+      - modsec-audit:/var/log/modsecurity
+    secrets:
+      - source: tls_cert
+        target: /etc/nginx/tls/server.crt
+      - source: tls_key
+        target: /etc/nginx/tls/server.key
+    networks: [edge, internal]
+
+  app:
+    <<: *hardening
+    image: greencal/crms-enterprise:${GREENCAL_VERSION:?GREENCAL_VERSION wajib ditetapkan}
+    build:
+      context: ..
+      dockerfile: Dockerfile
+      target: runtime
+    user: "10001:10001"
+    environment:
+      NODE_ENV: production
+      GREENCAL_DEPLOYMENT: onprem
+      # Egress deny lapis aplikasi, berlapis di atas egress deny lapis jaringan.
+      GREENCAL_EGRESS: deny
+      PORT: "8080"
+      HOST: "0.0.0.0"
+      TZ: Asia/Jakarta
+      GREENCAL_PG_POOL_MAX: "20"
+      GREENCAL_REDIS_URL: redis://cache:6379
+      GREENCAL_OBJECT_ENDPOINT: http://objects:9000
+    env_file:
+      # Berisi GREENCAL_ONPREM_PG_URL dengan sslmode=verify-full.
+      - path: ./app.env
+        required: true
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,size=256m
+    depends_on:
+      db: { condition: service_healthy }
+      cache: { condition: service_healthy }
+    healthcheck:
+      test: ["CMD", "node", "scripts/onprem/healthcheck.mjs"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+    networks: [internal]
+
+  # Pemasang migrasi berjalan sekali lalu berhenti. Tidak ikut restart.
+  migrator:
+    image: greencal/crms-enterprise:${GREENCAL_VERSION:?GREENCAL_VERSION wajib ditetapkan}
+    restart: "no"
+    read_only: true
+    security_opt: [no-new-privileges:true]
+    cap_drop: [ALL]
+    user: "10001:10001"
+    entrypoint: ["node", "scripts/onprem/apply-migrations.mjs"]
+    env_file:
+      - path: ./migrator.env
+        required: true
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,size=64m
+    depends_on:
+      db: { condition: service_healthy }
+    networks: [internal]
+
+  db:
+    <<: *hardening
+    image: postgres:16.10-bookworm@sha256:0000000000000000000000000000000000000000000000000000000000000000
+    # CATATAN OPERATOR: ganti digest placeholder sebelum rilis.
+    command:
+      - postgres
+      - -c
+      - config_file=/etc/postgresql/postgresql.conf
+      - -c
+      - hba_file=/etc/postgresql/pg_hba.conf
+    environment:
+      POSTGRES_DB: crms_onprem
+      POSTGRES_USER: crms_bootstrap
+      POSTGRES_PASSWORD_FILE: /run/secrets/db_bootstrap_password
+      POSTGRES_INITDB_ARGS: "--data-checksums --encoding=UTF8 --locale=C"
+      PGDATA: /var/lib/postgresql/data/pgdata
+    volumes:
+      - db-data:/var/lib/postgresql/data
+      - db-wal-archive:/var/lib/postgresql/wal_archive
+      - ./postgres/postgresql.conf:/etc/postgresql/postgresql.conf:ro
+      - ./postgres/pg_hba.conf:/etc/postgresql/pg_hba.conf:ro
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,size=128m
+      - /var/run/postgresql:rw,nosuid,size=64m
+    secrets: [db_bootstrap_password, db_replication_password]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U crms_bootstrap -d crms_onprem"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    networks: [internal]
+
+  cache:
+    <<: *hardening
+    image: redis:7.4.1-bookworm@sha256:0000000000000000000000000000000000000000000000000000000000000000
+    command:
+      - redis-server
+      - /usr/local/etc/redis/redis.conf
+    volumes:
+      - ./redis/redis.conf:/usr/local/etc/redis/redis.conf:ro
+      - cache-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    networks: [internal]
+
+  objects:
+    <<: *hardening
+    image: minio/minio:RELEASE.2025-04-22T22-12-26Z@sha256:0000000000000000000000000000000000000000000000000000000000000000
+    command: ["server", "/data", "--address", ":9000", "--console-address", ":9001"]
+    environment:
+      MINIO_ROOT_USER_FILE: /run/secrets/objects_access_key
+      MINIO_ROOT_PASSWORD_FILE: /run/secrets/objects_secret_key
+      # Nonaktifkan pemeriksaan pemutakhiran agar tidak ada panggilan keluar.
+      MINIO_UPDATE: "off"
+      MINIO_BROWSER: "off"
+    volumes:
+      - objects-data:/data
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,size=64m
+    secrets: [objects_access_key, objects_secret_key]
+    healthcheck:
+      test: ["CMD", "mc", "ready", "local"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+    networks: [internal]
+
+networks:
+  # Satu-satunya jaringan dengan jalan keluar; hanya edge yang menyentuhnya.
+  edge:
+    driver: bridge
+  # internal: true berarti tanpa gateway. Ini egress deny pada lapis jaringan:
+  # app, db, cache, dan objects tidak dapat menghubungi host mana pun di luar.
+  internal:
+    driver: bridge
+    internal: true
+
+volumes:
+  db-data:
+  db-wal-archive:
+  cache-data:
+  objects-data:
+  modsec-audit:
+  edge-tmp:
+  edge-run:
+
+secrets:
+  db_bootstrap_password:
+    file: ./secrets/db_bootstrap_password
+  db_replication_password:
+    file: ./secrets/db_replication_password
+  objects_access_key:
+    file: ./secrets/objects_access_key
+  objects_secret_key:
+    file: ./secrets/objects_secret_key
+  tls_cert:
+    file: ./secrets/server.crt
+  tls_key:
+    file: ./secrets/server.key

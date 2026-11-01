@@ -1,0 +1,128 @@
+{
+  "contract": "greencal-release-gates/1",
+  "assessedAt": "2026-11-01",
+  "assessedBy": "wp02-wp10-engineering",
+  "note": "Status PASSED hanya sah bila evidenceRef menunjuk bukti yang benar-benar tersimpan. Gate tanpa bukti WAJIB berstatus NOT_STARTED atau IN_PROGRESS, bukan PASSED. Berkas ini masuk manifest paket rilis, sehingga status di sini tidak dapat diubah tanpa mengubah digest paket.",
+  "gates": [
+    {
+      "id": "G01-UNIT-TEST",
+      "name": "Seluruh uji otomatis lulus",
+      "requirement": "Rangkaian uji penuh lulus pada commit rilis, tanpa uji yang dilewati pada jalur kritis.",
+      "status": "PASSED",
+      "evidenceRef": "ci://crms26-onprem/run-log",
+      "detail": "Lapisan presisi 30/30, IAM 45/45, audit dan siklus 30/30, deployment 30/30, integrasi PostgreSQL 26/26."
+    },
+    {
+      "id": "G02-SCHEMA-GUARD",
+      "name": "RLS lengkap dan tanpa kolom pecahan biner",
+      "requirement": "crms.find_tables_without_rls() dan crms.find_float_columns() mengembalikan nol baris pada basis data target.",
+      "status": "PASSED",
+      "evidenceRef": "ci://crms26-onprem/migration-guard",
+      "detail": "Guard dijalankan di dalam migrasi 0004 dan diulang pemasang migrasi setelah seluruh berkas terpasang."
+    },
+    {
+      "id": "G03-DETERMINISM",
+      "name": "Reproduksi run identik",
+      "requirement": "Dua eksekusi dengan parameter dan input sama menghasilkan manifest digest identik.",
+      "status": "PASSED",
+      "evidenceRef": "tests/onprem-precision.test.mjs",
+      "detail": "Diuji pada tingkat manifest, termasuk pencatatan random seed."
+    },
+    {
+      "id": "G04-IMAGE-DIGEST",
+      "name": "Seluruh citra kontainer disematkan pada digest yang diaudit",
+      "requirement": "Tidak ada tag bergerak dan tidak ada digest placeholder pada compose DC maupun DRC.",
+      "status": "BLOCKED",
+      "evidenceRef": null,
+      "detail": "Digest masih placeholder. Hanya operator bank yang dapat mengisinya dari registri internal setelah pemindaian citra. scripts/release/verify-onprem.mjs menolak rilis selama keadaan ini bertahan."
+    },
+    {
+      "id": "G05-PARAMETER-APPROVED",
+      "name": "Seluruh parameter regulatori berstatus APPROVED",
+      "requirement": "Tidak ada parameter berstatus SOURCE_PENDING atau BLOCKED yang dipakai run resmi.",
+      "status": "BLOCKED",
+      "evidenceRef": null,
+      "detail": "Lima dari tujuh Buku belum tersedia sebagai sumber berchecksum, dan sebagian tabel Buku 2 serta Lampiran Buku 7 masih SOURCE_PENDING karena ekstraksi tunggal tidak memenuhi syarat verifikasi ganda. Lihat docs/enterprise/wp04-source-extraction-20261101.md."
+    },
+    {
+      "id": "G06-SAST",
+      "name": "Pemindaian kode statis tanpa temuan high atau critical",
+      "requirement": "Semgrep berjalan pada setiap PR dan tidak menyisakan temuan high atau critical yang terbuka.",
+      "status": "IN_PROGRESS",
+      "evidenceRef": null,
+      "detail": "Alur kerja CI sudah ada; baseline temuan belum ditinjau dan ditutup."
+    },
+    {
+      "id": "G07-SCA-SBOM",
+      "name": "SBOM diterbitkan dan kerentanan dependensi tertutup",
+      "requirement": "SBOM CycloneDX dihasilkan per rilis; tidak ada kerentanan high atau critical yang terbuka.",
+      "status": "IN_PROGRESS",
+      "evidenceRef": null,
+      "detail": "Permukaan dependensi runtime hanya satu paket (pg). SBOM dihasilkan CI, penandatanganannya menunggu kunci rilis bank."
+    },
+    {
+      "id": "G08-SECRET-SCAN",
+      "name": "Tidak ada rahasia pada riwayat repositori",
+      "requirement": "gitleaks berjalan pada seluruh riwayat dan tidak menemukan rahasia.",
+      "status": "IN_PROGRESS",
+      "evidenceRef": null,
+      "detail": "Pemindaian pada perubahan baru sudah aktif; pemindaian riwayat penuh belum dijalankan."
+    },
+    {
+      "id": "G09-DAST",
+      "name": "Pemindaian dinamis pada lingkungan UAT",
+      "requirement": "OWASP ZAP baseline berjalan terhadap UAT, temuan medium ke atas ditutup atau diterima resmi.",
+      "status": "NOT_STARTED",
+      "evidenceRef": null,
+      "detail": "Membutuhkan lingkungan UAT bank yang belum tersedia bagi tim rekayasa."
+    },
+    {
+      "id": "G10-PENTEST",
+      "name": "Uji penetrasi pihak ketiga bersih",
+      "requirement": "Laporan uji penetrasi independen tanpa temuan high atau critical terbuka.",
+      "status": "NOT_STARTED",
+      "evidenceRef": null,
+      "detail": "Belum dipesan. Prasyarat produksi menurut Bagian 09.5."
+    },
+    {
+      "id": "G11-MODEL-VALIDATION",
+      "name": "Validasi model independen",
+      "requirement": "Validator independen mereproduksi seluruh run resmi dan menerbitkan laporan validasi.",
+      "status": "NOT_STARTED",
+      "evidenceRef": null,
+      "detail": "Jalur teknisnya siap (kolom reproduced_by, reproduction_matched, dan verifyReproduction), pelaksanaannya milik fungsi validasi bank."
+    },
+    {
+      "id": "G12-DR-RESTORE",
+      "name": "Uji restore dan failover DRC terdokumentasi",
+      "requirement": "Restore PITR dan failover DC ke DRC dijalankan nyata, dengan RPO dan RTO terukur.",
+      "status": "NOT_STARTED",
+      "evidenceRef": null,
+      "detail": "Konfigurasi replikasi dan arsip WAL sudah ada; angka RPO dan RTO tidak boleh dinyatakan sebelum uji nyata."
+    },
+    {
+      "id": "G13-DATA-RESIDENCY",
+      "name": "Asesmen residensi data dan UU 27/2022 PDP",
+      "requirement": "Asesmen residensi data serta analisis dampak pelindungan data pribadi disetujui fungsi kepatuhan.",
+      "status": "NOT_STARTED",
+      "evidenceRef": null,
+      "detail": "Skema menegakkan data_residency = 'ID' dan menyimpan digest payload alih-alih payload utuh, namun asesmen formalnya belum ada."
+    },
+    {
+      "id": "G14-CAB-APPROVAL",
+      "name": "Persetujuan CAB bank",
+      "requirement": "Change Advisory Board bank menyetujui rilis beserta rencana rollback.",
+      "status": "NOT_STARTED",
+      "evidenceRef": null,
+      "detail": "Gate terakhir. Tidak dapat dipenuhi tim rekayasa."
+    },
+    {
+      "id": "G15-SIGNED-BUNDLE",
+      "name": "Paket rilis offline ditandatangani",
+      "requirement": "manifest.json ditandatangani kunci rilis Ed25519 bank, dan tanda tangan diverifikasi operator sebelum instalasi.",
+      "status": "BLOCKED",
+      "evidenceRef": null,
+      "detail": "Pembangun paket sudah mendukung penandatanganan Ed25519 lewat GREENCAL_SIGNING_KEY. Kunci penandatangan sengaja tidak pernah dibuat oleh skrip build."
+    }
+  ]
+}

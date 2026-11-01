@@ -22,3 +22,15 @@ dist/
 
 # Local Workers runtime state
 .wrangler/
+
+# Rahasia dan konfigurasi lingkungan deployment on-premise (WP02).
+# Hanya berkas contoh dan README yang boleh masuk repositori.
+deploy/secrets/*
+!deploy/secrets/README.md
+deploy/app.env
+deploy/app.drc.env
+deploy/migrator.env
+deploy/.env
+
+# Keluaran paket rilis offline (dibangun, bukan disimpan).
+dist-release/
