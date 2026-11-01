@@ -1,7 +1,7 @@
 /* Enterprise UI: no localStorage, tokens, bank data, or provider secrets. */
 (()=>{'use strict';
  const $=s=>document.querySelector(s),el=(tag,text,cls)=>{const e=document.createElement(tag);if(text!==undefined)e.textContent=text;if(cls)e.className=cls;return e;};
- const labels={overview:'Ringkasan workspace',discovery:'Discovery Readiness',analytics:'Analitik kuantitatif',book7:'Buku 7 · Pendekatan Standar',book6:'Buku 6 · Kertas Kerja OJK',books124:'Buku 1, 2 & 4 · Integrasi CRMS',book3:'Buku 3 · Metode Penghitungan Emisi',book5:'Buku 5 · Data Risiko Fisik OJK',release:'Persetujuan rilis Bank',risk:'Register risiko iklim',factor:'Faktor emisi',emission:'Aktivitas & kalkulasi',regulatory_document:'Pustaka dokumen OJK',requirement:'Pemetaan persyaratan',governance:'Kebijakan & risk appetite',portfolio:'Eksposur pembiayaan',scenario:'Katalog skenario iklim',physical:'Screening risiko fisik',transition:'Asesmen risiko transisi',report_package:'Paket laporan internal',audit:'Audit institusi',manual:'Panduan pengguna'};
+ const labels={overview:'Ringkasan workspace',input:'Pusat Form Input CRMS',discovery:'Discovery Readiness',analytics:'Analitik kuantitatif',book7:'Buku 7 · Pendekatan Standar',book6:'Buku 6 · Kertas Kerja OJK',books124:'Buku 1, 2 & 4 · Integrasi CRMS',book3:'Buku 3 · Metode Penghitungan Emisi',book5:'Buku 5 · Data Risiko Fisik OJK',release:'Persetujuan rilis Bank',risk:'Register risiko iklim',factor:'Faktor emisi',emission:'Aktivitas & kalkulasi',regulatory_document:'Pustaka dokumen OJK',requirement:'Pemetaan persyaratan',governance:'Kebijakan & risk appetite',portfolio:'Eksposur pembiayaan',scenario:'Katalog skenario iklim',physical:'Screening risiko fisik',transition:'Asesmen risiko transisi',report_package:'Paket laporan internal',audit:'Audit institusi',manual:'Panduan pengguna'};
  // label, control type, choices; all values sent through server validation.
  const schema={
  governance:{policyArea:['Area kebijakan','select',['strategy','risk_appetite','governance','sharia','disclosure']],owner:['Pemilik kebijakan'],riskAppetite:['Risk appetite / ambang toleransi','textarea'],controls:['Kontrol & mitigasi','textarea'],shariaConsiderations:['Pertimbangan risiko syariah','textarea'],approvalReference:['Rujukan persetujuan internal'],effectiveFrom:['Mulai berlaku','date'],reviewDate:['Tanggal review','date']},
@@ -23,14 +23,20 @@
   const data=await response.json();if(!response.ok)throw Error(data.message||'Permintaan gagal ('+response.status+').');return data;
  }
  const membership=()=>session?.tenants.find(t=>t.tenant_id===tenant);
+ function renderPreview(initial='risk'){
+  $('#pageTitle').textContent='Pusat Form Input CRMS — Bank Sawan (simulasi)';
+  document.querySelectorAll('[data-view]').forEach(b=>b.classList.toggle('active',b.dataset.view==='input'||b.dataset.view===initial));
+  if(!window.GreenCalInput)throw Error('Aset form input CRMS tidak ditemukan.');
+  window.GreenCalInput.render($('#preview'),{schema,labels,mode:'preview',initial});
+ }
  async function start(){
   $('#retry').disabled=true;
   try{
    session=await api('/session');
    if(!session.tenants.length)throw Error('Identitas terverifikasi tetapi belum memiliki keanggotaan institusi aktif.');
    const select=$('#tenant');select.replaceChildren();session.tenants.forEach(t=>{const o=el('option',t.name);o.value=t.tenant_id;select.append(o);});
-   tenant=session.tenants[0].tenant_id;$('#workspace').hidden=false;$('#unavailable').hidden=true;$('#logout').hidden=false;await render();
-  }catch(e){session=null;tenant='';generation++;$('#content').replaceChildren();$('#workspace').hidden=true;$('#unavailable').hidden=false;notice(e.message,true);}
+   tenant=session.tenants[0].tenant_id;$('#workspace').hidden=false;$('#preview').hidden=true;$('#ojkReadiness').hidden=false;$('#unavailable').hidden=true;$('#logout').hidden=false;await render();
+  }catch(e){session=null;tenant='';generation++;$('#content').replaceChildren();$('#workspace').hidden=true;$('#preview').hidden=false;$('#ojkReadiness').hidden=true;$('#unavailable').hidden=false;$('#logout').hidden=true;renderPreview(view);notice('Workspace produksi belum aktif: '+e.message+' Gunakan hanya data fiktif untuk form simulasi.',true);}
   finally{$('#retry').disabled=false;}
  }
  function table(heads,items){const wrap=el('div',undefined,'tableWrap'),t=el('table'),thead=el('thead'),hr=el('tr'),body=el('tbody');heads.forEach(h=>hr.append(el('th',h)));thead.append(hr);items.forEach(cells=>{const r=el('tr');cells.forEach(c=>{const td=el('td');if(c instanceof Node)td.append(c);else td.textContent=String(c??'—');r.append(td);});body.append(r);});t.append(thead,body);wrap.append(t);return wrap;}
@@ -40,6 +46,11 @@
   document.querySelectorAll('[data-view]').forEach(b=>{b.classList.toggle('active',b.dataset.view===view);b.hidden=b.dataset.view==='audit'&&!membership().permissions.audit;});
   const root=$('#content');root.replaceChildren();notice('Memuat data institusi…');
   try{
+   if(view==='input'){
+    if(!window.GreenCalInput)throw Error('Aset form input CRMS tidak ditemukan.');
+    window.GreenCalInput.render(root,{schema,labels,mode:'live',canCreate:kind=>membership().permissions.create.includes(kind),onOpenRecord:async kind=>{view=kind;page=1;await render();await openForm();},onNavigate:async kind=>{view=kind;page=1;await render();}});
+    notice('Form operasional menggunakan API, otorisasi dan audit trail institusi.');return;
+   }
    if(view==='discovery'){
     if(!window.GreenCalDiscovery)throw Error('Komponen Discovery Readiness belum tersedia.');
     await window.GreenCalDiscovery.render(root,{api,membership,notice,subject:session.user.subject});return;
@@ -127,7 +138,7 @@
   try{const payload={};Object.entries(schema[view]).forEach(([key,[,type]])=>{const v=form.elements[key].value;payload[key]=type==='number'?Number(v):v;});const id=form.elements.recordId.value;await api('/records'+(id?'/'+id:''),{method:id?'PATCH':'POST',body:JSON.stringify({kind:view,title:form.elements.title.value,payload,...(id?{revision:Number(form.elements.revision.value)}:{})})});$('#recordDialog').close();if(requestGeneration===generation)await render();}catch(e){$('#formError').textContent=e.message;}finally{submit.disabled=false;}
  };
  $('#tenant').onchange=async e=>{tenant=e.target.value;page=1;$('#detailDialog').close();$('#recordDialog').close();$('#detailBody').replaceChildren();await render();};
- document.querySelectorAll('[data-view]').forEach(b=>b.onclick=async()=>{view=b.dataset.view;page=1;document.body.classList.remove('navOpen');$('#menuToggle').setAttribute('aria-expanded','false');await render();});
+ document.querySelectorAll('[data-view]').forEach(b=>b.onclick=async()=>{view=b.dataset.view;page=1;document.body.classList.remove('navOpen');$('#menuToggle').setAttribute('aria-expanded','false');if(!session){renderPreview(view);notice('Mode simulasi Bank Sawan; modul produksi memerlukan aktivasi institusi.');return;}await render();});
  $('#menuSearch').oninput=e=>document.querySelectorAll('[data-view]').forEach(b=>b.hidden=!b.textContent.toLowerCase().includes(e.target.value.toLowerCase())||(b.dataset.view==='audit'&&!membership()?.permissions.audit));
  $('#menuToggle').onclick=()=>{if(window.matchMedia('(max-width:800px)').matches){document.body.classList.remove('navCollapsed');const open=document.body.classList.toggle('navOpen');$('#menuToggle').setAttribute('aria-expanded',String(open));}else{document.body.classList.remove('navOpen');const collapsed=document.body.classList.toggle('navCollapsed');$('#menuToggle').setAttribute('aria-expanded',String(!collapsed));}};
  $('#closeDialog').onclick=$('#cancelDialog').onclick=()=>$('#recordDialog').close();$('#closeDetail').onclick=()=>$('#detailDialog').close();$('#retry').onclick=start;start();
