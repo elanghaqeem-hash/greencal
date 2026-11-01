@@ -111,13 +111,33 @@
  }
  async function openForm(record){
   const form=$('#recordForm');form.reset();form.elements.recordId.value=record?.id||'';form.elements.revision.value=record?.revision||'';form.elements.title.value=record?.title||'';$('#dialogTitle').textContent=(record?'Edit draf · ':'Tambah · ')+labels[view];$('#formError').textContent='';const fields=$('#fields');fields.replaceChildren();
-  Object.entries(schema[view]).forEach(([key,[label,type='text',choices]])=>{const l=el('label',label);if(type==='textarea')l.className='wide';const input=el(type==='select'?'select':type==='textarea'?'textarea':'input');input.name=key;input.required=true;if(type==='select')choices.forEach(value=>{const o=el('option',value);o.value=value;input.append(o);});else if(type!=='textarea')input.type=type;if(type==='number'){input.step='1';input.min='1';}input.value=record?.payload[key]??(type==='select'?choices[0]:'');l.append(input);fields.append(l);});
-  if(['physical','transition'].includes(view)){
-   for(const [field,kind] of [['portfolioId','portfolio'],['scenarioId','scenario']]){
-    const inp=form.elements[field];inp.placeholder='Pilih saran atau tempel ID record disetujui';const list=el('datalist');list.id='enterprise-ref-'+kind;inp.setAttribute('list',list.id);inp.parentElement.append(list);
-    const fill=async()=>{const response=await api('/references?kind='+kind+'&q='+encodeURIComponent(''));list.replaceChildren();response.records.forEach(item=>{const option=el('option');option.value=item.id;option.label=item.title;list.append(option);});};
-    try{await fill();}catch(e){$('#formError').textContent='Referensi '+kind+': '+e.message;}
-   }
+  const decimalFields=new Set(['ead','outstanding','quantity','value','carbonPrice']);
+  const numberRanges={book:[1,7],page:[1,100000],pageCount:[1,100000],horizonYear:[2025,2100],
+   hazardLevel:[1,5],vulnerabilityLevel:[1,5],likelihood:[1,5],severity:[1,5]};
+  Object.entries(schema[view]).forEach(([key,[label,type='text',choices]])=>{
+   const l=el('label',label),input=el(type==='select'?'select':type==='textarea'?'textarea':'input');
+   if(type==='textarea')l.className='wide';
+   input.name=key;input.required=true;
+   if(type==='select'){const blank=el('option','Pilih…');blank.value='';blank.disabled=true;input.append(blank);choices.forEach(value=>{const o=el('option',value);o.value=value;input.append(o);});}
+   else if(type!=='textarea')input.type=type;
+   if(type==='number'){input.step='1';input.min=String(numberRanges[key]?.[0]||1);if(numberRanges[key])input.max=String(numberRanges[key][1]);}
+   if(decimalFields.has(key)){input.inputMode='decimal';input.pattern='[0-9]{1,13}(\\.[0-9]{1,6})?';input.title='Gunakan titik desimal, maksimum 13 digit dan 6 desimal.';}
+   if(key==='currency'){input.pattern='[A-Z]{3}';input.maxLength=3;input.placeholder='IDR';}
+   if(key==='sha256'){input.pattern='[a-f0-9]{64}';input.maxLength=64;}
+   if(type==='url')input.placeholder='https://...';
+   if(type==='textarea')input.maxLength=4000;
+   if(type==='text'&&!['currency','sha256'].includes(key))input.maxLength=2000;
+   input.value=record?.payload[key]??'';
+   l.append(input);fields.append(l);
+  });
+  const references=['physical','transition'].includes(view)?[['portfolioId','portfolio'],['scenarioId','scenario']]:
+   view==='emission'?[['factorId','factor']]:view==='requirement'?[['documentId','regulatory_document']]:[];
+  for(const [field,kind] of references){
+   const inp=form.elements[field];inp.placeholder='ID record '+kind+' yang disetujui';const list=el('datalist');
+   list.id='enterprise-ref-'+kind;inp.setAttribute('list',list.id);inp.parentElement.append(list);
+   try{const response=await api('/references?kind='+kind+'&q=');
+    list.replaceChildren();response.records.forEach(item=>{const opt=el('option');opt.value=item.id;opt.label=item.title;list.append(opt);});
+   }catch(e){$('#formError').textContent='Referensi '+kind+': '+e.message;}
   }
   $('#recordDialog').showModal();
  }
