@@ -1,0 +1,49 @@
+name: GreenCal CRMS Guided Forms
+on:
+  push:
+    branches: [main, feat/crms-complete-guided-forms-20261101]
+    paths:
+      - 'assets/enterprise-formkit.js'
+      - 'assets/enterprise-formkit.css'
+      - 'assets/enterprise-analytics.js'
+      - 'assets/enterprise-book3.js'
+      - 'assets/enterprise-book6.js'
+      - 'assets/enterprise-release.js'
+      - 'assets/enterprise-input.js'
+      - 'assets/enterprise.js'
+      - 'enterprise.html'
+      - 'scripts/build-dist.mjs'
+      - 'tests/enterprise-guided-forms.test.mjs'
+      - '.github/workflows/crms-guided-forms.yml'
+  pull_request:
+    paths:
+      - 'assets/enterprise-formkit.js'
+      - 'assets/enterprise-formkit.css'
+      - 'assets/enterprise-analytics.js'
+      - 'assets/enterprise-book3.js'
+      - 'assets/enterprise-book6.js'
+      - 'assets/enterprise-release.js'
+      - 'assets/enterprise-input.js'
+      - 'assets/enterprise.js'
+      - 'enterprise.html'
+      - 'scripts/build-dist.mjs'
+      - 'tests/enterprise-guided-forms.test.mjs'
+      - '.github/workflows/crms-guided-forms.yml'
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - run: |
+          node --check assets/enterprise-formkit.js
+          node --check assets/enterprise-analytics.js
+          node --check assets/enterprise-book3.js
+          node --check assets/enterprise-book6.js
+          node --check assets/enterprise-release.js
+          node --check assets/enterprise-input.js
+          node --check assets/enterprise.js
+      - run: node --test tests/enterprise-guided-forms.test.mjs tests/enterprise-input.test.mjs
+      - run: node scripts/build-dist.mjs

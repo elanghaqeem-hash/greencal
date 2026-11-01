@@ -34,23 +34,41 @@
   root.append(intro);
   const catalog=await api('/book3/catalog');
   const section=el('section');section.className='panel';
-  const label=el('label','Pilih engine Buku 3'),select=el('select'),input=el('textarea'),output=el('pre'),status=el('p');
-  input.rows=15;input.spellcheck=false;input.setAttribute('aria-label','Payload JSON Buku 3');output.className='result';
+  const kit=window.GreenCalFormKit;if(!kit)throw Error('Komponen form input terpandu belum tersedia.');
+  const label=el('label','Pilih engine Buku 3'),select=el('select'),host=el('div'),output=el('pre'),status=el('p');
+  output.className='formkit-output';status.className='formkit-status';
   for(const method of catalog.methods){const opt=el('option',display[method]||method);opt.value=method;select.append(opt);}
   label.append(select);section.append(label);
-  const sub=el('p','Ubah seluruh contoh simulasi menggunakan sumber yang telah disetujui Bank. Tidak ada autosave.');section.append(sub);
-  const inputLabel=el('label','Data perhitungan (JSON)');inputLabel.append(input);section.append(inputLabel);
-  const run=el('button','Hitung & validasi');run.type='button';run.className='primary';
-  section.append(run,status,output);root.append(section);
-  const load=()=>{input.value=JSON.stringify(EXAMPLES[select.value],null,2);output.textContent='';status.textContent='';};
-  select.onchange=load;load();
-  run.onclick=async()=>{
-   run.disabled=true;status.textContent='';
+  section.append(el('p','Input emisi wajib menggunakan data dan sumber yang diotorisasi Bank. Setiap field ditampilkan terpisah; angka tetap string desimal agar presisi engine terjaga.'));
+  const form=el('form'),actions=el('div');actions.className='formkit-actions';
+  const run=el('button','Hitung & validasi','primary'),example=el('button','Muat contoh fiktif untuk uji'),clear=el('button','Kosongkan');
+  run.type='submit';example.type='button';clear.type='button';actions.append(clear,example,run);
+  form.append(host,actions,status,output);section.append(form);root.append(section);
+  let editor=null;
+  const load=(values={})=>{
+   let fields=kit.forExample(EXAMPLES[select.value],select.value);
+   function supportPeer(items){
+    if(items.some(x=>x.name==='sourceMethod')){
+     for(const k of ['peerSector','peerBusinessModel','scalingBasis','scalingEvidence'])
+      items.push(kit.field(k,k.replace(/([a-z])([A-Z])/g,'$1 $2'),'text',{optional:true}));
+    }
+    for(const x of items)if(x.type==='object')supportPeer(x.fields);
+   }
+   supportPeer(fields);
+   editor=kit.mount(host,fields,{values});
+   output.textContent='';status.textContent='';status.className='formkit-status';
+  };
+  select.onchange=()=>load();example.onclick=()=>{load(EXAMPLES[select.value]);status.textContent='CONTOH FIKTIF — bukan data bank, sumber resmi atau dasar pelaporan.';};
+  clear.onclick=()=>load();load();
+  form.onsubmit=async event=>{
+   event.preventDefault();run.disabled=true;status.textContent='';
    try{
-    const data=JSON.parse(input.value),response=await api('/book3/validate',{method:'POST',body:JSON.stringify({kind:select.value,payload:data})});
+    const payload=editor.getValue(),body={kind:select.value,payload};
+    if(new TextEncoder().encode(JSON.stringify(body)).length>30000)throw Error('Ukuran data melebihi batas 30 KB.');
+    const response=await api('/book3/validate',{method:'POST',body:JSON.stringify(body)});
     output.textContent=JSON.stringify(response.result,null,2);
-    notice('Hasil simulasi Buku 3 tersedia. Perhitungan tidak disimpan sebagai hasil produksi atau laporan OJK.');
-   }catch(e){status.textContent=e.message;status.className='error';notice(e.message,true);}
+    notice('Perhitungan Buku 3 selesai. Hasil tidak disimpan sebagai laporan produksi dan belum disetujui OJK.');
+   }catch(e){status.textContent=e.message;status.className='formkit-status error';notice(e.message,true);}
    finally{run.disabled=false;}
   };
   const explain=el('section');explain.className='panel';explain.append(el('h3','Persyaratan sebelum digunakan dalam laporan Bank'));
@@ -62,4 +80,5 @@
    explain.append(el('p',text));
   }root.append(explain);
  }};
+window.GreenCalBook3.templates=EXAMPLES;
 })();

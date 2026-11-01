@@ -126,10 +126,48 @@
    const row=el('div',undefined,'input-special-row');
    add(row,el('strong',item.label),el('p',item.description));
    if(live){const b=el('button','Buka modul');b.type='button';b.onclick=()=>onNavigate(item.kind);row.append(b);}
-   else row.append(el('small','Memerlukan aktivasi institusi','input-locked'));
+   else if(['book3','analytics','book7'].includes(item.kind)){
+    const b=el('button','Isi form simulasi');b.type='button';b.onclick=()=>renderSpecialPreview(item.kind);row.append(b);
+   }else row.append(el('small','Form lengkap memerlukan aktivasi institusi','input-locked'));
    list.append(row);
   }
-  next.append(list);root.append(next);
+  const specialWorkspace=el('div');next.append(list,specialWorkspace);root.append(next);
+  function renderSpecialPreview(kind){
+   if(live)return;
+   const kit=window.GreenCalFormKit,analytics=window.GreenCalAnalytics?.specs,examples=window.GreenCalBook3?.templates;
+   specialWorkspace.replaceChildren();
+   if(!kit||!analytics||!examples){specialWorkspace.append(el('p','Komponen input khusus belum tersedia. Periksa aset Vercel.','input-caution'));return;}
+   const isBook3=kind==='book3',items=isBook3?Object.entries(examples):
+    Object.entries(analytics).filter(([key])=>kind==='book7'?key.startsWith('book7_'):!key.startsWith('book7_'));
+   if(!items.length)return;
+   const panel=el('section',undefined,'panel'),heading=el('h3','Form '+(kind==='book3'?'Buku 3':kind==='book7'?'Buku 7':'Analitik & PCAF')+' · simulasi');
+   const tip=el('p','Isian tidak terkirim ke database atau engine. Hanya ekspor draf JSON fiktif untuk review form.','input-caution');
+   const pick=el('select');pick.setAttribute('aria-label','Pilih proses simulasi');
+   for(const [id,def] of items){const opt=el('option',isBook3?id:def.name);opt.value=id;pick.append(opt);}
+   const chooserLabel=el('label','Jenis proses / metodologi');chooserLabel.append(pick);
+   const form=el('form'),area=el('div'),status=el('p','', 'input-status');
+   const save=el('button','Validasi form & unduh draf JSON','primary');save.type='submit';
+   form.append(area,save,status);panel.append(heading,tip,chooserLabel,form);specialWorkspace.append(panel);
+   let editor;
+   const draw=()=>{
+    const id=pick.value,fields=isBook3?kit.forExample(examples[id],id):kit.forAnalytics(id,analytics[id].fields);
+    editor=kit.mount(area,fields);
+    status.textContent='';
+   };
+   pick.onchange=draw;draw();
+   form.onsubmit=event=>{
+    event.preventDefault();
+    try{
+     const input=editor.getValue();
+     download('GreenCal_CRMS_SIMULASI_'+pick.value+'.json',{
+      schema:'greencal-crms-special-input-simulation-v1',simulationOnly:true,persisted:false,
+      institution:'Bank Sawan (FIKTIF)',book:kind,method:pick.value,
+      regulatorySubmission:false,input});
+     status.textContent='Draf simulasi berhasil diekspor; tidak ada penyimpanan atau perhitungan bank.';
+    }catch(e){status.textContent='Periksa isian: '+e.message;}
+   };
+   panel.scrollIntoView?.({behavior:'smooth',block:'start'});
+  }
  }
  window.GreenCalInput={catalog,advanced,render};
 })();

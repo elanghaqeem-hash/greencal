@@ -36,18 +36,44 @@ window.GreenCalAnalytics={async render(root,ctx){
  for(const [id,config] of choices){const o=el('option',config.name);o.value=id;select.append(o);}
  slabel.append(select);entry.append(slabel);
  if(!choices.length){entry.append(el('p','Peran Anda hanya memiliki akses baca hasil analitik institusi.'));}else{
- const help=el('p',''),form=el('form'),field=el('textarea');field.rows=12;field.spellcheck=false;field.autocomplete='off';field.setAttribute('aria-label','Payload JSON data kuantitatif');const error=el('p','', 'error'),output=el('pre','', 'analyticsOutput'),actions=el('div',undefined,'formActions');
- const inputLabel=el('label','Data sumber (JSON)');inputLabel.className='wide';inputLabel.append(field);
- const fileLabel=el('label','Impor JSON lokal (maksimum 32 KiB, tanpa data pribadi)');const file=el('input');file.type='file';file.accept='.json,application/json';fileLabel.append(file);
- file.onchange=async()=>{const f=file.files?.[0];if(!f)return;if(f.size>32768){error.textContent='File melebihi batas 32 KiB. Pisahkan batch.';return;}field.value=await f.text();};
- const load=()=>{const x=specs[select.value];help.textContent=x.help;field.value=JSON.stringify(Object.fromEntries(x.fields.map(k=>[k,k==='entries'||k==='exposures'||k==='points'||k==='curve'||k==='components'||k==='scenarios'||k==='periods'||k==='hqlaSecurityChanges'||k==='corporateDeposits'||k==='undrawnCommitments'||k==='cashInflows'?[]:''])),null,2);error.textContent='';output.textContent='';};
- const submit=el('button','Jalankan engine');submit.className='primary';submit.type='submit';actions.append(submit);
- form.append(help,inputLabel,fileLabel,actions,error,output);entry.append(form);select.onchange=load;load();
- form.onsubmit=async e=>{e.preventDefault();submit.disabled=true;error.textContent='';try{
-  if(new TextEncoder().encode(field.value).length>29000)throw Error('Payload terlalu besar; gunakan batch maksimum 100 fasilitas dan 32 KiB request.');
-  const input=JSON.parse(field.value),spec=specs[select.value],data=await ctx.api(spec.url,{method:'POST',body:JSON.stringify(spec.kind?{kind:spec.kind,input}:input)});
-  output.textContent=JSON.stringify(data,null,2);download('GreenCal_Internal_'+(data.id||'batch')+'.json',data);await loadHistory();
- }catch(e){error.textContent=e.message;}finally{submit.disabled=false;}};
+ const kit=window.GreenCalFormKit;if(!kit)throw Error('Komponen form terpandu belum termuat.');
+ const help=el('p','', 'formkit-help'),form=el('form'),fieldsHost=el('div',undefined,'formkit-editor'),
+  error=el('p','', 'formkit-status'),output=el('pre','', 'formkit-output'),actions=el('div',undefined,'formkit-actions');
+ const fileLabel=el('label','Impor data input JSON institusi (maks. 32 KiB, tanpa PII)'),file=el('input');
+ file.type='file';file.accept='.json,application/json';fileLabel.append(file);
+ const submit=el('button','Validasi & jalankan engine','primary'),clear=el('button','Kosongkan form');submit.type='submit';clear.type='button';
+ actions.append(clear,submit);
+ let editor=null;
+ const load=values=>{
+  const x=specs[select.value];help.textContent=x.help;
+  editor=kit.mount(fieldsHost,kit.forAnalytics(select.value,x.fields),{values:values||{}});
+  error.textContent='';error.className='formkit-status';output.textContent='';
+ };
+ file.onchange=async()=>{
+  const f=file.files?.[0];if(!f)return;
+  try{
+   if(f.size>32768)throw Error('File terlalu besar (maksimal 32 KiB).');
+   const parsed=JSON.parse(await f.text());
+   if(!parsed||typeof parsed!=='object'||Array.isArray(parsed))throw Error('Dokumen harus berbentuk objek JSON.');
+   const value=parsed.kind===specs[select.value].kind&&parsed.input?parsed.input:parsed;
+   load(value);
+  }catch(e){error.textContent=e.message;error.className='formkit-status error';}
+ };
+ clear.onclick=()=>{load();file.value='';};
+ form.append(help,fieldsHost,fileLabel,actions,error,output);entry.append(form);
+ select.onchange=()=>{load();file.value='';};load();
+ form.onsubmit=async event=>{
+  event.preventDefault();submit.disabled=true;error.textContent='';error.className='formkit-status';
+  try{
+   const input=editor.getValue(),spec=specs[select.value],requestBody=spec.kind?{kind:spec.kind,input}:input;
+   if(new TextEncoder().encode(JSON.stringify(requestBody)).length>29000)throw Error('Payload di atas 29 KB. Pisahkan menjadi batch sesuai batasan API.');
+   const data=await ctx.api(spec.url,{method:'POST',body:JSON.stringify(requestBody)});
+   output.textContent=JSON.stringify(data,null,2);
+   download('GreenCal_Internal_'+(data.id||spec.kind||'batch')+'.json',data);
+   await loadHistory();
+  }catch(e){error.textContent=e.message;error.className='formkit-status error';ctx.notice(e.message,true);}
+  finally{submit.disabled=false;}
+ };
  }
  root.append(entry);
  const history=el('section',undefined,'panel');history.append(el('h2','Hasil analitik, bukti dan status rekonsiliasi'));root.append(history);
@@ -74,4 +100,5 @@ window.GreenCalAnalytics={async render(root,ctx){
  }
  await loadHistory();
 }};
+window.GreenCalAnalytics.specs=specs;
 })();
