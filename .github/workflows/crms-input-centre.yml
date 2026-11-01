@@ -1,0 +1,34 @@
+name: CRMS Input Centre
+on:
+  push:
+    branches:
+      - main
+      - feat/crms-input-center-20261101
+    paths:
+      - 'enterprise.html'
+      - 'assets/enterprise-input.js'
+      - 'assets/enterprise-input.css'
+      - 'assets/enterprise.js'
+      - 'scripts/build-dist.mjs'
+      - 'tests/enterprise-input.test.mjs'
+      - '.github/workflows/crms-input-centre.yml'
+  pull_request:
+    paths:
+      - 'enterprise.html'
+      - 'assets/enterprise-input.js'
+      - 'assets/enterprise-input.css'
+      - 'assets/enterprise.js'
+      - 'scripts/build-dist.mjs'
+      - 'tests/enterprise-input.test.mjs'
+      - '.github/workflows/crms-input-centre.yml'
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - run: node --check assets/enterprise-input.js && node --check assets/enterprise.js
+      - run: node --test tests/enterprise-input.test.mjs
+      - run: node scripts/build-dist.mjs
