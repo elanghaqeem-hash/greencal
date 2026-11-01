@@ -80,4 +80,5 @@
    explain.append(el('p',text));
   }root.append(explain);
  }};
+window.GreenCalBook3.templates=EXAMPLES;
 })();
