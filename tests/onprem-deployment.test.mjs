@@ -382,3 +382,38 @@ test('gate rilis mengembalikan temuan beku yang tidak dapat diubah pemanggil', (
   assert.throws(() => { r.findings.push({}); }, TypeError);
   assert.throws(() => { r.passed = true; }, TypeError);
 });
+
+test('setiap sumber COPY pada Dockerfile benar-benar ada', async () => {
+  // Kegagalan build "path not found" hanya muncul saat docker berjalan, dan di
+  // CI itu berarti satu putaran penuh terbuang. Diperiksa di sini tanpa daemon.
+  const { stat } = await import('node:fs/promises');
+  const dockerfile = await read('Dockerfile');
+  const sources = [];
+  for (const line of dockerfile.split('\n')) {
+    const m = line.match(/^\s*COPY\s+(.*)$/i);
+    if (!m) continue;
+    const parts = m[1].split(/\s+/).filter(Boolean);
+    // Lewati flag seperti --from dan --chown; argumen terakhir adalah tujuan.
+    const args = parts.filter((p) => !p.startsWith('--'));
+    const from = parts.some((p) => p.startsWith('--from='));
+    if (from) continue;  // sumber berasal dari tahap build sebelumnya
+    sources.push(...args.slice(0, -1));
+  }
+  assert.ok(sources.length >= 5, `hanya ${sources.length} sumber COPY terdeteksi`);
+  for (const src of sources) {
+    await assert.doesNotReject(
+      () => stat(join(ROOT, src)),
+      `Dockerfile menyalin ${src}, tetapi berkas atau direktori itu tidak ada`);
+  }
+});
+
+test('citra runtime tidak menyalin rahasia atau berkas lingkungan', async () => {
+  const dockerfile = await read('Dockerfile');
+  for (const forbidden of ['deploy/secrets', '.env', 'app.env']) {
+    assert.ok(!dockerfile.includes(`COPY ${forbidden}`),
+      `Dockerfile menyalin ${forbidden} ke dalam citra`);
+  }
+  // deploy/ secara utuh akan menyeret direktori rahasia ikut masuk.
+  assert.ok(!/^\s*COPY\s+deploy\s/mi.test(dockerfile),
+    'menyalin seluruh deploy/ akan menyertakan deploy/secrets');
+});

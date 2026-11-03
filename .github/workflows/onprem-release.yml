@@ -193,7 +193,7 @@ jobs:
             echo "## SAST Semgrep"
             echo
             if [ -f semgrep.sarif ]; then
-              count=$(node -e "const r=require('./semgrep.sarif');console.log((r.runs?.[0]?.results||[]).length)")
+              count=$(node -e "const r=JSON.parse(require('fs').readFileSync('semgrep.sarif','utf8'));console.log((r.runs?.[0]?.results||[]).length)")
               echo "Temuan severity ERROR: $count"
             else
               echo "Semgrep tidak menghasilkan SARIF; lihat log langkah."
@@ -233,27 +233,47 @@ jobs:
       # diverifikasi terhadap berkas checksum yang diterbitkan rilisnya sendiri.
       # Pola ini juga yang dipakai bank saat membangun paket offline.
       - name: Pasang Syft dan Grype dengan verifikasi checksum
+        # Biner dipasang di $RUNNER_TEMP, DI LUAR pohon kerja. Pada percobaan
+        # pertama keduanya diunduh ke dalam repositori, dan akibatnya syft
+        # memindai pemindainya sendiri: grype lalu melaporkan tiga kerentanan
+        # High pada modul Go milik syft, grype, containerd, dan docker/cli,
+        # bukan pada aplikasi. Temuan itu nyata bagi biner tersebut dan sama
+        # sekali tidak relevan bagi paket rilis bank.
         run: |
           set -euo pipefail
           install_tool() {
             local repo="$1" version="$2" archive="$3"
             local base="https://github.com/${repo}/releases/download/v${version}"
-            curl -fsSL --retry 3 -o "$archive" "${base}/${archive}"
-            curl -fsSL --retry 3 -o checksums.txt "${base}/${repo#*/}_${version}_checksums.txt"
+            curl -fsSL --retry 3 -o "${RUNNER_TEMP}/${archive}" "${base}/${archive}"
+            curl -fsSL --retry 3 -o "${RUNNER_TEMP}/checksums.txt" \
+              "${base}/${repo#*/}_${version}_checksums.txt"
             # Verifikasi terhadap checksum resmi rilis; gagal berarti arsip
             # tidak utuh atau bukan arsip yang diterbitkan.
-            grep " ${archive}\$" checksums.txt | sha256sum -c -
-            tar xzf "$archive"
-            rm -f "$archive" checksums.txt
+            ( cd "$RUNNER_TEMP" && grep " ${archive}\$" checksums.txt | sha256sum -c - )
+            tar xzf "${RUNNER_TEMP}/${archive}" -C "$RUNNER_TEMP"
+            rm -f "${RUNNER_TEMP}/${archive}" "${RUNNER_TEMP}/checksums.txt"
           }
           install_tool anchore/syft 1.18.1 syft_1.18.1_linux_amd64.tar.gz
           install_tool anchore/grype 0.86.1 grype_0.86.1_linux_amd64.tar.gz
-          ./syft version
-          ./grype version
+          "$RUNNER_TEMP/syft" version
+          "$RUNNER_TEMP/grype" version
       - name: Hasilkan SBOM CycloneDX
-        run: ./syft scan dir:. --output cyclonedx-json=greencal-crms-sbom.cyclonedx.json
+        run: |
+          "$RUNNER_TEMP/syft" scan dir:. \
+            --output cyclonedx-json=greencal-crms-sbom.cyclonedx.json
+      - name: Pastikan SBOM tidak memuat pemindainya sendiri
+        run: |
+          for tool in anchore/syft anchore/grype; do
+            if grep -q "$tool" greencal-crms-sbom.cyclonedx.json; then
+              echo "SBOM memuat $tool; pemindai ikut terpindai dan hasilnya tidak sah." >&2
+              exit 1
+            fi
+          done
+          echo "SBOM memuat aplikasi saja."
       - name: Pindai SBOM, gagalkan pada high atau critical
-        run: ./grype sbom:greencal-crms-sbom.cyclonedx.json --fail-on high --output table
+        run: |
+          "$RUNNER_TEMP/grype" sbom:greencal-crms-sbom.cyclonedx.json \
+            --fail-on high --output table
       - uses: actions/upload-artifact@6f51ac03b9356f520e9adb1b1b7802705f340c2b # v4.5.0
         if: always()
         with:
@@ -276,15 +296,20 @@ jobs:
           version=8.21.2
           archive="gitleaks_${version}_linux_x64.tar.gz"
           base="https://github.com/gitleaks/gitleaks/releases/download/v${version}"
-          curl -fsSL --retry 3 -o "$archive" "${base}/${archive}"
-          curl -fsSL --retry 3 -o checksums.txt "${base}/gitleaks_${version}_checksums.txt"
-          grep " ${archive}\$" checksums.txt | sha256sum -c -
-          tar xzf "$archive" gitleaks
-          ./gitleaks version
+          curl -fsSL --retry 3 -o "${RUNNER_TEMP}/${archive}" "${base}/${archive}"
+          curl -fsSL --retry 3 -o "${RUNNER_TEMP}/checksums.txt" \
+            "${base}/gitleaks_${version}_checksums.txt"
+          ( cd "$RUNNER_TEMP" && grep " ${archive}\$" checksums.txt | sha256sum -c - )
+          tar xzf "${RUNNER_TEMP}/${archive}" -C "$RUNNER_TEMP" gitleaks
+          "$RUNNER_TEMP/gitleaks" version
       - name: Pindai seluruh riwayat
+        # --config .gitleaks.toml memuat SELURUH aturan bawaan ditambah satu
+        # aturan khusus proyek, dengan pengecualian yang dinyatakan sebagai pola
+        # NILAI dan bukan sebagai berkas yang dilewati. Lihat .gitleaks.toml.
         run: |
           set -o pipefail
-          ./gitleaks git . --redact --report-format sarif --report-path gitleaks.sarif \
+          "$RUNNER_TEMP/gitleaks" git . --config .gitleaks.toml --redact \
+            --report-format sarif --report-path gitleaks.sarif \
             --log-level info 2>&1 | tee gitleaks.log
       - name: Ringkas hasil
         if: always()
@@ -316,12 +341,14 @@ jobs:
           version=0.86.1
           archive="grype_${version}_linux_amd64.tar.gz"
           base="https://github.com/anchore/grype/releases/download/v${version}"
-          curl -fsSL --retry 3 -o "$archive" "${base}/${archive}"
-          curl -fsSL --retry 3 -o checksums.txt "${base}/grype_${version}_checksums.txt"
-          grep " ${archive}\$" checksums.txt | sha256sum -c -
-          tar xzf "$archive" grype
+          curl -fsSL --retry 3 -o "${RUNNER_TEMP}/${archive}" "${base}/${archive}"
+          curl -fsSL --retry 3 -o "${RUNNER_TEMP}/checksums.txt" \
+            "${base}/grype_${version}_checksums.txt"
+          ( cd "$RUNNER_TEMP" && grep " ${archive}\$" checksums.txt | sha256sum -c - )
+          tar xzf "${RUNNER_TEMP}/${archive}" -C "$RUNNER_TEMP" grype
       - name: Pindai citra, gagalkan pada high atau critical
-        run: ./grype greencal/crms-enterprise:ci --fail-on high --output table
+        run: |
+          "$RUNNER_TEMP/grype" greencal/crms-enterprise:ci --fail-on high --output table
       - name: Pastikan citra tidak berjalan sebagai root
         run: |
           user=$(docker inspect -f '{{.Config.User}}' greencal/crms-enterprise:ci)

@@ -1,0 +1,87 @@
+# Konfigurasi gitleaks GreenCal CRMS Enterprise. WP10.
+#
+# Pemindaian pertama atas seluruh riwayat (658 commit) menghasilkan 82 temuan,
+# seluruhnya dari satu aturan: generic-api-key. Setelah diperiksa satu per satu,
+# hanya ada 12 NILAI unik yang ditandai, dan tidak satu pun rahasia:
+#
+#   "key":"BENSIN-RON-92-PERTAMAX"           kode jenis bahan bakar
+#   "key":"MINYAK-DEX-SOLAR-CN-53"           kode jenis bahan bakar
+#   "key":"DELAYED-TRANSITION-2030"          kunci skenario NGFS per tahun
+#   "key":"PETROCHEMICALS-20-14-16-17-60"    kode sektor KBLI
+#   key = "greencal_ip_scope_v1_"            prefiks kunci localStorage pada uji
+#
+# Aturan generic-api-key memicu pada kata "key" yang diikuti nilai berentropi
+# cukup tinggi. Pada basis kode ini, "key" nyaris selalu berarti kunci kamus
+# data regulatori, bukan kredensial.
+#
+# Pengecualian di bawah dibuat SEMPIT: dinyatakan sebagai pola NILAI, bukan
+# dengan mengecualikan berkas secara utuh dan bukan dengan mematikan aturannya.
+# Dengan begitu kredensial sungguhan di berkas mana pun, termasuk berkas yang
+# memuat pola di bawah, tetap terdeteksi. Mematikan generic-api-key sepenuhnya
+# akan membuat gate G08 tidak berguna, dan gate yang tidak berguna lebih buruk
+# daripada tidak ada gate karena ia memberi rasa aman yang salah.
+#
+# Setiap pengecualian wajib menyebut alasan dan tanggal peninjauan ulang, sama
+# seperti pengecualian ModSecurity pada deploy/nginx.
+
+title = "GreenCal CRMS Enterprise"
+
+[extend]
+# Mewarisi SELURUH aturan bawaan gitleaks. Tidak ada aturan yang dihapus.
+useDefault = true
+
+[[rules]]
+# Aturan TAMBAHAN khusus proyek: kredensial basis data yang tertulis lengkap di
+# dalam connection string. Bentuk ini tidak selalu tertangkap aturan bawaan,
+# dan justru inilah bentuk yang paling mungkin bocor dari berkas konfigurasi
+# deployment on-premise.
+id = "greencal-postgres-inline-password"
+description = "Kata sandi tertulis di dalam connection string PostgreSQL"
+regex = '''postgres(?:ql)?:\/\/[A-Za-z0-9._%-]+:[^@\s'"$]{3,}@'''
+tags = ["database", "credential"]
+
+[allowlist]
+description = "Pengecualian berdasarkan pemeriksaan satu per satu; lihat catatan di atas"
+
+regexes = [
+  # Kunci kamus data regulatori berformat SCREAMING-KEBAB.
+  # Alasan: kode jenis bahan bakar (BENSIN-RON-92-PERTAMAX), sektor KBLI, dan
+  #   skenario NGFS per tahun (DELAYED-TRANSITION-2030). Nilainya tampil di
+  #   antarmuka dan dikirim ke regulator; ia memang harus dapat dibaca manusia
+  #   dan tidak dapat berfungsi sebagai kredensial.
+  # Peninjauan: 2027-05-01.
+  '^[A-Z][A-Z0-9]*(?:-[A-Z0-9]+)+$',
+
+  # Prefiks ruang penyimpanan localStorage pada uji peramban.
+  # Alasan: greencal_ip_scope_v1_ adalah nama ruang penyimpanan, bukan rahasia.
+  #   Nilai di belakangnya adalah HMAC alamat jaringan yang dihitung sisi server
+  #   dan tidak pernah ada di repositori.
+  # Peninjauan: 2027-05-01.
+  '^greencal_[a-z0-9]+(?:_[a-z0-9]+)*_?$',
+
+  # Checksum dan digest SHA-256.
+  # Alasan: registry parameter, manifest paket rilis, dan uji menyimpan banyak
+  #   digest heksadesimal. Digest adalah nilai yang memang harus dapat
+  #   diverifikasi siapa pun; ia bukan rahasia.
+  # Peninjauan: 2027-05-01.
+  '^[a-f0-9]{64}$',
+
+  # Placeholder yang sengaja dibuat untuk validasi CI.
+  # Alasan: nilai ini dibuat agar `docker compose config` mau memvalidasi
+  #   proyek, lalu dibuang pada langkah yang sama. Teksnya menyatakan dirinya
+  #   bukan rahasia, sehingga tidak dapat tertukar dengan nilai sungguhan.
+  # Peninjauan: 2027-05-01.
+  'ci-(?:only-)?(?:placeholder|not-a-secret)[a-z0-9-]*',
+
+  # Kata sandi sintetis pada alur kerja CI dan contoh di dalam uji.
+  # Alasan: aturan greencal-postgres-inline-password di atas menandai enam
+  #   connection string, dan seluruhnya menamai dirinya sendiri sebagai nilai
+  #   sintetis: ci_synthetic_password, synthetic_ci_password_not_a_real_secret,
+  #   ci-only-not-a-bank-secret, serta contoh user:password dan user:pass pada
+  #   uji. Tidak satu pun kredensial sungguhan, dan tidak ada yang perlu
+  #   dicabut. Pengecualian dibatasi pada bentuk nilainya, sehingga kata sandi
+  #   sungguhan pada connection string tetap tertangkap aturan itu.
+  # Peninjauan: 2027-05-01.
+  '(?i)(?:synthetic|ci[-_]only|not[-_]a[-_](?:real[-_])?(?:bank[-_])?secret|placeholder|dummy)',
+  '^postgres(?:ql)?://(?:user|another|example):(?:password|pass|secret)@$',
+]
