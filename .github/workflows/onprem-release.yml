@@ -346,9 +346,59 @@ jobs:
             "${base}/grype_${version}_checksums.txt"
           ( cd "$RUNNER_TEMP" && grep " ${archive}\$" checksums.txt | sha256sum -c - )
           tar xzf "${RUNNER_TEMP}/${archive}" -C "$RUNNER_TEMP" grype
-      - name: Pindai citra, gagalkan pada high atau critical
+      - name: Pindai citra, gagalkan pada kerentanan high atau critical YANG SUDAH ADA PERBAIKANNYA
+        # --only-fixed membuat gate ini menggagalkan build hanya bila ada
+        # kerentanan yang BISA ditutup tetapi belum ditutup. Kerentanan tanpa
+        # paket perbaikan tidak dapat diperbaiki tim rekayasa, dan membiarkan
+        # gate gagal karenanya akan mendorong orang menambah daftar pengabaian
+        # sampai gate ini berhenti bermakna. Keduanya tetap dilaporkan di bawah,
+        # dan dicatat sebagai gate rilis terbuka G16, bukan disembunyikan.
         run: |
-          "$RUNNER_TEMP/grype" greencal/crms-enterprise:ci --fail-on high --output table
+          "$RUNNER_TEMP/grype" greencal/crms-enterprise:ci \
+            --fail-on high --only-fixed --output table
+      - name: Laporkan kerentanan tanpa perbaikan untuk asesmen bank
+        if: always()
+        run: |
+          set -o pipefail
+          "$RUNNER_TEMP/grype" greencal/crms-enterprise:ci \
+            --output json --file grype-image.json || true
+          node --input-type=module -e '
+            import { readFileSync } from "node:fs";
+            const r = JSON.parse(readFileSync("grype-image.json", "utf8"));
+            const rows = (r.matches || [])
+              .filter((m) => ["High", "Critical"].includes(m.vulnerability.severity))
+              .map((m) => ({
+                paket: m.artifact.name,
+                versi: m.artifact.version,
+                cve: m.vulnerability.id,
+                severity: m.vulnerability.severity,
+                perbaikan: (m.vulnerability.fix?.versions || []).join(", ") || m.vulnerability.fix?.state || "tidak ada",
+              }));
+            const unfixed = rows.filter((x) => !/^\d/.test(x.perbaikan));
+            const lines = [
+              "## Kerentanan citra, severity High dan Critical",
+              "",
+              `Total: ${rows.length}. Tanpa paket perbaikan: ${unfixed.length}.`,
+              "",
+            ];
+            if (unfixed.length) {
+              lines.push("| Paket | Versi | CVE | Severity | Perbaikan |", "| --- | --- | --- | --- | --- |");
+              for (const x of unfixed) {
+                lines.push(`| ${x.paket} | ${x.versi} | ${x.cve} | ${x.severity} | ${x.perbaikan} |`);
+              }
+              lines.push("", "Kerentanan tanpa paket perbaikan tidak dapat ditutup tim rekayasa.",
+                "Lihat gate G16 pada docs/enterprise/release/release-gates.json.");
+            } else {
+              lines.push("Tidak ada kerentanan High atau Critical tanpa perbaikan.");
+            }
+            process.stdout.write(lines.join("\n") + "\n");
+          ' >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@6f51ac03b9356f520e9adb1b1b7802705f340c2b # v4.5.0
+        if: always() && hashFiles('grype-image.json') != ''
+        with:
+          name: grype-image-report
+          path: grype-image.json
+          retention-days: 90
       - name: Pastikan citra tidak berjalan sebagai root
         run: |
           user=$(docker inspect -f '{{.Config.User}}' greencal/crms-enterprise:ci)

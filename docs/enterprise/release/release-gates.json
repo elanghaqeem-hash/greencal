@@ -1,6 +1,6 @@
 {
   "contract": "greencal-release-gates/1",
-  "assessedAt": "2026-11-01",
+  "assessedAt": "2026-11-03",
   "assessedBy": "wp02-wp10-engineering",
   "note": "Status PASSED hanya sah bila evidenceRef menunjuk bukti yang benar-benar tersimpan. Gate tanpa bukti WAJIB berstatus NOT_STARTED atau IN_PROGRESS, bukan PASSED. Berkas ini masuk manifest paket rilis, sehingga status di sini tidak dapat diubah tanpa mengubah digest paket.",
   "gates": [
@@ -48,25 +48,25 @@
       "id": "G06-SAST",
       "name": "Pemindaian kode statis tanpa temuan high atau critical",
       "requirement": "Semgrep berjalan pada setiap PR dan tidak menyisakan temuan high atau critical yang terbuka.",
-      "status": "IN_PROGRESS",
-      "evidenceRef": null,
-      "detail": "Alur kerja CI sudah ada; baseline temuan belum ditinjau dan ditutup."
+      "status": "PASSED",
+      "evidenceRef": "ci://onprem-release/sast",
+      "detail": "Semgrep (p/javascript, p/nodejs, p/sql-injection, p/secrets) berjalan pada setiap PR dan tidak menyisakan temuan severity ERROR."
     },
     {
       "id": "G07-SCA-SBOM",
       "name": "SBOM diterbitkan dan kerentanan dependensi tertutup",
       "requirement": "SBOM CycloneDX dihasilkan per rilis; tidak ada kerentanan high atau critical yang terbuka.",
-      "status": "IN_PROGRESS",
-      "evidenceRef": null,
-      "detail": "Permukaan dependensi runtime hanya satu paket (pg). SBOM dihasilkan CI, penandatanganannya menunggu kunci rilis bank."
+      "status": "PASSED",
+      "evidenceRef": "ci://onprem-release/sca-sbom",
+      "detail": "SBOM CycloneDX dihasilkan Syft 1.18.1 dan dipindai Grype 0.86.1 tanpa temuan high atau critical; npm audit melaporkan nol kerentanan. Pemindai dipasang di luar pohon kerja dan CI memverifikasi SBOM tidak memuat pemindainya sendiri. Penandatanganan SBOM masih menunggu kunci rilis bank."
     },
     {
       "id": "G08-SECRET-SCAN",
       "name": "Tidak ada rahasia pada riwayat repositori",
       "requirement": "gitleaks berjalan pada seluruh riwayat dan tidak menemukan rahasia.",
-      "status": "IN_PROGRESS",
-      "evidenceRef": null,
-      "detail": "Pemindaian pada perubahan baru sudah aktif; pemindaian riwayat penuh belum dijalankan."
+      "status": "PASSED",
+      "evidenceRef": "ci://onprem-release/secret-scan",
+      "detail": "gitleaks 8.21.2 memindai seluruh 658 commit riwayat dengan .gitleaks.toml: nol temuan. Pemindaian pertama memunculkan 82 temuan, seluruhnya dari 12 nilai unik yang setelah diperiksa satu per satu bukan rahasia (kode bahan bakar, kunci skenario NGFS, kode sektor KBLI, prefiks localStorage). Tidak ada kredensial yang perlu dicabut. Seluruh aturan bawaan tetap aktif dan ditambah satu aturan khusus proyek untuk kata sandi pada connection string."
     },
     {
       "id": "G09-DAST",
@@ -123,6 +123,14 @@
       "status": "BLOCKED",
       "evidenceRef": null,
       "detail": "Pembangun paket sudah mendukung penandatanganan Ed25519 lewat GREENCAL_SIGNING_KEY. Kunci penandatangan sengaja tidak pernah dibuat oleh skrip build."
+    },
+    {
+      "id": "G16-BASE-IMAGE-UNFIXED-CVE",
+      "name": "Kerentanan citra dasar tanpa paket perbaikan",
+      "requirement": "Setiap kerentanan high atau critical tanpa paket perbaikan diasesmen penerapannya terhadap beban kerja ini, lalu diterima resmi atau ditutup dengan berpindah basis distribusi.",
+      "status": "BLOCKED",
+      "evidenceRef": null,
+      "detail": "Citra runtime node:24.13.0-trixie-slim menyisakan tiga CVE glibc berstatus \"won't fix\" pada Debian 13: CVE-2025-15281, CVE-2026-0861, dan CVE-2026-0915, masing-masing pada libc6 dan libc-bin. Tidak ada paket perbaikan yang dapat dipasang, sehingga tim rekayasa tidak dapat menutupnya. Penerapannya terhadap beban kerja ini BELUM diasesmen dan tidak diklaim tidak berlaku. Gate CI menggagalkan build hanya untuk kerentanan yang sudah ada perbaikannya (--only-fixed), dan kerentanan tanpa perbaikan dilaporkan pada ringkasan CI serta artefak grype-image-report. Penutupan menuntut asesmen keamanan bank, atau perpindahan ke basis distribusi yang memperbaikinya."
     }
   ]
 }
