@@ -21,7 +21,7 @@ dengan tepat gate mana yang masih terbuka beserta alasannya.
 | WP05 | Presisi desimal eksak, formula berversi, calculation_run yang dapat direproduksi | Selesai |
 | WP10 | Audit berantai hash, DevSecOps CI, paket rilis offline bertanda tangan | Selesai dari sisi mekanisme; gate bank masih terbuka |
 
-Uji: **414 uji, 412 lulus, 0 gagal, 2 dilewati.** Dua yang dilewati adalah uji
+Uji: **479 uji, 477 lulus, 0 gagal, 2 dilewati.** Dua yang dilewati adalah uji
 PostgreSQL warisan Vercel yang menuntut `GREENCAL_TEST_PG_URL` terpisah dan
 tidak terkait perubahan ini. Baseline WP00 adalah 248 uji; penambahan bersihnya
 166 uji.
@@ -252,14 +252,14 @@ paket. Keadaan saat ini:
 
 | Gate | Status | Alasan |
 | --- | --- | --- |
-| G01 Uji otomatis | **PASSED** | 414 uji, 0 gagal |
+| G01 Uji otomatis | **PASSED** | 479 uji, 0 gagal |
 | G02 Guard skema | **PASSED** | RLS lengkap, tanpa kolom pecahan biner |
 | G03 Determinisme | **PASSED** | Manifest digest identik pada eksekusi ulang |
 | G04 Digest citra | BLOCKED | Hanya operator bank dapat mengisi digest dari registri internal |
 | G05 Parameter APPROVED | BLOCKED | 5 dari 7 Buku belum tersedia sebagai sumber berchecksum |
-| G06 SAST | IN_PROGRESS | Alur kerja ada, baseline temuan belum ditutup |
-| G07 SBOM dan SCA | IN_PROGRESS | SBOM dihasilkan CI, penandatanganan menunggu kunci bank |
-| G08 Pemindaian rahasia | IN_PROGRESS | Riwayat penuh belum dipindai sekali pun |
+| G06 SAST | **PASSED** | Semgrep tanpa temuan severity ERROR |
+| G07 SBOM dan SCA | **PASSED** | Syft dan Grype tanpa temuan high atau critical; npm audit nol kerentanan. Penandatanganan SBOM masih menunggu kunci rilis bank |
+| G08 Pemindaian rahasia | **PASSED** | Nol temuan pada seluruh 658 commit riwayat |
 | G09 DAST | NOT_STARTED | Butuh lingkungan UAT bank |
 | G10 Uji penetrasi | NOT_STARTED | Belum dipesan |
 | G11 Validasi model independen | NOT_STARTED | Jalur teknis siap, pelaksanaannya milik fungsi validasi bank |
@@ -267,6 +267,39 @@ paket. Keadaan saat ini:
 | G13 Residensi data dan PDP | NOT_STARTED | Skema menegakkan `data_residency = 'ID'`, asesmen formal belum ada |
 | G14 Persetujuan CAB | NOT_STARTED | Tidak dapat dipenuhi tim rekayasa |
 | G15 Paket bertanda tangan | BLOCKED | Menunggu kunci rilis bank |
+| G16 CVE citra dasar tanpa perbaikan | BLOCKED | Tiga CVE glibc berstatus "won't fix" pada Debian 13; butuh asesmen keamanan bank |
+
+### F.1 Pengerasan citra runtime
+
+Pemindaian citra pertama kali berjalan sampai selesai pada 3 November dan
+menemukan kerentanan nyata, bukan galat konfigurasi:
+
+| Temuan | Jumlah awal | Tindakan | Sisa |
+| --- | --- | --- | --- |
+| Node 24.11.0 | 1 Critical, 5 High | Naik ke 24.13.0 pada ketiga tahap build | 0 |
+| Paket npm bundled (glob, minimatch, tar, brace-expansion) | 11 High | npm, npx, dan corepack dibuang dari tahap runtime; penghapusan diverifikasi di dalam build | 0 |
+| Debian 12 bookworm (termasuk zlib1g CVE-2023-45853 Critical) | 1 Critical, ~14 High | Basis berpindah ke Debian 13 trixie, ditambah pembaruan keamanan paket yang sudah ada | 0 |
+| glibc pada Debian 13 | 3 High, "won't fix" | Dicatat sebagai gate G16; **tidak** diabaikan dan **tidak** diklaim tidak berlaku | 3 |
+
+Dua keputusan yang perlu dicatat:
+
+1. **npm dibuang dari citra runtime.** Seluruh temuan High pada paket npm
+   berasal dari npm yang dibundel citra dasar, bukan dari dependensi aplikasi:
+   aplikasi hanya bergantung pada `pg`, dan `npm audit` melaporkan nol
+   kerentanan. npm tidak dibutuhkan saat runtime, jadi membuangnya menutup
+   temuan sekaligus mengecilkan permukaan serang. Penghapusannya diverifikasi
+   di dalam build dengan `! command -v npm`, bukan diasumsikan.
+
+2. **Gate memakai `--only-fixed`.** Build digagalkan hanya oleh kerentanan yang
+   sudah ada perbaikannya. Gate yang gagal karena hal yang tidak dapat
+   diperbaiki siapa pun akan mendorong orang menambah daftar pengabaian sampai
+   gate itu berhenti bermakna. Kerentanan tanpa perbaikan tetap dipindai,
+   diringkas sebagai tabel pada ringkasan CI, diunggah sebagai artefak, dan
+   dicatat sebagai gate terbuka G16.
+
+Penerapan ketiga CVE glibc terhadap beban kerja ini **belum diasesmen**, dan
+dokumen ini tidak mengklaim ketiganya tidak berlaku: klaim itu akan menjadi
+klaim tanpa bukti, tepat jenis yang dilarang Bagian 09.5.
 
 **Kesimpulan: platform ini siap UAT, dan TIDAK boleh dipakai produksi bank.**
 `scripts/release/verify-onprem.mjs` dan `scripts/release/build-offline-bundle.mjs`
