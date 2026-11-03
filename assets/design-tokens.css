@@ -1,0 +1,375 @@
+/* GreenCal CRMS Enterprise — design system "Fresh Green Finance". WP09.
+ * Master Execution Prompt v2.0 Bagian 08.
+ *
+ * Satu-satunya tempat warna, tipografi, jarak, radius, dan bayangan
+ * didefinisikan. Stylesheet lain memakai token, tidak pernah nilai literal.
+ *
+ * Tiga hal yang membentuk keputusan di berkas ini:
+ *
+ * 1. Angka regulatori harus mudah dibandingkan. Karena itu seluruh angka
+ *    memakai tabular numerals (`tnum`), sehingga digit sejajar antar baris dan
+ *    perbedaan satu digit terlihat, bukan tersamar lebar karakter.
+ *
+ * 2. Warna tidak boleh menjadi satu-satunya pembawa makna (WCAG 1.4.1).
+ *    Token status menyertakan pasangan teks dan latar yang lulus AA penuh,
+ *    dan komponen wajib menambahkan ikon atau label, bukan hanya warna.
+ *
+ * 3. Seluruh kontras DIHITUNG, bukan diklaim. scripts/design/contrast.mjs
+ *    membaca berkas ini dan menghitung rasio setiap pasangan yang dipakai;
+ *    tests/design-system.test.mjs menggagalkan CI bila ada yang di bawah
+ *    ambang WCAG 2.2 AA, pada mode terang MAUPUN gelap.
+ */
+
+/* --------------------------------------------------------------------------
+ * Font, dihosting sendiri
+ * --------------------------------------------------------------------------
+ * Tidak ada permintaan ke Google Fonts atau CDN mana pun: deployment
+ * on-premise menolak egress, sehingga font yang diambil dari luar tidak akan
+ * pernah tiba dan teks akan jatuh ke font cadangan tanpa peringatan.
+ *
+ * Inter, SIL Open Font License 1.1, salinan lisensi di
+ * assets/fonts/inter-OFL-1.1.txt. Hanya subset latin dan empat berat yang
+ * benar-benar dipakai (96 KB total); berat lain disintesis peramban tidak
+ * diizinkan karena merusak bentuk huruf.
+ */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('fonts/inter-latin-400-normal.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA,
+    U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+2074, U+20AC, U+2122, U+2191,
+    U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url('fonts/inter-latin-500-normal.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA,
+    U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+2074, U+20AC, U+2122, U+2191,
+    U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url('fonts/inter-latin-600-normal.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA,
+    U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+2074, U+20AC, U+2122, U+2191,
+    U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('fonts/inter-latin-700-normal.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA,
+    U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+2074, U+20AC, U+2122, U+2191,
+    U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+/* --------------------------------------------------------------------------
+ * Token mode terang
+ * -------------------------------------------------------------------------- */
+:root {
+  color-scheme: light dark;
+
+  /* Warna dasar. Hijau yang dipakai bukan hijau cerah pemasaran: pada layar
+   * yang dipakai sepanjang hari untuk membaca angka, hijau tua membaca lebih
+   * tenang dan menyisakan kontras untuk status. */
+  --color-bg: #fbfdfc;
+  --color-surface: #ffffff;
+  --color-surface-sunken: #f1f6f3;
+  --color-surface-raised: #ffffff;
+  --color-border: #d8e5de;
+  --color-border-strong: #6b847b;
+  --color-text: #0d2822;
+  --color-text-muted: #45605a;
+  --color-text-inverse: #f4faf7;
+
+  /* Merek. --color-brand dipakai untuk isian tombol dan kontrol aktif,
+   * --color-link untuk teks tautan (lebih gelap agar lulus AA sebagai teks). */
+  --color-brand: #0c6349;
+  --color-brand-hover: #084e3a;
+  --color-brand-subtle: #e6f2ed;
+  --color-on-brand: #ffffff;
+  --color-link: #0a5740;
+  --color-link-visited: #5a3d78;
+
+  /* Fokus. Cincin fokus wajib terlihat di atas latar halaman maupun kartu
+   * (WCAG 2.4.11 dan 1.4.11), jadi warnanya bukan warna merek. */
+  --color-focus-ring: #073a66;
+
+  /* Status. Setiap status punya pasangan teks dan latar yang lulus AA penuh. */
+  --color-success-text: #0d5c3b;
+  --color-success-bg: #e3f5eb;
+  --color-success-border: #8fc9ac;
+  --color-warning-text: #6d4a00;
+  --color-warning-bg: #fdf3da;
+  --color-warning-border: #d8b25c;
+  --color-danger-text: #8f1d24;
+  --color-danger-bg: #fdeceb;
+  --color-danger-border: #d79a9a;
+  --color-info-text: #0a4f78;
+  --color-info-bg: #e6f1f9;
+  --color-info-border: #8bb8d4;
+
+  /* Seri data. Dibedakan hue DAN terang, sehingga tetap terbaca pada cetakan
+   * hitam putih dan bagi pembaca dengan defisiensi penglihatan warna. */
+  --color-chart-1: #063d2c;
+  --color-chart-2: #0a5281;
+  --color-chart-3: #8a4c00;
+  --color-chart-4: #0f8084;
+  --color-chart-5: #9177b7;
+
+  /* Tipografi. Skala 1.2 dari 1rem, dibulatkan ke kelipatan yang nyaman. */
+  --font-sans: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, 'Liberation Mono', monospace;
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
+  --text-base: 1rem;
+  --text-lg: 1.125rem;
+  --text-xl: 1.375rem;
+  --text-2xl: 1.75rem;
+  --text-3xl: 2.125rem;
+  --leading-tight: 1.25;
+  --leading-normal: 1.55;
+  --leading-relaxed: 1.7;
+  --weight-regular: 400;
+  --weight-medium: 500;
+  --weight-semibold: 600;
+  --weight-bold: 700;
+  /* Angka regulatori memakai tabular numerals agar digit sejajar antar baris. */
+  --numeric-features: 'tnum' 1, 'lnum' 1, 'zero' 1;
+
+  /* Jarak. Skala 4px, dinyatakan dalam rem agar menghormati ukuran font
+   * peramban pengguna. */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.5rem;
+  --space-6: 2rem;
+  --space-7: 3rem;
+  --space-8: 4rem;
+
+  /* Radius. Lembut, tidak membulat penuh: formulir regulatori membaca lebih
+   * tepat dengan sudut yang tegas. */
+  --radius-sm: 0.25rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.75rem;
+  --radius-full: 999px;
+
+  /* Bayangan. Tipis; kedalaman dinyatakan lewat batas, bukan lewat bayangan
+   * besar yang menurunkan kontras tepi. */
+  --shadow-sm: 0 1px 2px rgba(13, 40, 34, 0.06);
+  --shadow-md: 0 2px 8px rgba(13, 40, 34, 0.08);
+  --shadow-lg: 0 8px 24px rgba(13, 40, 34, 0.10);
+
+  /* Lebar fokus dan batas. */
+  --border-width: 1px;
+  --focus-width: 3px;
+  --focus-offset: 2px;
+
+  /* Durasi. Dihormati prefers-reduced-motion di bawah. */
+  --duration-fast: 120ms;
+  --duration-normal: 200ms;
+  --easing: cubic-bezier(0.2, 0, 0.3, 1);
+
+  /* Lapisan. Dideklarasikan agar tidak ada z-index karangan di komponen. */
+  --z-base: 0;
+  --z-sticky: 100;
+  --z-dropdown: 200;
+  --z-modal: 300;
+  --z-toast: 400;
+}
+
+/* --------------------------------------------------------------------------
+ * Token mode gelap
+ * --------------------------------------------------------------------------
+ * Dua jalur: preferensi sistem, dan pilihan eksplisit lewat
+ * `data-theme="dark"` pada elemen root. Pilihan eksplisit menang, sehingga
+ * pengguna dapat menolak preferensi sistem.
+ *
+ * Mode gelap BUKAN inversi mode terang. Hijau tua pada latar gelap tidak
+ * terbaca, jadi merek bergeser ke hijau terang dan warna di atasnya menjadi
+ * hijau sangat tua. Latar tidak pernah hitam murni: #000 pada panel OLED besar
+ * menghasilkan silau tepi pada teks terang.
+ */
+:root[data-theme='dark'] {
+  --color-bg: #0a1512;
+  --color-surface: #121f1a;
+  --color-surface-sunken: #0d1915;
+  --color-surface-raised: #182a23;
+  --color-border: #27403a;
+  --color-border-strong: #6d8c82;
+  --color-text: #e7f1ec;
+  --color-text-muted: #a3bcb3;
+  --color-text-inverse: #0a1512;
+
+  --color-brand: #54d3a4;
+  --color-brand-hover: #74dfb7;
+  --color-brand-subtle: #16332a;
+  --color-on-brand: #04231a;
+  --color-link: #6fd9b3;
+  --color-link-visited: #c3a8e0;
+
+  --color-focus-ring: #4a90c8;
+
+  --color-success-text: #74dfab;
+  --color-success-bg: #102d20;
+  --color-success-border: #2f6b4d;
+  --color-warning-text: #f0c558;
+  --color-warning-bg: #2e2412;
+  --color-warning-border: #7a5f20;
+  --color-danger-text: #ffa3a0;
+  --color-danger-bg: #331718;
+  --color-danger-border: #8a4040;
+  --color-info-text: #8ec9ef;
+  --color-info-bg: #122631;
+  --color-info-border: #35607a;
+
+  --color-chart-1: #218c60;
+  --color-chart-2: #378bde;
+  --color-chart-3: #d38225;
+  --color-chart-4: #2db2be;
+  --color-chart-5: #c5a2e9;
+
+  /* Bayangan pada mode gelap hampir tak berguna; kedalaman dinyatakan lewat
+   * --color-surface-raised dan batas. */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 2px 8px rgba(0, 0, 0, 0.5);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.6);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --color-bg: #0a1512;
+    --color-surface: #121f1a;
+    --color-surface-sunken: #0d1915;
+    --color-surface-raised: #182a23;
+    --color-border: #27403a;
+    --color-border-strong: #6d8c82;
+    --color-text: #e7f1ec;
+    --color-text-muted: #a3bcb3;
+    --color-text-inverse: #0a1512;
+
+    --color-brand: #54d3a4;
+    --color-brand-hover: #74dfb7;
+    --color-brand-subtle: #16332a;
+    --color-on-brand: #04231a;
+    --color-link: #6fd9b3;
+    --color-link-visited: #c3a8e0;
+
+    --color-focus-ring: #4a90c8;
+
+    --color-success-text: #74dfab;
+    --color-success-bg: #102d20;
+    --color-success-border: #2f6b4d;
+    --color-warning-text: #f0c558;
+    --color-warning-bg: #2e2412;
+    --color-warning-border: #7a5f20;
+    --color-danger-text: #ffa3a0;
+    --color-danger-bg: #331718;
+    --color-danger-border: #8a4040;
+    --color-info-text: #8ec9ef;
+    --color-info-bg: #122631;
+    --color-info-border: #35607a;
+
+    --color-chart-1: #218c60;
+    --color-chart-2: #378bde;
+    --color-chart-3: #d38225;
+    --color-chart-4: #2db2be;
+    --color-chart-5: #c5a2e9;
+
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+    --shadow-md: 0 2px 8px rgba(0, 0, 0, 0.5);
+    --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.6);
+  }
+}
+
+/* --------------------------------------------------------------------------
+ * Dasar yang diturunkan dari token
+ * -------------------------------------------------------------------------- */
+html {
+  /* Tidak mengunci ukuran font akar: pengguna yang memperbesar font peramban
+   * (WCAG 1.4.4) harus terlayani, bukan dipaksa 16px. */
+  background: var(--color-bg);
+}
+
+body {
+  margin: 0;
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-sans);
+  font-size: var(--text-base);
+  line-height: var(--leading-normal);
+  /* Ratusan angka per halaman: tabular numerals berlaku global. */
+  font-feature-settings: var(--numeric-features);
+  -webkit-text-size-adjust: 100%;
+  text-rendering: optimizeLegibility;
+}
+
+/* Fokus terlihat pada SETIAP elemen yang dapat difokus, dan tidak pernah
+ * dihapus. Menghilangkan outline tanpa pengganti adalah kegagalan WCAG 2.4.7
+ * yang paling sering ditemukan pada aplikasi internal. */
+:where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
+  outline: var(--focus-width) solid var(--color-focus-ring);
+  outline-offset: var(--focus-offset);
+  border-radius: var(--radius-sm);
+}
+
+/* Target sentuh minimum 24x24 CSS px (WCAG 2.2, 2.5.8 Target Size Minimum). */
+:where(a, button, input[type='checkbox'], input[type='radio'], summary, [role='button']) {
+  min-block-size: 24px;
+  min-inline-size: 24px;
+}
+
+/* Angka pada tabel: sejajar kanan dan tabular, agar kolom rupiah dapat
+ * dibandingkan sekali lihat. */
+:where(td, th)[data-numeric],
+:where(.gc-numeric) {
+  font-variant-numeric: tabular-nums lining-nums;
+  text-align: end;
+  white-space: nowrap;
+}
+
+/* Gerakan dihormati. Animasi dimatikan, bukan dipercepat, karena pengguna
+ * yang meminta pengurangan gerak biasanya sensitif terhadap gerak apa pun. */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Mode kontras tinggi sistem: serahkan warna ke sistem, jangan menimpanya. */
+@media (forced-colors: active) {
+  :where(button, .gc-button) {
+    border: var(--border-width) solid ButtonBorder;
+  }
+  :where(a, button, input, select, textarea):focus-visible {
+    outline: var(--focus-width) solid Highlight;
+  }
+}
+
+/* Cetak: laporan regulator sering dicetak. Latar gelap dibuang, dan warna
+ * status tetap dibedakan lewat batas, bukan hanya warna. */
+@media print {
+  :root {
+    --color-bg: #ffffff;
+    --color-surface: #ffffff;
+    --color-surface-sunken: #ffffff;
+    --color-text: #000000;
+    --color-text-muted: #333333;
+  }
+  body { background: #ffffff; color: #000000; }
+  :where(.gc-status) { border: 1pt solid #000000; }
+}

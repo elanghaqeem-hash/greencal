@@ -1,0 +1,3405 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "GreenCal CRMS Enterprise API",
+    "version": "0.1.0",
+    "summary": "API institusi untuk pelaporan CRMS Perbankan 2026.",
+    "description": "API ini dipakai workspace institusi GreenCal CRMS Enterprise.\n\nSifat yang berlaku pada SELURUH operasi:\n\n- **Default deny.** Tidak ada endpoint yang terbuka tanpa sesi SSO institusi terverifikasi.\n- **Isolasi tenant.** Tenant berasal dari token terverifikasi sisi server, bukan dari header,\n  parameter kueri, atau badan permintaan. Permintaan yang mencoba menetapkan konteks tenant\n  lewat header ditolak di edge dengan status 400.\n- **Objek tenant lain menghasilkan 404, bukan 403**, agar keberadaannya tidak terungkap.\n- **Fail closed.** Modul yang belum diaktifkan institusi menjawab 503, bukan melayani sebagian.\n- **Validasi ulang di server.** Nilai hasil perhitungan dari peramban tidak pernah dipercaya.\n- **Audit append-only.** Setiap operasi yang mengubah keadaan menulis entri log berantai hash\n  yang tidak dapat diubah maupun dihapus, termasuk oleh akun berhak penuh di basis data.\n\nSpesifikasi ini **dibangun** dari `docs/inventory/menu-form-action.csv`, yang digerbang dua arah\nterhadap kode penangan oleh `scripts/inventory/extract-actions.mjs`. Endpoint yang ada di kode\ntetapi tidak terdaftar, maupun sebaliknya, menggagalkan CI.",
+    "contact": {
+      "name": "Tim CRMS institusi"
+    },
+    "license": {
+      "name": "Proprietary",
+      "identifier": "LicenseRef-Proprietary"
+    }
+  },
+  "servers": [
+    {
+      "url": "https://{host}",
+      "description": "Edge intranet institusi; tidak terjangkau dari internet.",
+      "variables": {
+        "host": {
+          "default": "crms.intranet.local"
+        }
+      }
+    }
+  ],
+  "tags": [
+    {
+      "name": "Analitik"
+    },
+    {
+      "name": "Analitik lanjutan"
+    },
+    {
+      "name": "Audit"
+    },
+    {
+      "name": "Beranda"
+    },
+    {
+      "name": "Buku 1, 2, 4"
+    },
+    {
+      "name": "Buku 3"
+    },
+    {
+      "name": "Buku 5"
+    },
+    {
+      "name": "Buku 6"
+    },
+    {
+      "name": "Kesiapan"
+    },
+    {
+      "name": "Referensi"
+    },
+    {
+      "name": "Register"
+    },
+    {
+      "name": "Registri sumber"
+    },
+    {
+      "name": "Rilis"
+    },
+    {
+      "name": "Sumber data"
+    }
+  ],
+  "security": [
+    {
+      "institutionSso": []
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "institutionSso": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "description": "Token OIDC dari penyedia identitas bank. Server memverifikasi tanda tangan, issuer, audience, masa berlaku, dan keanggotaan tenant. Header yang disediakan klien tidak dipercaya."
+      }
+    },
+    "schemas": {
+      "Error": {
+        "type": "object",
+        "required": [
+          "ok",
+          "code",
+          "message"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "ok": {
+            "type": "boolean",
+            "const": false
+          },
+          "code": {
+            "type": "string",
+            "description": "Kode galat yang stabil; klien bercabang pada kode ini, bukan pada teks pesan.",
+            "pattern": "^[A-Z][A-Z0-9_]{2,63}$"
+          },
+          "message": {
+            "type": "string",
+            "description": "Pesan berbahasa Indonesia untuk pengguna akhir. Tidak memuat jejak tumpukan maupun detail internal.",
+            "maxLength": 500
+          }
+        }
+      }
+    },
+    "responses": {
+      "Unauthorized": {
+        "description": "Sesi SSO institusi tidak ada atau tidak sah.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
+      },
+      "Forbidden": {
+        "description": "Peran tidak berwenang, atau ditolak aturan pemisahan tugas.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
+      },
+      "NotFound": {
+        "description": "Objek tidak ada pada tenant ini. Objek milik tenant lain juga menghasilkan 404, bukan 403, agar keberadaannya tidak terungkap.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
+      },
+      "Conflict": {
+        "description": "Revisi berubah, atau keadaan objek tidak mengizinkan aksi ini.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
+      },
+      "TooManyRequests": {
+        "description": "Pembatasan laju di edge.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
+      },
+      "Unavailable": {
+        "description": "Modul belum diaktifkan institusi, atau prasyarat backend belum tersedia. Fail closed, bukan melayani dengan konfigurasi setengah.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
+      }
+    }
+  },
+  "paths": {
+    "/api/enterprise/analytics/advanced/runs": {
+      "get": {
+        "operationId": "getAnalyticsAdvancedRuns",
+        "summary": "Lihat daftar run lanjutan",
+        "tags": [
+          "Analitik lanjutan"
+        ],
+        "description": "Modul M21. Peran minimum risk_analyst. Otorisasi dievaluasi sebagai crsa_run:read dengan default deny, lalu aturan pemisahan tugas. Aksi ini tidak mengubah keadaan dan tidak menulis log audit.",
+        "responses": {
+          "200": {
+            "description": "Berhasil.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          },
+          "503": {
+            "$ref": "#/components/responses/Unavailable"
+          }
+        },
+        "x-greencal-action-id": "ACT-ADV-001",
+        "x-greencal-module": "M21",
+        "x-greencal-required-role": "risk_analyst",
+        "x-greencal-rbac": {
+          "resource": "crsa_run",
+          "action": "read"
+        },
+        "x-greencal-writes-audit": false,
+        "x-greencal-test-case-ids": [
+          "api.analytics-advanced-runs.get.authz",
+          "api.analytics-advanced-runs.get.tenant-isolation"
+        ],
+        "x-greencal-form": "Form run lanjutan"
+      },
+      "post": {
+        "operationId": "postAnalyticsAdvancedRuns",
+        "summary": "Jalankan run lanjutan",
+        "tags": [
+          "Analitik lanjutan"
+        ],
+        "description": "Modul M21. Peran minimum climate_model_analyst. Otorisasi dievaluasi sebagai crsa_run:execute dengan default deny, lalu aturan pemisahan tugas. Aksi ini menulis entri log audit append-only.",
+        "responses": {
+          "200": {
+            "description": "Aksi dijalankan pada objek yang sudah ada.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Objek dibuat, atau keputusan direkam.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          },
+          "503": {
+            "$ref": "#/components/responses/Unavailable"
+          }
+        },
+        "x-greencal-action-id": "ACT-ADV-002",
+        "x-greencal-module": "M21",
+        "x-greencal-required-role": "climate_model_analyst",
+        "x-greencal-rbac": {
+          "resource": "crsa_run",
+          "action": "execute"
+        },
+        "x-greencal-writes-audit": true,
+        "x-greencal-test-case-ids": [
+          "api.analytics-advanced-runs.post.authz",
+          "api.analytics-advanced-runs.post.tenant-isolation"
+        ],
+        "x-greencal-form": "Form run lanjutan",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "description": "Isi badan permintaan divalidasi ulang di server. Keluaran peramban tidak pernah dipercaya; perhitungan dihitung kembali sebelum submit, check, dan approve."
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/enterprise/analytics/advanced/runs/{id}": {
+      "get": {
+        "operationId": "getAnalyticsAdvancedRunsById",
+        "summary": "Lihat hasil run lanjutan",
+        "tags": [
+          "Analitik lanjutan"
+        ],
+        "description": "Modul M21. Peran minimum climate_model_analyst. Otorisasi dievaluasi sebagai crsa_run:read dengan default deny, lalu aturan pemisahan tugas. Aksi ini tidak mengubah keadaan dan tidak menulis log audit.",
+        "responses": {
+          "200": {
+            "description": "Berhasil.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          },
+          "503": {
+            "$ref": "#/components/responses/Unavailable"
+          }
+        },
+        "x-greencal-action-id": "ACT-ADV-003",
+        "x-greencal-module": "M21",
+        "x-greencal-required-role": "climate_model_analyst",
+        "x-greencal-rbac": {
+          "resource": "crsa_run",
+          "action": "read"
+        },
+        "x-greencal-writes-audit": false,
+        "x-greencal-test-case-ids": [
+          "api.analytics-advanced-runs-id.get.authz",
+          "api.analytics-advanced-runs-id.get.tenant-isolation"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "Pengenal objek dalam tenant pemanggil.",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 80,
+              "pattern": "^[A-Za-z0-9_-]+$"
+            }
+          }
+        ]
+      }
+    },
+    "/api/enterprise/analytics/batches": {
+      "get": {
+        "operationId": "getAnalyticsBatches",
+        "summary": "Lihat daftar batch portofolio",
+        "tags": [
+          "Analitik"
+        ],
+        "description": "Modul M09. Peran minimum risk_analyst. Otorisasi dievaluasi sebagai portfolio:read dengan default deny, lalu aturan pemisahan tugas. Aksi ini tidak mengubah keadaan dan tidak menulis log audit.",
+        "responses": {
+          "200": {
+            "description": "Berhasil.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          },
+          "503": {
+            "$ref": "#/components/responses/Unavailable"
+          }
+        },
+        "x-greencal-action-id": "ACT-ANA-001",
+        "x-greencal-module": "M09",
+        "x-greencal-required-role": "risk_analyst",
+        "x-greencal-rbac": {
+          "resource": "portfolio",
+          "action": "read"
+        },
+        "x-greencal-writes-audit": false,
+        "x-greencal-test-case-ids": [
+          "api.analytics-batches.get.authz",
+          "api.analytics-batches.get.tenant-isolation"
+        ]
+      }
+    },
+    "/api/enterprise/analytics/batches/{id}": {
+      "get": {
+        "operationId": "getAnalyticsBatchesById",
+        "summary": "Lihat pratinjau laporan batch",
+        "tags": [
+          "Analitik"
+        ],
+        "description": "Modul M09. Peran minimum risk_analyst. Otorisasi dievaluasi sebagai portfolio:read dengan default deny, lalu aturan pemisahan tugas. Aksi ini tidak mengubah keadaan dan tidak menulis log audit.",
+        "responses": {
+          "200": {
+            "description": "Berhasil.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          },
+          "503": {
+            "$ref": "#/components/responses/Unavailable"
+          }
+        },
+        "x-greencal-action-id": "ACT-ANA-002",
+        "x-greencal-module": "M09",
+        "x-greencal-required-role": "risk_analyst",
+        "x-greencal-rbac": {
+          "resource": "portfolio",
+          "action": "read"
+        },
+        "x-greencal-writes-audit": false,
+        "x-greencal-test-case-ids": [
+          "api.analytics-batches-id.get.authz",
+          "api.analytics-batches-id.get.tenant-isolation"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "Pengenal objek dalam tenant pemanggil.",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 80,
+              "pattern": "^[A-Za-z0-9_-]+$"
+            }
+          }
+        ]
+      }
+    },
+    "/api/enterprise/analytics/import": {
+      "post": {
+        "operationId": "postAnalyticsImport",
+        "summary": "Impor batch posisi portofolio",
+        "tags": [
+          "Analitik"
+        ],
+        "description": "Modul M09. Peran minimum data_maker. Otorisasi dievaluasi sebagai portfolio:create dengan default deny, lalu aturan pemisahan tugas. Aksi ini menulis entri log audit append-only.",
+        "responses": {
+          "200": {
+            "description": "Aksi dijalankan pada objek yang sudah ada.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Objek dibuat, atau keputusan direkam.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          },
+          "503": {
+            "$ref": "#/components/responses/Unavailable"
+          }
+        },
+        "x-greencal-action-id": "ACT-ANA-003",
+        "x-greencal-module": "M09",
+        "x-greencal-required-role": "data_maker",
+        "x-greencal-rbac": {
+          "resource": "portfolio",
+          "action": "create"
+        },
+        "x-greencal-writes-audit": true,
+        "x-greencal-test-case-ids": [
+          "api.analytics-import.post.authz",
+          "api.analytics-import.post.tenant-isolation"
+        ],
+        "x-greencal-form": "Form impor portofolio",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "description": "Isi badan permintaan divalidasi ulang di server. Keluaran peramban tidak pernah dipercaya; perhitungan dihitung kembali sebelum submit, check, dan approve."
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/enterprise/analytics/runs": {
+      "get": {
+        "operationId": "getAnalyticsRuns",
+        "summary": "Lihat daftar run CRSA",
+        "tags": [
+          "Analitik"
+        ],
+        "description": "Modul M16. Peran minimum executive_viewer. Otorisasi dievaluasi sebagai crsa_run:read dengan default deny, lalu aturan pemisahan tugas. Aksi ini tidak mengubah keadaan dan tidak menulis log audit.",
+        "responses": {
+          "200": {
+            "description": "Berhasil.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          },
+          "503": {
+            "$ref": "#/components/responses/Unavailable"
+          }
+        },
+        "x-greencal-action-id": "ACT-ANA-004",
+        "x-greencal-module": "M16",
+        "x-greencal-required-role": "executive_viewer",
+        "x-greencal-rbac": {
+          "resource": "crsa_run",
+          "action": "read"
+        },
+        "x-greencal-writes-audit": false,
+        "x-greencal-test-case-ids": [
+          "api.analytics-runs.get.authz",
+          "api.analytics-runs.get.tenant-isolation"
+        ],
+        "x-greencal-form": "Form parameter run"
+      },
+      "post": {
+        "operationId": "postAnalyticsRuns",
+        "summary": "Jalankan run CRSA",
+        "tags": [
+          "Analitik"
+        ],
+        "description": "Modul M16. Peran minimum risk_analyst. Otorisasi dievaluasi sebagai crsa_run:execute dengan default deny, lalu aturan pemisahan tugas. Aksi ini menulis entri log audit append-only.",
+        "responses": {
+          "200": {
+            "description": "Aksi dijalankan pada objek yang sudah ada.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Objek dibuat, atau keputusan direkam.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          },
+          "503": {
+            "$ref": "#/components/responses/Unavailable"
+          }
+        },
+        "x-greencal-action-id": "ACT-ANA-005",
+        "x-greencal-module": "M16",
+        "x-greencal-required-role": "risk_analyst",
+        "x-greencal-rbac": {
+          "resource": "crsa_run",
+          "action": "execute"
+        },
+        "x-greencal-writes-audit": true,
+        "x-greencal-test-case-ids": [
+          "api.analytics-runs.post.authz",
+          "api.analytics-runs.post.tenant-isolation"
+        ],
+        "x-greencal-form": "Form parameter run",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "description": "Isi badan permintaan divalidasi ulang di server. Keluaran peramban tidak pernah dipercaya; perhitungan dihitung kembali sebelum submit, check, dan approve."
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/enterprise/analytics/runs/{id}": {
+      "get": {
+        "operationId": "getAnalyticsRunsById",
+        "summary": "Lihat hasil satu run CRSA",
+        "tags": [
+          "Analitik"
+        ],
+        "description": "Modul M16. Peran minimum risk_analyst. Otorisasi dievaluasi sebagai crsa_run:read dengan default deny, lalu aturan pemisahan tugas. Aksi ini tidak mengubah keadaan dan tidak menulis log audit.",
+        "responses": {
+          "200": {
+            "description": "Berhasil.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          },
+          "503": {
+            "$ref": "#/components/responses/Unavailable"
+          }
+        },
+        "x-greencal-action-id": "ACT-ANA-006",
+        "x-greencal-module": "M16",
+        "x-greencal-required-role": "risk_analyst",
+        "x-greencal-rbac": {
+          "resource": "crsa_run",
+          "action": "read"
+        },
+        "x-greencal-writes-audit": false,
+        "x-greencal-test-case-ids": [
+          "api.analytics-runs-id.get.authz",
+          "api.analytics-runs-id.get.tenant-isolation"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "Pengenal objek dalam tenant pemanggil.",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 80,
+              "pattern": "^[A-Za-z0-9_-]+$"
+            }
+          }
+        ]
+      }
+    },
+    "/api/enterprise/analytics/sources": {
+      "get": {
+        "operationId": "getAnalyticsSources",
+        "summary": "Lihat daftar dataset sumber",
+        "tags": [
+          "Sumber data"
+        ],
+        "description": "Modul M09. Peran minimum risk_analyst. Otorisasi dievaluasi sebagai dataset:read dengan default deny, lalu aturan pemisahan tugas. Aksi ini tidak mengubah keadaan dan tidak menulis log audit.",
+        "responses": {
+          "200": {
+            "description": "Berhasil.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          },
+          "503": {
+            "$ref": "#/components/responses/Unavailable"
+          }
+        },
+        "x-greencal-action-id": "ACT-SRC-001",
+        "x-greencal-module": "M09",
+        "x-greencal-required-role": "risk_analyst",
+        "x-greencal-rbac": {
+          "resource": "dataset",
+          "action": "read"
+        },
+        "x-greencal-writes-audit": false,
+        "x-greencal-test-case-ids": [
+          "api.analytics-sources.get.authz",
+          "api.analytics-sources.get.tenant-isolation"
+        ],
+        "x-greencal-form": "Form dataset sumber"
+      },
+      "post": {
+        "operationId": "postAnalyticsSources",
+        "summary": "Daftarkan dataset sumber",
+        "tags": [
+          "Sumber data"
+        ],
+        "description": "Modul M09. Peran minimum data_maker. Otorisasi dievaluasi sebagai dataset:create dengan default deny, lalu aturan pemisahan tugas. Aksi ini menulis entri log audit append-only.",
+        "responses": {
+          "200": {
+            "description": "Aksi dijalankan pada objek yang sudah ada.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Objek dibuat, atau keputusan direkam.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          },
+          "503": {
+            "$ref": "#/components/responses/Unavailable"
+          }
+        },
+        "x-greencal-action-id": "ACT-SRC-002",
+        "x-greencal-module": "M09",
+        "x-greencal-required-role": "data_maker",
+        "x-greencal-rbac": {
+          "resource": "dataset",
+          "action": "create"
+        },
+        "x-greencal-writes-audit": true,
+        "x-greencal-test-case-ids": [
+          "api.analytics-sources.post.authz",
+          "api.analytics-sources.post.tenant-isolation"
+        ],
+        "x-greencal-form": "Form dataset sumber",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "description": "Isi badan permintaan divalidasi ulang di server. Keluaran peramban tidak pernah dipercaya; perhitungan dihitung kembali sebelum submit, check, dan approve."
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/enterprise/analytics/sources/{id}": {
+      "get": {
+        "operationId": "getAnalyticsSourcesById",
+        "summary": "Lihat status verifikasi dataset",
+        "tags": [
+          "Sumber data"
+        ],
+        "description": "Modul M09. Peran minimum risk_analyst. Otorisasi dievaluasi sebagai dataset:read dengan default deny, lalu aturan pemisahan tugas. Aksi ini tidak mengubah keadaan dan tidak menulis log audit.",
+        "responses": {
+          "200": {
+            "description": "Berhasil.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          },
+          "503": {
+            "$ref": "#/components/responses/Unavailable"
+          }
+        },
+        "x-greencal-action-id": "ACT-SRC-003",
+        "x-greencal-module": "M09",
+        "x-greencal-required-role": "risk_analyst",
+        "x-greencal-rbac": {
+          "resource": "dataset",
+          "action": "read"
+        },
+        "x-greencal-writes-audit": false,
+        "x-greencal-test-case-ids": [
+          "api.analytics-sources-id.get.authz",
+          "api.analytics-sources-id.get.tenant-isolation"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "Pengenal objek dalam tenant pemanggil.",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 80,
+              "pattern": "^[A-Za-z0-9_-]+$"
+            }
+          }
+        ]
+      }
+    },
+    "/api/enterprise/analytics/sources/{id}/report": {
+      "get": {
+        "operationId": "getAnalyticsSourcesByIdReport",
+        "summary": "Lihat pratinjau kesiapan pelaporan dataset",
+        "tags": [
+          "Sumber data"
+        ],
+        "description": "Modul M09. Peran minimum risk_analyst. Otorisasi dievaluasi sebagai dataset:read dengan default deny, lalu aturan pemisahan tugas. Aksi ini tidak mengubah keadaan dan tidak menulis log audit.",
+        "responses": {
+          "200": {
+            "description": "Berhasil.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          },
+          "503": {
+            "$ref": "#/components/responses/Unavailable"
+          }
+        },
+        "x-greencal-action-id": "ACT-SRC-004",
+        "x-greencal-module": "M09",
+        "x-greencal-required-role": "risk_analyst",
+        "x-greencal-rbac": {
+          "resource": "dataset",
+          "action": "read"
+        },
+        "x-greencal-writes-audit": false,
+        "x-greencal-test-case-ids": [
+          "api.analytics-sources-id-report.get.authz",
+          "api.analytics-sources-id-report.get.tenant-isolation"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "Pengenal objek dalam tenant pemanggil.",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 80,
+              "pattern": "^[A-Za-z0-9_-]+$"
+            }
+          }
+        ]
+      }
+    },
+    "/api/enterprise/audit": {
+      "get": {
+        "operationId": "getAudit",
+        "summary": "Lihat jejak audit tenant",
+        "tags": [
+          "Audit"
+        ],
+        "description": "Modul M28. Peran minimum internal_auditor. Otorisasi dievaluasi sebagai audit:read dengan default deny, lalu aturan pemisahan tugas. Aksi ini tidak mengubah keadaan dan tidak menulis log audit.",
+        "responses": {
+          "200": {
+            "description": "Berhasil.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          },
+          "503": {
+            "$ref": "#/components/responses/Unavailable"
+          }
+        },
+        "x-greencal-action-id": "ACT-AUD-001",
+        "x-greencal-module": "M28",
+        "x-greencal-required-role": "internal_auditor",
+        "x-greencal-rbac": {
+          "resource": "audit",
+          "action": "read"
+        },
+        "x-greencal-writes-audit": false,
+        "x-greencal-test-case-ids": [
+          "api.audit.get.authz",
+          "api.audit.get.tenant-isolation"
+        ]
+      }
+    },
+    "/api/enterprise/book3/catalog": {
+      "get": {
+        "operationId": "getBook3Catalog",
+        "summary": "Lihat katalog Buku 3",
+        "tags": [
+          "Buku 3"
+        ],
+        "description": "Modul M32. Peran minimum executive_viewer. Otorisasi dievaluasi sebagai parameter:read dengan default deny, lalu aturan pemisahan tugas. Aksi ini tidak mengubah keadaan dan tidak menulis log audit.",
+        "responses": {
+          "200": {
+            "description": "Berhasil.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          },
+          "503": {
+            "$ref": "#/components/responses/Unavailable"
+          }
+        },
+        "x-greencal-action-id": "ACT-B3-001",
+        "x-greencal-module": "M32",
+        "x-greencal-required-role": "executive_viewer",
+        "x-greencal-rbac": {
+          "resource": "parameter",
+          "action": "read"
+        },
+        "x-greencal-writes-audit": false,
+        "x-greencal-test-case-ids": [
+          "api.book3-catalog.get.authz",
+          "api.book3-catalog.get.tenant-isolation"
+        ]
+      }
+    },
+    "/api/enterprise/book5/catalog": {
+      "get": {
+        "operationId": "getBook5Catalog",
+        "summary": "Lihat katalog risiko fisik Buku 5",
+        "tags": [
+          "Buku 5"
+        ],
+        "description": "Modul M15. Peran minimum executive_viewer. Otorisasi dievaluasi sebagai parameter:read dengan default deny, lalu aturan pemisahan tugas. Aksi ini tidak mengubah keadaan dan tidak menulis log audit.",
+        "responses": {
+          "200": {
+            "description": "Berhasil.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          },
+          "503": {
+            "$ref": "#/components/responses/Unavailable"
+          }
+        },
+        "x-greencal-action-id": "ACT-B5-001",
+        "x-greencal-module": "M15",
+        "x-greencal-required-role": "executive_viewer",
+        "x-greencal-rbac": {
+          "resource": "parameter",
+          "action": "read"
+        },
+        "x-greencal-writes-audit": false,
+        "x-greencal-test-case-ids": [
+          "api.book5-catalog.get.authz",
+          "api.book5-catalog.get.tenant-isolation"
+        ]
+      }
+    },
+    "/api/enterprise/book5/locations": {
+      "get": {
+        "operationId": "getBook5Locations",
+        "summary": "Lihat pemetaan lokasi agunan",
+        "tags": [
+          "Buku 5"
+        ],
+        "description": "Modul M15. Peran minimum risk_analyst. Otorisasi dievaluasi sebagai physical_mapping:read dengan default deny, lalu aturan pemisahan tugas. Aksi ini tidak mengubah keadaan dan tidak menulis log audit.",
+        "responses": {
+          "200": {
+            "description": "Berhasil.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          },
+          "503": {
+            "$ref": "#/components/responses/Unavailable"
+          }
+        },
+        "x-greencal-action-id": "ACT-B5-002",
+        "x-greencal-module": "M15",
+        "x-greencal-required-role": "risk_analyst",
+        "x-greencal-rbac": {
+          "resource": "physical_mapping",
+          "action": "read"
+        },
+        "x-greencal-writes-audit": false,
+        "x-greencal-test-case-ids": [
+          "api.book5-locations.get.authz",
+          "api.book5-locations.get.tenant-isolation"
+        ],
+        "x-greencal-form": "Form lokasi agunan"
+      }
+    },
+    "/api/enterprise/book5/postcodes": {
+      "get": {
+        "operationId": "getBook5Postcodes",
+        "summary": "Cari kode pos dan tingkat bahaya",
+        "tags": [
+          "Buku 5"
+        ],
+        "description": "Modul M15. Peran minimum risk_analyst. Otorisasi dievaluasi sebagai physical_mapping:read dengan default deny, lalu aturan pemisahan tugas. Aksi ini tidak mengubah keadaan dan tidak menulis log audit.",
+        "responses": {
+          "200": {
+            "description": "Berhasil.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          },
+          "503": {
+            "$ref": "#/components/responses/Unavailable"
+          }
+        },
+        "x-greencal-action-id": "ACT-B5-003",
+        "x-greencal-module": "M15",
+        "x-greencal-required-role": "risk_analyst",
+        "x-greencal-rbac": {
+          "resource": "physical_mapping",
+          "action": "read"
+        },
+        "x-greencal-writes-audit": false,
+        "x-greencal-test-case-ids": [
+          "api.book5-postcodes.get.authz",
+          "api.book5-postcodes.get.tenant-isolation"
+        ]
+      }
+    },
+    "/api/enterprise/book6/catalog": {
+      "get": {
+        "operationId": "getBook6Catalog",
+        "summary": "Lihat struktur template Buku 6",
+        "tags": [
+          "Buku 6"
+        ],
+        "description": "Modul M23. Peran minimum executive_viewer. Otorisasi dievaluasi sebagai workpaper:read dengan default deny, lalu aturan pemisahan tugas. Aksi ini tidak mengubah keadaan dan tidak menulis log audit.",
+        "responses": {
+          "200": {
+            "description": "Berhasil.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          },
+          "503": {
+            "$ref": "#/components/responses/Unavailable"
+          }
+        },
+        "x-greencal-action-id": "ACT-B6-001",
+        "x-greencal-module": "M23",
+        "x-greencal-required-role": "executive_viewer",
+        "x-greencal-rbac": {
+          "resource": "workpaper",
+          "action": "read"
+        },
+        "x-greencal-writes-audit": false,
+        "x-greencal-test-case-ids": [
+          "api.book6-catalog.get.authz",
+          "api.book6-catalog.get.tenant-isolation"
+        ]
+      }
+    },
+    "/api/enterprise/book6/workpapers": {
+      "get": {
+        "operationId": "getBook6Workpapers",
+        "summary": "Lihat daftar kertas kerja Buku 6",
+        "tags": [
+          "Buku 6"
+        ],
+        "description": "Modul M23. Peran minimum executive_viewer. Otorisasi dievaluasi sebagai workpaper:read dengan default deny, lalu aturan pemisahan tugas. Aksi ini tidak mengubah keadaan dan tidak menulis log audit.",
+        "responses": {
+          "200": {
+            "description": "Berhasil.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          },
+          "503": {
+            "$ref": "#/components/responses/Unavailable"
+          }
+        },
+        "x-greencal-action-id": "ACT-B6-002",
+        "x-greencal-module": "M23",
+        "x-greencal-required-role": "executive_viewer",
+        "x-greencal-rbac": {
+          "resource": "workpaper",
+          "action": "read"
+        },
+        "x-greencal-writes-audit": false,
+        "x-greencal-test-case-ids": [
+          "api.book6-workpapers.get.authz",
+          "api.book6-workpapers.get.tenant-isolation"
+        ],
+        "x-greencal-form": "Form kertas kerja"
+      },
+      "post": {
+        "operationId": "postBook6Workpapers",
+        "summary": "Buat kertas kerja Buku 6",
+        "tags": [
+          "Buku 6"
+        ],
+        "description": "Modul M23. Peran minimum data_maker. Otorisasi dievaluasi sebagai workpaper:create dengan default deny, lalu aturan pemisahan tugas. Aksi ini menulis entri log audit append-only.",
+        "responses": {
+          "200": {
+            "description": "Aksi dijalankan pada objek yang sudah ada.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Objek dibuat, atau keputusan direkam.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          },
+          "503": {
+            "$ref": "#/components/responses/Unavailable"
+          }
+        },
+        "x-greencal-action-id": "ACT-B6-003",
+        "x-greencal-module": "M23",
+        "x-greencal-required-role": "data_maker",
+        "x-greencal-rbac": {
+          "resource": "workpaper",
+          "action": "create"
+        },
+        "x-greencal-writes-audit": true,
+        "x-greencal-test-case-ids": [
+          "api.book6-workpapers.post.authz",
+          "api.book6-workpapers.post.tenant-isolation"
+        ],
+        "x-greencal-form": "Form kertas kerja",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "description": "Isi badan permintaan divalidasi ulang di server. Keluaran peramban tidak pernah dipercaya; perhitungan dihitung kembali sebelum submit, check, dan approve."
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/enterprise/book6/workpapers/{id}": {
+      "get": {
+        "operationId": "getBook6WorkpapersById",
+        "summary": "Lihat satu kertas kerja Buku 6",
+        "tags": [
+          "Buku 6"
+        ],
+        "description": "Modul M23. Peran minimum data_maker. Otorisasi dievaluasi sebagai workpaper:read dengan default deny, lalu aturan pemisahan tugas. Aksi ini tidak mengubah keadaan dan tidak menulis log audit.",
+        "responses": {
+          "200": {
+            "description": "Berhasil.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          },
+          "503": {
+            "$ref": "#/components/responses/Unavailable"
+          }
+        },
+        "x-greencal-action-id": "ACT-B6-004",
+        "x-greencal-module": "M23",
+        "x-greencal-required-role": "data_maker",
+        "x-greencal-rbac": {
+          "resource": "workpaper",
+          "action": "read"
+        },
+        "x-greencal-writes-audit": false,
+        "x-greencal-test-case-ids": [
+          "api.book6-workpapers-id.get.authz",
+          "api.book6-workpapers-id.get.tenant-isolation"
+        ],
+        "x-greencal-form": "Form kertas kerja",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "Pengenal objek dalam tenant pemanggil.",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 80,
+              "pattern": "^[A-Za-z0-9_-]+$"
+            }
+          }
+        ]
+      },
+      "patch": {
+        "operationId": "patchBook6WorkpapersById",
+        "summary": "Edit kertas kerja Buku 6",
+        "tags": [
+          "Buku 6"
+        ],
+        "description": "Modul M23. Peran minimum data_maker. Otorisasi dievaluasi sebagai workpaper:update dengan default deny, lalu aturan pemisahan tugas. Aksi ini menulis entri log audit append-only.",
+        "responses": {
+          "200": {
+            "description": "Berhasil.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          },
+          "503": {
+            "$ref": "#/components/responses/Unavailable"
+          }
+        },
+        "x-greencal-action-id": "ACT-B6-005",
+        "x-greencal-module": "M23",
+        "x-greencal-required-role": "data_maker",
+        "x-greencal-rbac": {
+          "resource": "workpaper",
+          "action": "update"
+        },
+        "x-greencal-writes-audit": true,
+        "x-greencal-test-case-ids": [
+          "api.book6-workpapers-id.patch.authz",
+          "api.book6-workpapers-id.patch.tenant-isolation"
+        ],
+        "x-greencal-form": "Form kertas kerja",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "Pengenal objek dalam tenant pemanggil.",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 80,
+              "pattern": "^[A-Za-z0-9_-]+$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "description": "Isi badan permintaan divalidasi ulang di server. Keluaran peramban tidak pernah dipercaya; perhitungan dihitung kembali sebelum submit, check, dan approve."
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/enterprise/book6/workpapers/{id}/export": {
+      "get": {
+        "operationId": "getBook6WorkpapersByIdExport",
+        "summary": "Ekspor bukti kertas kerja Buku 6",
+        "tags": [
+          "Buku 6"
+        ],
+        "description": "Modul M23. Peran minimum internal_auditor. Otorisasi dievaluasi sebagai workpaper:export dengan default deny, lalu aturan pemisahan tugas. Aksi ini tidak mengubah keadaan dan tidak menulis log audit.",
+        "responses": {
+          "200": {
+            "description": "Berhasil.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          },
+          "503": {
+            "$ref": "#/components/responses/Unavailable"
+          }
+        },
+        "x-greencal-action-id": "ACT-B6-006",
+        "x-greencal-module": "M23",
+        "x-greencal-required-role": "internal_auditor",
+        "x-greencal-rbac": {
+          "resource": "workpaper",
+          "action": "export"
+        },
+        "x-greencal-writes-audit": false,
+        "x-greencal-test-case-ids": [
+          "api.book6-workpapers-id-export.get.authz",
+          "api.book6-workpapers-id-export.get.tenant-isolation"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "Pengenal objek dalam tenant pemanggil.",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 80,
+              "pattern": "^[A-Za-z0-9_-]+$"
+            }
+          }
+        ]
+      }
+    },
+    "/api/enterprise/books124/catalog": {
+      "get": {
+        "operationId": "getBooks124Catalog",
+        "summary": "Lihat katalog Buku 1, 2, dan 4",
+        "tags": [
+          "Buku 1, 2, 4"
+        ],
+        "description": "Modul M32. Peran minimum executive_viewer. Otorisasi dievaluasi sebagai parameter:read dengan default deny, lalu aturan pemisahan tugas. Aksi ini tidak mengubah keadaan dan tidak menulis log audit.",
+        "responses": {
+          "200": {
+            "description": "Berhasil.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          },
+          "503": {
+            "$ref": "#/components/responses/Unavailable"
+          }
+        },
+        "x-greencal-action-id": "ACT-B124-001",
+        "x-greencal-module": "M32",
+        "x-greencal-required-role": "executive_viewer",
+        "x-greencal-rbac": {
+          "resource": "parameter",
+          "action": "read"
+        },
+        "x-greencal-writes-audit": false,
+        "x-greencal-test-case-ids": [
+          "api.books124-catalog.get.authz",
+          "api.books124-catalog.get.tenant-isolation"
+        ]
+      }
+    },
+    "/api/enterprise/discovery/assessments": {
+      "get": {
+        "operationId": "getDiscoveryAssessments",
+        "summary": "Lihat daftar asesmen kesiapan",
+        "tags": [
+          "Kesiapan"
+        ],
+        "description": "Modul M06. Peran minimum executive_viewer. Otorisasi dievaluasi sebagai governance:read dengan default deny, lalu aturan pemisahan tugas. Aksi ini tidak mengubah keadaan dan tidak menulis log audit.",
+        "responses": {
+          "200": {
+            "description": "Berhasil.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          },
+          "503": {
+            "$ref": "#/components/responses/Unavailable"
+          }
+        },
+        "x-greencal-action-id": "ACT-DSC-001",
+        "x-greencal-module": "M06",
+        "x-greencal-required-role": "executive_viewer",
+        "x-greencal-rbac": {
+          "resource": "governance",
+          "action": "read"
+        },
+        "x-greencal-writes-audit": false,
+        "x-greencal-test-case-ids": [
+          "api.discovery-assessments.get.authz",
+          "api.discovery-assessments.get.tenant-isolation"
+        ],
+        "x-greencal-form": "Form asesmen kesiapan"
+      },
+      "post": {
+        "operationId": "postDiscoveryAssessments",
+        "summary": "Buat asesmen kesiapan",
+        "tags": [
+          "Kesiapan"
+        ],
+        "description": "Modul M06. Peran minimum data_maker. Otorisasi dievaluasi sebagai governance:create dengan default deny, lalu aturan pemisahan tugas. Aksi ini menulis entri log audit append-only.",
+        "responses": {
+          "200": {
+            "description": "Aksi dijalankan pada objek yang sudah ada.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Objek dibuat, atau keputusan direkam.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          },
+          "503": {
+            "$ref": "#/components/responses/Unavailable"
+          }
+        },
+        "x-greencal-action-id": "ACT-DSC-002",
+        "x-greencal-module": "M06",
+        "x-greencal-required-role": "data_maker",
+        "x-greencal-rbac": {
+          "resource": "governance",
+          "action": "create"
+        },
+        "x-greencal-writes-audit": true,
+        "x-greencal-test-case-ids": [
+          "api.discovery-assessments.post.authz",
+          "api.discovery-assessments.post.tenant-isolation"
+        ],
+        "x-greencal-form": "Form asesmen kesiapan",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "description": "Isi badan permintaan divalidasi ulang di server. Keluaran peramban tidak pernah dipercaya; perhitungan dihitung kembali sebelum submit, check, dan approve."
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/enterprise/discovery/assessments/{id}": {
+      "get": {
+        "operationId": "getDiscoveryAssessmentsById",
+        "summary": "Lihat satu asesmen kesiapan",
+        "tags": [
+          "Kesiapan"
+        ],
+        "description": "Modul M06. Peran minimum data_maker. Otorisasi dievaluasi sebagai governance:read dengan default deny, lalu aturan pemisahan tugas. Aksi ini tidak mengubah keadaan dan tidak menulis log audit.",
+        "responses": {
+          "200": {
+            "description": "Berhasil.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          },
+          "503": {
+            "$ref": "#/components/responses/Unavailable"
+          }
+        },
+        "x-greencal-action-id": "ACT-DSC-003",
+        "x-greencal-module": "M06",
+        "x-greencal-required-role": "data_maker",
+        "x-greencal-rbac": {
+          "resource": "governance",
+          "action": "read"
+        },
+        "x-greencal-writes-audit": false,
+        "x-greencal-test-case-ids": [
+          "api.discovery-assessments-id.get.authz",
+          "api.discovery-assessments-id.get.tenant-isolation"
+        ],
+        "x-greencal-form": "Form asesmen kesiapan",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "Pengenal objek dalam tenant pemanggil.",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 80,
+              "pattern": "^[A-Za-z0-9_-]+$"
+            }
+          }
+        ]
+      },
+      "patch": {
+        "operationId": "patchDiscoveryAssessmentsById",
+        "summary": "Edit asesmen kesiapan",
+        "tags": [
+          "Kesiapan"
+        ],
+        "description": "Modul M06. Peran minimum data_maker. Otorisasi dievaluasi sebagai governance:update dengan default deny, lalu aturan pemisahan tugas. Aksi ini menulis entri log audit append-only.",
+        "responses": {
+          "200": {
+            "description": "Berhasil.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          },
+          "503": {
+            "$ref": "#/components/responses/Unavailable"
+          }
+        },
+        "x-greencal-action-id": "ACT-DSC-004",
+        "x-greencal-module": "M06",
+        "x-greencal-required-role": "data_maker",
+        "x-greencal-rbac": {
+          "resource": "governance",
+          "action": "update"
+        },
+        "x-greencal-writes-audit": true,
+        "x-greencal-test-case-ids": [
+          "api.discovery-assessments-id.patch.authz",
+          "api.discovery-assessments-id.patch.tenant-isolation"
+        ],
+        "x-greencal-form": "Form asesmen kesiapan",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "Pengenal objek dalam tenant pemanggil.",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 80,
+              "pattern": "^[A-Za-z0-9_-]+$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "description": "Isi badan permintaan divalidasi ulang di server. Keluaran peramban tidak pernah dipercaya; perhitungan dihitung kembali sebelum submit, check, dan approve."
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/enterprise/discovery/assessments/{id}/export": {
+      "get": {
+        "operationId": "getDiscoveryAssessmentsByIdExport",
+        "summary": "Ekspor hasil asesmen disetujui",
+        "tags": [
+          "Kesiapan"
+        ],
+        "description": "Modul M06. Peran minimum internal_auditor. Otorisasi dievaluasi sebagai governance:export dengan default deny, lalu aturan pemisahan tugas. Aksi ini tidak mengubah keadaan dan tidak menulis log audit.",
+        "responses": {
+          "200": {
+            "description": "Berhasil.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          },
+          "503": {
+            "$ref": "#/components/responses/Unavailable"
+          }
+        },
+        "x-greencal-action-id": "ACT-DSC-005",
+        "x-greencal-module": "M06",
+        "x-greencal-required-role": "internal_auditor",
+        "x-greencal-rbac": {
+          "resource": "governance",
+          "action": "export"
+        },
+        "x-greencal-writes-audit": false,
+        "x-greencal-test-case-ids": [
+          "api.discovery-assessments-id-export.get.authz",
+          "api.discovery-assessments-id-export.get.tenant-isolation"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "Pengenal objek dalam tenant pemanggil.",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 80,
+              "pattern": "^[A-Za-z0-9_-]+$"
+            }
+          }
+        ]
+      }
+    },
+    "/api/enterprise/discovery/assessments/{id}/history": {
+      "get": {
+        "operationId": "getDiscoveryAssessmentsByIdHistory",
+        "summary": "Lihat riwayat revisi asesmen",
+        "tags": [
+          "Kesiapan"
+        ],
+        "description": "Modul M06. Peran minimum internal_auditor. Otorisasi dievaluasi sebagai governance:read dengan default deny, lalu aturan pemisahan tugas. Aksi ini tidak mengubah keadaan dan tidak menulis log audit.",
+        "responses": {
+          "200": {
+            "description": "Berhasil.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          },
+          "503": {
+            "$ref": "#/components/responses/Unavailable"
+          }
+        },
+        "x-greencal-action-id": "ACT-DSC-006",
+        "x-greencal-module": "M06",
+        "x-greencal-required-role": "internal_auditor",
+        "x-greencal-rbac": {
+          "resource": "governance",
+          "action": "read"
+        },
+        "x-greencal-writes-audit": false,
+        "x-greencal-test-case-ids": [
+          "api.discovery-assessments-id-history.get.authz",
+          "api.discovery-assessments-id-history.get.tenant-isolation"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "Pengenal objek dalam tenant pemanggil.",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 80,
+              "pattern": "^[A-Za-z0-9_-]+$"
+            }
+          }
+        ]
+      }
+    },
+    "/api/enterprise/discovery/assessments/{id}/workflow": {
+      "post": {
+        "operationId": "postDiscoveryAssessmentsByIdWorkflow",
+        "summary": "Submit, check, atau approve asesmen",
+        "tags": [
+          "Kesiapan"
+        ],
+        "description": "Modul M06. Peran minimum checker. Otorisasi dievaluasi sebagai governance:approve dengan default deny, lalu aturan pemisahan tugas. Aksi ini menulis entri log audit append-only.",
+        "responses": {
+          "200": {
+            "description": "Aksi dijalankan pada objek yang sudah ada.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Objek dibuat, atau keputusan direkam.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          },
+          "503": {
+            "$ref": "#/components/responses/Unavailable"
+          }
+        },
+        "x-greencal-action-id": "ACT-DSC-007",
+        "x-greencal-module": "M06",
+        "x-greencal-required-role": "checker",
+        "x-greencal-rbac": {
+          "resource": "governance",
+          "action": "approve"
+        },
+        "x-greencal-writes-audit": true,
+        "x-greencal-test-case-ids": [
+          "api.discovery-assessments-id-workflow.post.authz",
+          "api.discovery-assessments-id-workflow.post.tenant-isolation"
+        ],
+        "x-greencal-form": "Form workflow",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "Pengenal objek dalam tenant pemanggil.",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 80,
+              "pattern": "^[A-Za-z0-9_-]+$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "description": "Isi badan permintaan divalidasi ulang di server. Keluaran peramban tidak pernah dipercaya; perhitungan dihitung kembali sebelum submit, check, dan approve."
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/enterprise/discovery/catalog": {
+      "get": {
+        "operationId": "getDiscoveryCatalog",
+        "summary": "Lihat katalog pertanyaan kesiapan",
+        "tags": [
+          "Kesiapan"
+        ],
+        "description": "Modul M06. Peran minimum executive_viewer. Otorisasi dievaluasi sebagai governance:read dengan default deny, lalu aturan pemisahan tugas. Aksi ini tidak mengubah keadaan dan tidak menulis log audit.",
+        "responses": {
+          "200": {
+            "description": "Berhasil.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          },
+          "503": {
+            "$ref": "#/components/responses/Unavailable"
+          }
+        },
+        "x-greencal-action-id": "ACT-DSC-008",
+        "x-greencal-module": "M06",
+        "x-greencal-required-role": "executive_viewer",
+        "x-greencal-rbac": {
+          "resource": "governance",
+          "action": "read"
+        },
+        "x-greencal-writes-audit": false,
+        "x-greencal-test-case-ids": [
+          "api.discovery-catalog.get.authz",
+          "api.discovery-catalog.get.tenant-isolation"
+        ]
+      }
+    },
+    "/api/enterprise/institution": {
+      "get": {
+        "operationId": "getInstitution",
+        "summary": "Lihat profil institusi",
+        "tags": [
+          "Beranda"
+        ],
+        "description": "Modul M01. Peran minimum executive_viewer. Otorisasi dievaluasi sebagai institution:read dengan default deny, lalu aturan pemisahan tugas. Aksi ini tidak mengubah keadaan dan tidak menulis log audit.",
+        "responses": {
+          "200": {
+            "description": "Berhasil.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          },
+          "503": {
+            "$ref": "#/components/responses/Unavailable"
+          }
+        },
+        "x-greencal-action-id": "ACT-INS-001",
+        "x-greencal-module": "M01",
+        "x-greencal-required-role": "executive_viewer",
+        "x-greencal-rbac": {
+          "resource": "institution",
+          "action": "read"
+        },
+        "x-greencal-writes-audit": false,
+        "x-greencal-test-case-ids": [
+          "api.institution.get.authz",
+          "api.institution.get.tenant-isolation"
+        ]
+      }
+    },
+    "/api/enterprise/records": {
+      "get": {
+        "operationId": "getRecords",
+        "summary": "Lihat daftar register",
+        "tags": [
+          "Register"
+        ],
+        "description": "Modul M24. Peran minimum executive_viewer. Otorisasi dievaluasi sebagai record:read dengan default deny, lalu aturan pemisahan tugas. Aksi ini tidak mengubah keadaan dan tidak menulis log audit.",
+        "responses": {
+          "200": {
+            "description": "Berhasil.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          },
+          "503": {
+            "$ref": "#/components/responses/Unavailable"
+          }
+        },
+        "x-greencal-action-id": "ACT-REC-001",
+        "x-greencal-module": "M24",
+        "x-greencal-required-role": "executive_viewer",
+        "x-greencal-rbac": {
+          "resource": "record",
+          "action": "read"
+        },
+        "x-greencal-writes-audit": false,
+        "x-greencal-test-case-ids": [
+          "api.records.get.authz",
+          "api.records.get.tenant-isolation"
+        ],
+        "x-greencal-form": "Form register",
+        "parameters": [
+          {
+            "name": "kind",
+            "in": "query",
+            "required": true,
+            "description": "Jenis register.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 10000,
+              "default": 1
+            }
+          }
+        ]
+      },
+      "post": {
+        "operationId": "postRecords",
+        "summary": "Buat draf register",
+        "tags": [
+          "Register"
+        ],
+        "description": "Modul M24. Peran minimum data_maker. Otorisasi dievaluasi sebagai record:create dengan default deny, lalu aturan pemisahan tugas. Aksi ini menulis entri log audit append-only.",
+        "responses": {
+          "200": {
+            "description": "Aksi dijalankan pada objek yang sudah ada.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Objek dibuat, atau keputusan direkam.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          },
+          "503": {
+            "$ref": "#/components/responses/Unavailable"
+          }
+        },
+        "x-greencal-action-id": "ACT-REC-002",
+        "x-greencal-module": "M24",
+        "x-greencal-required-role": "data_maker",
+        "x-greencal-rbac": {
+          "resource": "record",
+          "action": "create"
+        },
+        "x-greencal-writes-audit": true,
+        "x-greencal-test-case-ids": [
+          "api.records.post.authz",
+          "api.records.post.tenant-isolation"
+        ],
+        "x-greencal-form": "Form register",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "description": "Isi badan permintaan divalidasi ulang di server. Keluaran peramban tidak pernah dipercaya; perhitungan dihitung kembali sebelum submit, check, dan approve."
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/enterprise/records/{id}": {
+      "get": {
+        "operationId": "getRecordsById",
+        "summary": "Lihat satu register",
+        "tags": [
+          "Register"
+        ],
+        "description": "Modul M24. Peran minimum data_maker. Otorisasi dievaluasi sebagai record:read dengan default deny, lalu aturan pemisahan tugas. Aksi ini tidak mengubah keadaan dan tidak menulis log audit.",
+        "responses": {
+          "200": {
+            "description": "Berhasil.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          },
+          "503": {
+            "$ref": "#/components/responses/Unavailable"
+          }
+        },
+        "x-greencal-action-id": "ACT-REC-003",
+        "x-greencal-module": "M24",
+        "x-greencal-required-role": "data_maker",
+        "x-greencal-rbac": {
+          "resource": "record",
+          "action": "read"
+        },
+        "x-greencal-writes-audit": false,
+        "x-greencal-test-case-ids": [
+          "api.records-id.get.authz",
+          "api.records-id.get.tenant-isolation"
+        ],
+        "x-greencal-form": "Form register",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "Pengenal objek dalam tenant pemanggil.",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 80,
+              "pattern": "^[A-Za-z0-9_-]+$"
+            }
+          }
+        ]
+      },
+      "patch": {
+        "operationId": "patchRecordsById",
+        "summary": "Edit draf register",
+        "tags": [
+          "Register"
+        ],
+        "description": "Modul M24. Peran minimum data_maker. Otorisasi dievaluasi sebagai record:update dengan default deny, lalu aturan pemisahan tugas. Aksi ini menulis entri log audit append-only.",
+        "responses": {
+          "200": {
+            "description": "Berhasil.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          },
+          "503": {
+            "$ref": "#/components/responses/Unavailable"
+          }
+        },
+        "x-greencal-action-id": "ACT-REC-004",
+        "x-greencal-module": "M24",
+        "x-greencal-required-role": "data_maker",
+        "x-greencal-rbac": {
+          "resource": "record",
+          "action": "update"
+        },
+        "x-greencal-writes-audit": true,
+        "x-greencal-test-case-ids": [
+          "api.records-id.patch.authz",
+          "api.records-id.patch.tenant-isolation"
+        ],
+        "x-greencal-form": "Form register",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "Pengenal objek dalam tenant pemanggil.",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 80,
+              "pattern": "^[A-Za-z0-9_-]+$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "description": "Isi badan permintaan divalidasi ulang di server. Keluaran peramban tidak pernah dipercaya; perhitungan dihitung kembali sebelum submit, check, dan approve."
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/enterprise/records/{id}/export": {
+      "get": {
+        "operationId": "getRecordsByIdExport",
+        "summary": "Ekspor snapshot bukti register",
+        "tags": [
+          "Register"
+        ],
+        "description": "Modul M24. Peran minimum internal_auditor. Otorisasi dievaluasi sebagai record:export dengan default deny, lalu aturan pemisahan tugas. Aksi ini tidak mengubah keadaan dan tidak menulis log audit.",
+        "responses": {
+          "200": {
+            "description": "Berhasil.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          },
+          "503": {
+            "$ref": "#/components/responses/Unavailable"
+          }
+        },
+        "x-greencal-action-id": "ACT-REC-005",
+        "x-greencal-module": "M24",
+        "x-greencal-required-role": "internal_auditor",
+        "x-greencal-rbac": {
+          "resource": "record",
+          "action": "export"
+        },
+        "x-greencal-writes-audit": false,
+        "x-greencal-test-case-ids": [
+          "api.records-id-export.get.authz",
+          "api.records-id-export.get.tenant-isolation"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "Pengenal objek dalam tenant pemanggil.",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 80,
+              "pattern": "^[A-Za-z0-9_-]+$"
+            }
+          }
+        ]
+      }
+    },
+    "/api/enterprise/records/{id}/history": {
+      "get": {
+        "operationId": "getRecordsByIdHistory",
+        "summary": "Lihat riwayat revisi register",
+        "tags": [
+          "Register"
+        ],
+        "description": "Modul M24. Peran minimum internal_auditor. Otorisasi dievaluasi sebagai record:read dengan default deny, lalu aturan pemisahan tugas. Aksi ini tidak mengubah keadaan dan tidak menulis log audit.",
+        "responses": {
+          "200": {
+            "description": "Berhasil.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          },
+          "503": {
+            "$ref": "#/components/responses/Unavailable"
+          }
+        },
+        "x-greencal-action-id": "ACT-REC-006",
+        "x-greencal-module": "M24",
+        "x-greencal-required-role": "internal_auditor",
+        "x-greencal-rbac": {
+          "resource": "record",
+          "action": "read"
+        },
+        "x-greencal-writes-audit": false,
+        "x-greencal-test-case-ids": [
+          "api.records-id-history.get.authz",
+          "api.records-id-history.get.tenant-isolation"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "Pengenal objek dalam tenant pemanggil.",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 80,
+              "pattern": "^[A-Za-z0-9_-]+$"
+            }
+          }
+        ]
+      }
+    },
+    "/api/enterprise/records/{id}/workflow": {
+      "post": {
+        "operationId": "postRecordsByIdWorkflow",
+        "summary": "Submit, check, atau approve register",
+        "tags": [
+          "Register"
+        ],
+        "description": "Modul M24. Peran minimum checker. Otorisasi dievaluasi sebagai record:approve dengan default deny, lalu aturan pemisahan tugas. Aksi ini menulis entri log audit append-only.",
+        "responses": {
+          "200": {
+            "description": "Aksi dijalankan pada objek yang sudah ada.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Objek dibuat, atau keputusan direkam.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          },
+          "503": {
+            "$ref": "#/components/responses/Unavailable"
+          }
+        },
+        "x-greencal-action-id": "ACT-REC-007",
+        "x-greencal-module": "M24",
+        "x-greencal-required-role": "checker",
+        "x-greencal-rbac": {
+          "resource": "record",
+          "action": "approve"
+        },
+        "x-greencal-writes-audit": true,
+        "x-greencal-test-case-ids": [
+          "api.records-id-workflow.post.authz",
+          "api.records-id-workflow.post.tenant-isolation"
+        ],
+        "x-greencal-form": "Form workflow",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "Pengenal objek dalam tenant pemanggil.",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 80,
+              "pattern": "^[A-Za-z0-9_-]+$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "description": "Isi badan permintaan divalidasi ulang di server. Keluaran peramban tidak pernah dipercaya; perhitungan dihitung kembali sebelum submit, check, dan approve."
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/enterprise/references": {
+      "get": {
+        "operationId": "getReferences",
+        "summary": "Lihat faktor dan referensi regulatori",
+        "tags": [
+          "Referensi"
+        ],
+        "description": "Modul M32. Peran minimum executive_viewer. Otorisasi dievaluasi sebagai parameter:read dengan default deny, lalu aturan pemisahan tugas. Aksi ini tidak mengubah keadaan dan tidak menulis log audit.",
+        "responses": {
+          "200": {
+            "description": "Berhasil.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          },
+          "503": {
+            "$ref": "#/components/responses/Unavailable"
+          }
+        },
+        "x-greencal-action-id": "ACT-REF-001",
+        "x-greencal-module": "M32",
+        "x-greencal-required-role": "executive_viewer",
+        "x-greencal-rbac": {
+          "resource": "parameter",
+          "action": "read"
+        },
+        "x-greencal-writes-audit": false,
+        "x-greencal-test-case-ids": [
+          "api.references.get.authz",
+          "api.references.get.tenant-isolation"
+        ]
+      }
+    },
+    "/api/enterprise/release/assignments": {
+      "get": {
+        "operationId": "getReleaseAssignments",
+        "summary": "Lihat penugasan reviewer rilis",
+        "tags": [
+          "Rilis"
+        ],
+        "description": "Modul M26. Peran minimum executive_viewer. Otorisasi dievaluasi sebagai release:read dengan default deny, lalu aturan pemisahan tugas. Aksi ini tidak mengubah keadaan dan tidak menulis log audit.",
+        "responses": {
+          "200": {
+            "description": "Berhasil.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          },
+          "503": {
+            "$ref": "#/components/responses/Unavailable"
+          }
+        },
+        "x-greencal-action-id": "ACT-REL-001",
+        "x-greencal-module": "M26",
+        "x-greencal-required-role": "executive_viewer",
+        "x-greencal-rbac": {
+          "resource": "release",
+          "action": "read"
+        },
+        "x-greencal-writes-audit": false,
+        "x-greencal-test-case-ids": [
+          "api.release-assignments.get.authz",
+          "api.release-assignments.get.tenant-isolation"
+        ],
+        "x-greencal-form": "Form penugasan reviewer"
+      },
+      "post": {
+        "operationId": "postReleaseAssignments",
+        "summary": "Tetapkan reviewer rilis",
+        "tags": [
+          "Rilis"
+        ],
+        "description": "Modul M26. Peran minimum institution_administrator. Otorisasi dievaluasi sebagai release:assign dengan default deny, lalu aturan pemisahan tugas. Aksi ini menulis entri log audit append-only.",
+        "responses": {
+          "200": {
+            "description": "Aksi dijalankan pada objek yang sudah ada.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Objek dibuat, atau keputusan direkam.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          },
+          "503": {
+            "$ref": "#/components/responses/Unavailable"
+          }
+        },
+        "x-greencal-action-id": "ACT-REL-002",
+        "x-greencal-module": "M26",
+        "x-greencal-required-role": "institution_administrator",
+        "x-greencal-rbac": {
+          "resource": "release",
+          "action": "assign"
+        },
+        "x-greencal-writes-audit": true,
+        "x-greencal-test-case-ids": [
+          "api.release-assignments.post.authz",
+          "api.release-assignments.post.tenant-isolation"
+        ],
+        "x-greencal-form": "Form penugasan reviewer",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "description": "Isi badan permintaan divalidasi ulang di server. Keluaran peramban tidak pernah dipercaya; perhitungan dihitung kembali sebelum submit, check, dan approve."
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/enterprise/release/candidates": {
+      "get": {
+        "operationId": "getReleaseCandidates",
+        "summary": "Lihat daftar kandidat rilis",
+        "tags": [
+          "Rilis"
+        ],
+        "description": "Modul M26. Peran minimum executive_viewer. Otorisasi dievaluasi sebagai release:read dengan default deny, lalu aturan pemisahan tugas. Aksi ini tidak mengubah keadaan dan tidak menulis log audit.",
+        "responses": {
+          "200": {
+            "description": "Berhasil.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          },
+          "503": {
+            "$ref": "#/components/responses/Unavailable"
+          }
+        },
+        "x-greencal-action-id": "ACT-REL-003",
+        "x-greencal-module": "M26",
+        "x-greencal-required-role": "executive_viewer",
+        "x-greencal-rbac": {
+          "resource": "release",
+          "action": "read"
+        },
+        "x-greencal-writes-audit": false,
+        "x-greencal-test-case-ids": [
+          "api.release-candidates.get.authz",
+          "api.release-candidates.get.tenant-isolation"
+        ],
+        "x-greencal-form": "Form kandidat rilis"
+      },
+      "post": {
+        "operationId": "postReleaseCandidates",
+        "summary": "Ajukan kandidat rilis",
+        "tags": [
+          "Rilis"
+        ],
+        "description": "Modul M26. Peran minimum crms_project_administrator. Otorisasi dievaluasi sebagai release:create dengan default deny, lalu aturan pemisahan tugas. Aksi ini menulis entri log audit append-only.",
+        "responses": {
+          "200": {
+            "description": "Aksi dijalankan pada objek yang sudah ada.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Objek dibuat, atau keputusan direkam.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          },
+          "503": {
+            "$ref": "#/components/responses/Unavailable"
+          }
+        },
+        "x-greencal-action-id": "ACT-REL-004",
+        "x-greencal-module": "M26",
+        "x-greencal-required-role": "crms_project_administrator",
+        "x-greencal-rbac": {
+          "resource": "release",
+          "action": "create"
+        },
+        "x-greencal-writes-audit": true,
+        "x-greencal-test-case-ids": [
+          "api.release-candidates.post.authz",
+          "api.release-candidates.post.tenant-isolation"
+        ],
+        "x-greencal-form": "Form kandidat rilis",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "description": "Isi badan permintaan divalidasi ulang di server. Keluaran peramban tidak pernah dipercaya; perhitungan dihitung kembali sebelum submit, check, dan approve."
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/enterprise/release/candidates/{id}": {
+      "get": {
+        "operationId": "getReleaseCandidatesById",
+        "summary": "Lihat status gate kandidat rilis",
+        "tags": [
+          "Rilis"
+        ],
+        "description": "Modul M26. Peran minimum executive_viewer. Otorisasi dievaluasi sebagai release:read dengan default deny, lalu aturan pemisahan tugas. Aksi ini tidak mengubah keadaan dan tidak menulis log audit.",
+        "responses": {
+          "200": {
+            "description": "Berhasil.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          },
+          "503": {
+            "$ref": "#/components/responses/Unavailable"
+          }
+        },
+        "x-greencal-action-id": "ACT-REL-005",
+        "x-greencal-module": "M26",
+        "x-greencal-required-role": "executive_viewer",
+        "x-greencal-rbac": {
+          "resource": "release",
+          "action": "read"
+        },
+        "x-greencal-writes-audit": false,
+        "x-greencal-test-case-ids": [
+          "api.release-candidates-id.get.authz",
+          "api.release-candidates-id.get.tenant-isolation"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "Pengenal objek dalam tenant pemanggil.",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 80,
+              "pattern": "^[A-Za-z0-9_-]+$"
+            }
+          }
+        ]
+      }
+    },
+    "/api/enterprise/release/candidates/{id}/reviews": {
+      "post": {
+        "operationId": "postReleaseCandidatesByIdReviews",
+        "summary": "Rekam keputusan review rilis",
+        "tags": [
+          "Rilis"
+        ],
+        "description": "Modul M26. Peran minimum compliance_reviewer. Otorisasi dievaluasi sebagai release:approve dengan default deny, lalu aturan pemisahan tugas. Aksi ini menulis entri log audit append-only.",
+        "responses": {
+          "200": {
+            "description": "Aksi dijalankan pada objek yang sudah ada.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Objek dibuat, atau keputusan direkam.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          },
+          "503": {
+            "$ref": "#/components/responses/Unavailable"
+          }
+        },
+        "x-greencal-action-id": "ACT-REL-006",
+        "x-greencal-module": "M26",
+        "x-greencal-required-role": "compliance_reviewer",
+        "x-greencal-rbac": {
+          "resource": "release",
+          "action": "approve"
+        },
+        "x-greencal-writes-audit": true,
+        "x-greencal-test-case-ids": [
+          "api.release-candidates-id-reviews.post.authz",
+          "api.release-candidates-id-reviews.post.tenant-isolation"
+        ],
+        "x-greencal-form": "Form review rilis",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "Pengenal objek dalam tenant pemanggil.",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 80,
+              "pattern": "^[A-Za-z0-9_-]+$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "description": "Isi badan permintaan divalidasi ulang di server. Keluaran peramban tidak pernah dipercaya; perhitungan dihitung kembali sebelum submit, check, dan approve."
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/enterprise/session": {
+      "get": {
+        "operationId": "getSession",
+        "summary": "Lihat sesi dan peran aktif",
+        "tags": [
+          "Beranda"
+        ],
+        "description": "Modul M02. Peran minimum executive_viewer. Otorisasi dievaluasi sebagai session:read dengan default deny, lalu aturan pemisahan tugas. Aksi ini tidak mengubah keadaan dan tidak menulis log audit.",
+        "responses": {
+          "200": {
+            "description": "Berhasil.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          },
+          "503": {
+            "$ref": "#/components/responses/Unavailable"
+          }
+        },
+        "x-greencal-action-id": "ACT-SES-001",
+        "x-greencal-module": "M02",
+        "x-greencal-required-role": "executive_viewer",
+        "x-greencal-rbac": {
+          "resource": "session",
+          "action": "read"
+        },
+        "x-greencal-writes-audit": false,
+        "x-greencal-test-case-ids": [
+          "api.session.get.authz",
+          "api.session.get.tenant-isolation"
+        ]
+      }
+    },
+    "/api/enterprise/source-registry": {
+      "get": {
+        "operationId": "getSourceRegistry",
+        "summary": "Lihat daftar kandidat sumber",
+        "tags": [
+          "Registri sumber"
+        ],
+        "description": "Modul M32. Peran minimum risk_analyst. Otorisasi dievaluasi sebagai dataset:read dengan default deny, lalu aturan pemisahan tugas. Aksi ini tidak mengubah keadaan dan tidak menulis log audit.",
+        "responses": {
+          "200": {
+            "description": "Berhasil.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          },
+          "503": {
+            "$ref": "#/components/responses/Unavailable"
+          }
+        },
+        "x-greencal-action-id": "ACT-REG-001",
+        "x-greencal-module": "M32",
+        "x-greencal-required-role": "risk_analyst",
+        "x-greencal-rbac": {
+          "resource": "dataset",
+          "action": "read"
+        },
+        "x-greencal-writes-audit": false,
+        "x-greencal-test-case-ids": [
+          "api.source-registry.get.authz",
+          "api.source-registry.get.tenant-isolation"
+        ],
+        "x-greencal-form": "Form kandidat sumber"
+      },
+      "post": {
+        "operationId": "postSourceRegistry",
+        "summary": "Ajukan kandidat sumber terverifikasi",
+        "tags": [
+          "Registri sumber"
+        ],
+        "description": "Modul M32. Peran minimum data_maker. Otorisasi dievaluasi sebagai dataset:create dengan default deny, lalu aturan pemisahan tugas. Aksi ini menulis entri log audit append-only.",
+        "responses": {
+          "200": {
+            "description": "Aksi dijalankan pada objek yang sudah ada.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Objek dibuat, atau keputusan direkam.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          },
+          "503": {
+            "$ref": "#/components/responses/Unavailable"
+          }
+        },
+        "x-greencal-action-id": "ACT-REG-002",
+        "x-greencal-module": "M32",
+        "x-greencal-required-role": "data_maker",
+        "x-greencal-rbac": {
+          "resource": "dataset",
+          "action": "create"
+        },
+        "x-greencal-writes-audit": true,
+        "x-greencal-test-case-ids": [
+          "api.source-registry.post.authz",
+          "api.source-registry.post.tenant-isolation"
+        ],
+        "x-greencal-form": "Form kandidat sumber",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "description": "Isi badan permintaan divalidasi ulang di server. Keluaran peramban tidak pernah dipercaya; perhitungan dihitung kembali sebelum submit, check, dan approve."
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/enterprise/source-registry/{id}": {
+      "get": {
+        "operationId": "getSourceRegistryById",
+        "summary": "Lihat detail kandidat sumber",
+        "tags": [
+          "Registri sumber"
+        ],
+        "description": "Modul M32. Peran minimum risk_analyst. Otorisasi dievaluasi sebagai dataset:read dengan default deny, lalu aturan pemisahan tugas. Aksi ini tidak mengubah keadaan dan tidak menulis log audit.",
+        "responses": {
+          "200": {
+            "description": "Berhasil.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          },
+          "503": {
+            "$ref": "#/components/responses/Unavailable"
+          }
+        },
+        "x-greencal-action-id": "ACT-REG-003",
+        "x-greencal-module": "M32",
+        "x-greencal-required-role": "risk_analyst",
+        "x-greencal-rbac": {
+          "resource": "dataset",
+          "action": "read"
+        },
+        "x-greencal-writes-audit": false,
+        "x-greencal-test-case-ids": [
+          "api.source-registry-id.get.authz",
+          "api.source-registry-id.get.tenant-isolation"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "Pengenal objek dalam tenant pemanggil.",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 80,
+              "pattern": "^[A-Za-z0-9_-]+$"
+            }
+          }
+        ]
+      }
+    },
+    "/api/enterprise/source-registry/{id}/reviews": {
+      "post": {
+        "operationId": "postSourceRegistryByIdReviews",
+        "summary": "Rekam keputusan review dataset",
+        "tags": [
+          "Registri sumber"
+        ],
+        "description": "Modul M32. Peran minimum compliance_reviewer. Otorisasi dievaluasi sebagai dataset:approve dengan default deny, lalu aturan pemisahan tugas. Aksi ini menulis entri log audit append-only.",
+        "responses": {
+          "200": {
+            "description": "Aksi dijalankan pada objek yang sudah ada.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Objek dibuat, atau keputusan direkam.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          },
+          "503": {
+            "$ref": "#/components/responses/Unavailable"
+          }
+        },
+        "x-greencal-action-id": "ACT-REG-004",
+        "x-greencal-module": "M32",
+        "x-greencal-required-role": "compliance_reviewer",
+        "x-greencal-rbac": {
+          "resource": "dataset",
+          "action": "approve"
+        },
+        "x-greencal-writes-audit": true,
+        "x-greencal-test-case-ids": [
+          "api.source-registry-id-reviews.post.authz",
+          "api.source-registry-id-reviews.post.tenant-isolation"
+        ],
+        "x-greencal-form": "Form review sumber",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "Pengenal objek dalam tenant pemanggil.",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 80,
+              "pattern": "^[A-Za-z0-9_-]+$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "description": "Isi badan permintaan divalidasi ulang di server. Keluaran peramban tidak pernah dipercaya; perhitungan dihitung kembali sebelum submit, check, dan approve."
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/enterprise/summary": {
+      "get": {
+        "operationId": "getSummary",
+        "summary": "Lihat ringkasan register",
+        "tags": [
+          "Beranda"
+        ],
+        "description": "Modul M24. Peran minimum executive_viewer. Otorisasi dievaluasi sebagai summary:read dengan default deny, lalu aturan pemisahan tugas. Aksi ini tidak mengubah keadaan dan tidak menulis log audit.",
+        "responses": {
+          "200": {
+            "description": "Berhasil.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          },
+          "503": {
+            "$ref": "#/components/responses/Unavailable"
+          }
+        },
+        "x-greencal-action-id": "ACT-SUM-001",
+        "x-greencal-module": "M24",
+        "x-greencal-required-role": "executive_viewer",
+        "x-greencal-rbac": {
+          "resource": "summary",
+          "action": "read"
+        },
+        "x-greencal-writes-audit": false,
+        "x-greencal-test-case-ids": [
+          "api.summary.get.authz",
+          "api.summary.get.tenant-isolation"
+        ]
+      }
+    }
+  }
+}

@@ -1,0 +1,457 @@
+# Alur kerja rilis on-premise: uji, gate konfigurasi, dan DevSecOps.
+# WP02 dan WP10. Master Execution Prompt v2.0 Bagian 09.3 dan 09.5.
+#
+# Prinsip alur kerja ini:
+#   - Gate berjalan pada setiap PR, bukan hanya pada tag. Kontrol yang hanya
+#     diperiksa saat rilis akan selalu ditemukan terlambat.
+#   - Uji skema dijalankan terhadap PostgreSQL 16 sungguhan, bukan tiruan.
+#     Jaminan RLS tidak dapat dibuktikan dengan mock.
+#   - Tidak ada langkah yang memakai aksi pihak ketiga tanpa penyematan commit
+#     SHA, karena tag aksi dapat dipindahkan oleh pemiliknya.
+
+name: onprem-release
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: onprem-release-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  NODE_VERSION: '24.11.0'
+
+jobs:
+  unit:
+    name: Uji unit dan properti
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af # v4.1.0
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+      - run: npm ci
+      - name: Bangun dist
+        run: npm run build
+      - name: Uji on-premise (presisi, IAM, audit, siklus, deployment)
+        run: npm run test:onprem
+      - name: Uji paket rilis
+        run: node --test tests/onprem-release-bundle.test.mjs
+      - name: Gate inventaris aksi dua arah
+        # Menolak endpoint di kode yang tidak terdaftar DAN baris inventaris
+        # yang rutenya tidak ada. Keduanya adalah penyimpangan dokumentasi.
+        run: npm run inventory:check
+      - name: Uji inventaris dan OpenAPI
+        run: node --test tests/inventory-openapi.test.mjs
+      - name: Pastikan OpenAPI tidak basi
+        run: |
+          npm run openapi:build
+          if ! git diff --quiet -- docs/api/openapi.json; then
+            echo "docs/api/openapi.json basi; jalankan npm run openapi:build dan commit hasilnya." >&2
+            git --no-pager diff -- docs/api/openapi.json
+            exit 1
+          fi
+      - name: Validasi registry CRMS 2026
+        # Registry parameter tiba bersama WP04. Selama berkasnya belum ada di
+        # cabang ini, langkah dilewati dengan catatan, bukan digagalkan:
+        # kegagalan karena berkas yang memang belum ada menyembunyikan
+        # kegagalan yang sesungguhnya.
+        run: |
+          if [ -f scripts/registry/validate-crms26.mjs ]; then
+            npm run registry:validate
+          else
+            echo "scripts/registry/validate-crms26.mjs belum ada di cabang ini (tiba bersama WP04); dilewati." \
+              >> "$GITHUB_STEP_SUMMARY"
+          fi
+      - name: Gate kontras WCAG 2.2 AA pada mode terang dan gelap
+        # Kontras dihitung dari token yang benar-benar dipakai stylesheet.
+        run: npm run design:contrast
+      - name: Uji design system
+        run: node --test tests/design-system.test.mjs
+      - name: Uji warisan Vercel dan Cloudflare
+        run: npm run test:vercel
+
+  schema:
+    name: Jaminan skema terhadap PostgreSQL 16 sungguhan
+    runs-on: ubuntu-24.04
+    services:
+      postgres:
+        image: postgres:16.10-bookworm
+        env:
+          POSTGRES_PASSWORD: ci-only-not-a-secret
+          POSTGRES_DB: crms_onprem_ci
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      GREENCAL_ONPREM_PG_URL: postgresql://postgres:ci-only-not-a-secret@127.0.0.1:5432/crms_onprem_ci
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af # v4.1.0
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+      - run: npm ci
+      - name: Rencana migrasi
+        run: npm run migrate:onprem:plan
+      - name: Pasang migrasi dan jalankan guard
+        run: npm run migrate:onprem
+      - name: Pasang ulang untuk membuktikan idempotensi
+        run: npm run migrate:onprem
+      - name: Beri keanggotaan peran agar uji dapat berganti peran
+        run: psql "$GREENCAL_ONPREM_PG_URL" -c 'GRANT crms_owner, crms_app, crms_readonly TO postgres;'
+      - name: Uji integrasi isolasi tenant, audit, dan presisi
+        run: npm run test:onprem-postgres
+
+  config-gate:
+    name: Gate konfigurasi deployment
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af # v4.1.0
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+      - name: Validasi sintaks compose
+        run: |
+          set -euo pipefail
+          cp deploy/app.env.example deploy/app.env
+          cp deploy/migrator.env.example deploy/migrator.env
+          cp deploy/app.drc.env.example deploy/app.drc.env
+          # compose menuntut setiap berkas rahasia benar-benar ada sebelum ia
+          # mau memvalidasi proyek. Placeholder CI ini TIDAK pernah dipakai di
+          # mana pun selain validasi sintaks, dan dibuang di langkah yang sama.
+          for f in db_bootstrap_password db_replication_password \
+                   objects_access_key objects_secret_key server.crt server.key; do
+            echo "ci-placeholder-not-a-secret" > "deploy/secrets/$f"
+          done
+          GREENCAL_VERSION=ci GREENCAL_DC_DB_HOST=db.dc.invalid \
+            docker compose -f deploy/docker-compose.dc.yml config --quiet
+          GREENCAL_VERSION=ci GREENCAL_DC_DB_HOST=db.dc.invalid \
+            docker compose -f deploy/docker-compose.drc.yml config --quiet
+          rm -f deploy/app.env deploy/migrator.env deploy/app.drc.env
+          find deploy/secrets -type f ! -name README.md -delete
+          echo "compose DC dan DRC lulus validasi sintaks" >> "$GITHUB_STEP_SUMMARY"
+      - name: Gate pengerasan on-premise
+        # Gate ini SENGAJA gagal selama digest citra masih placeholder.
+        # continue-on-error menjaga CI tetap informatif tanpa mengaburkan
+        # keadaan: ringkasan di bawah mencatat hasilnya apa adanya.
+        id: hardening
+        continue-on-error: true
+        run: npm run release:verify-onprem
+      - name: Catat hasil gate pada ringkasan
+        run: |
+          {
+            echo "## Gate pengerasan on-premise"
+            echo
+            if [ "${{ steps.hardening.outcome }}" = "success" ]; then
+              echo "Lulus: seluruh kontrol pengerasan terpenuhi."
+            else
+              echo "GAGAL: masih ada blocker. Rilis produksi bank TIDAK diizinkan."
+              echo
+              echo '```'
+              npm run --silent release:verify-onprem || true
+              echo '```'
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  sast:
+    name: SAST Semgrep
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: actions/setup-python@0b93645e9fea7318ecaed2b359559ac225c90a2b # v5.3.0
+        with:
+          python-version: '3.12'
+      # Python 3.12 tidak lagi memasang setuptools, dan semgrep masih
+      # membutuhkan pkg_resources. Tanpa baris ini, semgrep gagal diimpor.
+      # Versi disematkan: pemindai yang berubah sendiri membuat hasil gate
+      # tidak dapat dibandingkan antar rilis.
+      - run: pip install --no-cache-dir setuptools==75.6.0 semgrep==1.97.0
+      - name: Jalankan Semgrep
+        id: semgrep
+        run: |
+          set -o pipefail
+          semgrep scan \
+            --config p/javascript --config p/nodejs --config p/sql-injection --config p/secrets \
+            --sarif --output semgrep.sarif --metrics=off --severity ERROR \
+            --error 2>&1 | tee semgrep.log || echo "found=1" >> "$GITHUB_OUTPUT"
+      - name: Ringkas temuan
+        if: always()
+        run: |
+          {
+            echo "## SAST Semgrep"
+            echo
+            if [ -f semgrep.sarif ]; then
+              count=$(node -e "const r=JSON.parse(require('fs').readFileSync('semgrep.sarif','utf8'));console.log((r.runs?.[0]?.results||[]).length)")
+              echo "Temuan severity ERROR: $count"
+            else
+              echo "Semgrep tidak menghasilkan SARIF; lihat log langkah."
+            fi
+            echo
+            echo '```'
+            tail -40 semgrep.log 2>/dev/null || true
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@6f51ac03b9356f520e9adb1b1b7802705f340c2b # v4.5.0
+        if: always() && hashFiles('semgrep.sarif') != ''
+        with:
+          name: semgrep-sarif
+          path: semgrep.sarif
+          retention-days: 90
+      - name: Gagalkan bila ada temuan severity ERROR
+        if: steps.semgrep.outputs.found == '1'
+        run: |
+          echo "Semgrep menemukan temuan severity ERROR; tutup temuan sebelum rilis." >&2
+          exit 1
+
+  sca-sbom:
+    name: SBOM dan pemindaian dependensi
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af # v4.1.0
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+      - run: npm ci
+      - name: npm audit untuk kerentanan high dan critical
+        run: npm audit --audit-level=high --omit=dev
+      # Syft dan Grype dipasang sebagai biner berversi tetap, bukan lewat aksi
+      # pihak ketiga. Alasannya: pin commit SHA sebuah aksi hanya dapat
+      # diverifikasi dengan membaca repositori aksi itu, sedangkan biner dapat
+      # diverifikasi terhadap berkas checksum yang diterbitkan rilisnya sendiri.
+      # Pola ini juga yang dipakai bank saat membangun paket offline.
+      - name: Pasang Syft dan Grype dengan verifikasi checksum
+        # Biner dipasang di $RUNNER_TEMP, DI LUAR pohon kerja. Pada percobaan
+        # pertama keduanya diunduh ke dalam repositori, dan akibatnya syft
+        # memindai pemindainya sendiri: grype lalu melaporkan tiga kerentanan
+        # High pada modul Go milik syft, grype, containerd, dan docker/cli,
+        # bukan pada aplikasi. Temuan itu nyata bagi biner tersebut dan sama
+        # sekali tidak relevan bagi paket rilis bank.
+        run: |
+          set -euo pipefail
+          install_tool() {
+            local repo="$1" version="$2" archive="$3"
+            local base="https://github.com/${repo}/releases/download/v${version}"
+            curl -fsSL --retry 3 -o "${RUNNER_TEMP}/${archive}" "${base}/${archive}"
+            curl -fsSL --retry 3 -o "${RUNNER_TEMP}/checksums.txt" \
+              "${base}/${repo#*/}_${version}_checksums.txt"
+            # Verifikasi terhadap checksum resmi rilis; gagal berarti arsip
+            # tidak utuh atau bukan arsip yang diterbitkan.
+            ( cd "$RUNNER_TEMP" && grep " ${archive}\$" checksums.txt | sha256sum -c - )
+            tar xzf "${RUNNER_TEMP}/${archive}" -C "$RUNNER_TEMP"
+            rm -f "${RUNNER_TEMP}/${archive}" "${RUNNER_TEMP}/checksums.txt"
+          }
+          install_tool anchore/syft 1.18.1 syft_1.18.1_linux_amd64.tar.gz
+          install_tool anchore/grype 0.86.1 grype_0.86.1_linux_amd64.tar.gz
+          "$RUNNER_TEMP/syft" version
+          "$RUNNER_TEMP/grype" version
+      - name: Hasilkan SBOM CycloneDX
+        run: |
+          "$RUNNER_TEMP/syft" scan dir:. \
+            --output cyclonedx-json=greencal-crms-sbom.cyclonedx.json
+      - name: Pastikan SBOM tidak memuat pemindainya sendiri
+        run: |
+          for tool in anchore/syft anchore/grype; do
+            if grep -q "$tool" greencal-crms-sbom.cyclonedx.json; then
+              echo "SBOM memuat $tool; pemindai ikut terpindai dan hasilnya tidak sah." >&2
+              exit 1
+            fi
+          done
+          echo "SBOM memuat aplikasi saja."
+      - name: Pindai SBOM, gagalkan pada high atau critical
+        run: |
+          "$RUNNER_TEMP/grype" sbom:greencal-crms-sbom.cyclonedx.json \
+            --fail-on high --output table
+      - uses: actions/upload-artifact@6f51ac03b9356f520e9adb1b1b7802705f340c2b # v4.5.0
+        if: always()
+        with:
+          name: sbom
+          path: greencal-crms-sbom.cyclonedx.json
+          retention-days: 90
+
+  secret-scan:
+    name: Pemindaian rahasia pada seluruh riwayat
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          # Riwayat penuh: rahasia yang sudah dihapus dari HEAD tetap ada di
+          # riwayat dan tetap harus dicabut.
+          fetch-depth: 0
+      - name: Pasang gitleaks dengan verifikasi checksum
+        run: |
+          set -euo pipefail
+          version=8.21.2
+          archive="gitleaks_${version}_linux_x64.tar.gz"
+          base="https://github.com/gitleaks/gitleaks/releases/download/v${version}"
+          curl -fsSL --retry 3 -o "${RUNNER_TEMP}/${archive}" "${base}/${archive}"
+          curl -fsSL --retry 3 -o "${RUNNER_TEMP}/checksums.txt" \
+            "${base}/gitleaks_${version}_checksums.txt"
+          ( cd "$RUNNER_TEMP" && grep " ${archive}\$" checksums.txt | sha256sum -c - )
+          tar xzf "${RUNNER_TEMP}/${archive}" -C "$RUNNER_TEMP" gitleaks
+          "$RUNNER_TEMP/gitleaks" version
+      - name: Pindai seluruh riwayat
+        # --config .gitleaks.toml memuat SELURUH aturan bawaan ditambah satu
+        # aturan khusus proyek, dengan pengecualian yang dinyatakan sebagai pola
+        # NILAI dan bukan sebagai berkas yang dilewati. Lihat .gitleaks.toml.
+        run: |
+          set -o pipefail
+          "$RUNNER_TEMP/gitleaks" git . --config .gitleaks.toml --redact \
+            --report-format sarif --report-path gitleaks.sarif \
+            --log-level info 2>&1 | tee gitleaks.log
+      - name: Ringkas hasil
+        if: always()
+        run: |
+          {
+            echo "## Pemindaian rahasia"
+            echo
+            echo '```'
+            tail -20 gitleaks.log 2>/dev/null || true
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@6f51ac03b9356f520e9adb1b1b7802705f340c2b # v4.5.0
+        if: always() && hashFiles('gitleaks.sarif') != ''
+        with:
+          name: gitleaks-sarif
+          path: gitleaks.sarif
+          retention-days: 90
+
+  container-scan:
+    name: Bangun dan pindai citra kontainer
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - name: Bangun citra runtime
+        run: docker build --target runtime -t greencal/crms-enterprise:ci .
+      - name: Pasang Grype dengan verifikasi checksum
+        run: |
+          set -euo pipefail
+          version=0.86.1
+          archive="grype_${version}_linux_amd64.tar.gz"
+          base="https://github.com/anchore/grype/releases/download/v${version}"
+          curl -fsSL --retry 3 -o "${RUNNER_TEMP}/${archive}" "${base}/${archive}"
+          curl -fsSL --retry 3 -o "${RUNNER_TEMP}/checksums.txt" \
+            "${base}/grype_${version}_checksums.txt"
+          ( cd "$RUNNER_TEMP" && grep " ${archive}\$" checksums.txt | sha256sum -c - )
+          tar xzf "${RUNNER_TEMP}/${archive}" -C "$RUNNER_TEMP" grype
+      - name: Pindai citra, gagalkan pada kerentanan high atau critical YANG SUDAH ADA PERBAIKANNYA
+        # --only-fixed membuat gate ini menggagalkan build hanya bila ada
+        # kerentanan yang BISA ditutup tetapi belum ditutup. Kerentanan tanpa
+        # paket perbaikan tidak dapat diperbaiki tim rekayasa, dan membiarkan
+        # gate gagal karenanya akan mendorong orang menambah daftar pengabaian
+        # sampai gate ini berhenti bermakna. Keduanya tetap dilaporkan di bawah,
+        # dan dicatat sebagai gate rilis terbuka G16, bukan disembunyikan.
+        run: |
+          "$RUNNER_TEMP/grype" greencal/crms-enterprise:ci \
+            --fail-on high --only-fixed --output table
+      - name: Laporkan kerentanan tanpa perbaikan untuk asesmen bank
+        if: always()
+        run: |
+          set -o pipefail
+          "$RUNNER_TEMP/grype" greencal/crms-enterprise:ci \
+            --output json --file grype-image.json || true
+          node --input-type=module -e '
+            import { readFileSync } from "node:fs";
+            const r = JSON.parse(readFileSync("grype-image.json", "utf8"));
+            const rows = (r.matches || [])
+              .filter((m) => ["High", "Critical"].includes(m.vulnerability.severity))
+              .map((m) => ({
+                paket: m.artifact.name,
+                versi: m.artifact.version,
+                cve: m.vulnerability.id,
+                severity: m.vulnerability.severity,
+                perbaikan: (m.vulnerability.fix?.versions || []).join(", ") || m.vulnerability.fix?.state || "tidak ada",
+              }));
+            const unfixed = rows.filter((x) => !/^\d/.test(x.perbaikan));
+            const lines = [
+              "## Kerentanan citra, severity High dan Critical",
+              "",
+              `Total: ${rows.length}. Tanpa paket perbaikan: ${unfixed.length}.`,
+              "",
+            ];
+            if (unfixed.length) {
+              lines.push("| Paket | Versi | CVE | Severity | Perbaikan |", "| --- | --- | --- | --- | --- |");
+              for (const x of unfixed) {
+                lines.push(`| ${x.paket} | ${x.versi} | ${x.cve} | ${x.severity} | ${x.perbaikan} |`);
+              }
+              lines.push("", "Kerentanan tanpa paket perbaikan tidak dapat ditutup tim rekayasa.",
+                "Lihat gate G16 pada docs/enterprise/release/release-gates.json.");
+            } else {
+              lines.push("Tidak ada kerentanan High atau Critical tanpa perbaikan.");
+            }
+            process.stdout.write(lines.join("\n") + "\n");
+          ' >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@6f51ac03b9356f520e9adb1b1b7802705f340c2b # v4.5.0
+        if: always() && hashFiles('grype-image.json') != ''
+        with:
+          name: grype-image-report
+          path: grype-image.json
+          retention-days: 90
+      - name: Pastikan citra tidak berjalan sebagai root
+        run: |
+          user=$(docker inspect -f '{{.Config.User}}' greencal/crms-enterprise:ci)
+          echo "USER citra: ${user:-<kosong>}"
+          case "$user" in
+            ''|root|0|0:*) echo "Citra berjalan sebagai root; ditolak." >&2; exit 1 ;;
+          esac
+      - name: Pastikan tidak ada alat jaringan di citra runtime
+        run: |
+          for tool in curl wget git gcc; do
+            if docker run --rm --entrypoint sh greencal/crms-enterprise:ci -c "command -v $tool" 2>/dev/null; then
+              echo "$tool ada di citra runtime; permukaan serang terlalu besar." >&2
+              exit 1
+            fi
+          done
+          echo "Tidak ada alat jaringan di citra runtime."
+
+  bundle:
+    name: Paket rilis offline
+    needs: [unit, schema, config-gate]
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af # v4.1.0
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+      - name: Bangun manifest paket
+        # Keluar 2 berarti paket terbangun tetapi ditandai NOT_RELEASABLE.
+        # Itu keadaan yang benar saat gate bank belum tertutup, jadi langkah ini
+        # tidak gagal karenanya; yang gagal hanya galat nyata.
+        run: |
+          set +e
+          npm run release:bundle
+          code=$?
+          set -e
+          if [ "$code" -ne 0 ] && [ "$code" -ne 2 ]; then exit "$code"; fi
+          echo "BUNDLE_EXIT=$code" >> "$GITHUB_ENV"
+      - name: Ringkas status kelayakan rilis
+        run: |
+          {
+            echo "## Paket rilis offline"
+            echo
+            echo '```json'
+            cat dist-release/manifest.sha256
+            echo '```'
+            if [ "${BUNDLE_EXIT}" = "2" ]; then
+              echo
+              echo "Paket ditandai **NOT_RELEASABLE**: gate bank belum tertutup."
+              echo "Paket boleh dipakai UAT, tidak boleh dipakai produksi."
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@6f51ac03b9356f520e9adb1b1b7802705f340c2b # v4.5.0
+        with:
+          name: onprem-release-manifest
+          path: dist-release/
+          retention-days: 90
