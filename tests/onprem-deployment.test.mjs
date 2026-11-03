@@ -417,3 +417,25 @@ test('citra runtime tidak menyalin rahasia atau berkas lingkungan', async () => 
   assert.ok(!/^\s*COPY\s+deploy\s/mi.test(dockerfile),
     'menyalin seluruh deploy/ akan menyertakan deploy/secrets');
 });
+
+test('setiap skrip yang dijalankan Dockerfile ada, atau dijaga pemeriksaan keberadaan', async () => {
+  // Build citra gagal belakangan dan mahal bila ia memanggil skrip yang tidak
+  // ada. Diperiksa di sini, tanpa daemon docker.
+  const { stat } = await import('node:fs/promises');
+  const dockerfile = await read('Dockerfile');
+  const invocations = [...dockerfile.matchAll(/node\s+(?:--test\s+)?((?:scripts|tests)\/[\w./-]+)/g)]
+    .map((m) => m[1]);
+  // Termasuk berkas uji yang didaftarkan pada baris lanjutan.
+  for (const m of dockerfile.matchAll(/^\s+(tests\/[\w./-]+\.mjs)\s*\\?$/gm)) invocations.push(m[1]);
+
+  assert.ok(invocations.length >= 8, `hanya ${invocations.length} pemanggilan terdeteksi`);
+  for (const path of [...new Set(invocations)]) {
+    try {
+      await stat(join(ROOT, path));
+    } catch {
+      // Boleh tidak ada HANYA bila dijaga pemeriksaan keberadaan.
+      assert.match(dockerfile, new RegExp(`\\[ -f ${path.replace(/[.\\/]/g, '\\$&')} \\]`),
+        `Dockerfile menjalankan ${path} yang tidak ada dan tidak dijaga pemeriksaan keberadaan`);
+    }
+  }
+});

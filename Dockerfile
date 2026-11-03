@@ -28,9 +28,29 @@ WORKDIR /build
 COPY package.json package-lock.json ./
 RUN npm ci --ignore-scripts
 COPY . .
+# Rangkaian uji yang tidak membutuhkan basis data maupun jaringan. Uji
+# integrasi PostgreSQL dan pemindaian keamanan dijalankan CI, bukan di dalam
+# build citra: keduanya menuntut layanan di luar citra.
 RUN node scripts/build-dist.mjs \
- && node --test tests/onprem-precision.test.mjs tests/onprem-iam.test.mjs tests/onprem-audit-cycle.test.mjs \
- && node scripts/registry/validate-crms26.mjs
+ && node --test \
+      tests/onprem-precision.test.mjs \
+      tests/onprem-iam.test.mjs \
+      tests/onprem-audit-cycle.test.mjs \
+      tests/onprem-deployment.test.mjs \
+      tests/onprem-release-bundle.test.mjs \
+      tests/inventory-openapi.test.mjs \
+      tests/design-system.test.mjs \
+      tests/secret-scan-config.test.mjs \
+ && node scripts/inventory/extract-actions.mjs --check \
+ && node scripts/design/contrast.mjs \
+ # Registry parameter tiba bersama WP04. Selama berkas validatornya belum ada
+ # di cabang ini, langkah dilewati dengan catatan: menggagalkan build karena
+ # berkas yang memang belum ada akan menyembunyikan kegagalan sesungguhnya.
+ && if [ -f scripts/registry/validate-crms26.mjs ]; then \
+      node scripts/registry/validate-crms26.mjs; \
+    else \
+      echo "scripts/registry/validate-crms26.mjs belum ada di cabang ini; dilewati."; \
+    fi
 
 # --- Tahap 3: runtime --------------------------------------------------------
 FROM node:24.11.0-bookworm-slim AS runtime
