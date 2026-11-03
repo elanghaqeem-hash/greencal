@@ -11,7 +11,7 @@
 #   - Tidak ada paket build, kompilator, atau alat jaringan di citra akhir.
 
 # --- Tahap 1: dependensi -----------------------------------------------------
-FROM node:24.11.0-bookworm-slim AS deps
+FROM node:24.13.0-trixie-slim AS deps
 WORKDIR /build
 # Hanya manifes yang disalin lebih dulu agar lapisan dependensi dapat dicache.
 COPY package.json package-lock.json ./
@@ -23,7 +23,7 @@ RUN npm ci --omit=dev --ignore-scripts \
 # --- Tahap 2: verifikasi -----------------------------------------------------
 # Uji dijalankan di dalam citra, bukan hanya di CI, sehingga paket rilis
 # offline membawa bukti bahwa uji lulus pada lingkungan yang sama.
-FROM node:24.11.0-bookworm-slim AS verify
+FROM node:24.13.0-trixie-slim AS verify
 WORKDIR /build
 COPY package.json package-lock.json ./
 RUN npm ci --ignore-scripts
@@ -53,10 +53,25 @@ RUN node scripts/build-dist.mjs \
     fi
 
 # --- Tahap 3: runtime --------------------------------------------------------
-FROM node:24.11.0-bookworm-slim AS runtime
+FROM node:24.13.0-trixie-slim AS runtime
 
-# Tidak ada apt-get install di tahap ini: tidak ada curl, wget, git, atau
-# kompilator di citra produksi. Permukaan serangnya sekecil mungkin.
+# Tidak ada paket BARU yang dipasang di tahap ini: tidak ada curl, wget, git,
+# atau kompilator di citra produksi. Yang dilakukan hanyalah memasang pembaruan
+# keamanan untuk paket yang MEMANG sudah ada, lalu membuang npm, corepack, dan
+# seluruh cache apt. npm tidak dibutuhkan saat runtime, dan justru npm bundled
+# itulah sumber temuan High pada glob, minimatch, tar, dan brace-expansion;
+# membuangnya menghilangkan temuan sekaligus mengecilkan permukaan serang.
+RUN set -eux; \
+    apt-get update; \
+    apt-get upgrade -y --no-install-recommends; \
+    rm -rf /usr/local/lib/node_modules/npm \
+           /usr/local/lib/node_modules/corepack \
+           /usr/local/bin/npm /usr/local/bin/npx /usr/local/bin/corepack; \
+    apt-get clean; \
+    rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* /root/.npm; \
+    ! command -v npm; \
+    ! command -v npx
+
 ENV NODE_ENV=production \
     NODE_OPTIONS=--disable-proto=throw \
     GREENCAL_DEPLOYMENT=onprem \

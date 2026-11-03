@@ -439,3 +439,40 @@ test('setiap skrip yang dijalankan Dockerfile ada, atau dijaga pemeriksaan keber
     }
   }
 });
+
+test('citra runtime membuang npm dan memasang pembaruan keamanan', async () => {
+  const dockerfile = await read('Dockerfile');
+  const runtime = dockerfile.split(/^FROM .* AS runtime$/mi)[1] || '';
+  assert.ok(runtime, 'tahap runtime tidak ditemukan');
+
+  // npm bundled pada citra dasar node adalah sumber temuan High pada glob,
+  // minimatch, tar, dan brace-expansion, dan tidak satu pun dibutuhkan saat
+  // runtime. Membuangnya adalah kontrol, bukan rapi-rapi.
+  assert.match(runtime, /rm -rf[^\n]*node_modules\/npm/,
+    'tahap runtime wajib membuang npm bundled');
+  assert.match(runtime, /!\s*command -v npm/,
+    'penghapusan npm wajib diverifikasi di dalam build, bukan diasumsikan');
+
+  // Pembaruan keamanan untuk paket yang sudah ada, tanpa memasang paket baru.
+  assert.match(runtime, /apt-get upgrade -y/,
+    'tahap runtime wajib memasang pembaruan keamanan paket yang sudah ada');
+  assert.ok(!/apt-get install/.test(runtime),
+    'tahap runtime tidak boleh memasang paket baru');
+  assert.match(runtime, /rm -rf[^\n]*\/var\/lib\/apt\/lists/,
+    'cache apt wajib dibuang agar tidak ikut dalam citra');
+});
+
+test('seluruh tahap build memakai citra dasar yang sama dan disematkan', async () => {
+  const dockerfile = await read('Dockerfile');
+  const bases = [...dockerfile.matchAll(/^\s*FROM\s+(\S+)\s+AS\s+(\S+)/gmi)].map((m) => [m[1], m[2]]);
+  assert.ok(bases.length >= 3, `hanya ${bases.length} tahap terdeteksi`);
+  const images = new Set(bases.map(([img]) => img));
+  // Tahap yang memakai citra dasar berbeda versi menghasilkan hasil uji yang
+  // tidak mewakili citra yang benar-benar dirilis.
+  assert.equal(images.size, 1,
+    `tahap build memakai citra dasar berbeda: ${[...images].join(', ')}`);
+  const [image] = images;
+  assert.match(image, /^node:\d+\.\d+\.\d+-[a-z]+-slim$/,
+    `citra dasar ${image} wajib menyebut versi patch lengkap`);
+  assert.ok(!/:latest|^node:\d+$|^node:\d+-/.test(image), `citra dasar ${image} tidak disematkan`);
+});
